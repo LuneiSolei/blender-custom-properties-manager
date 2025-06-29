@@ -1,0 +1,12 @@
+﻿blender_version_min = "4.4.3"
+id = "custom_properties_manager"
+license = ["SPDX:CC-BY-4.0"]
+maintainer = "Lunei Solei"
+name = "Custom Properties Manager"
+schema_version = "1.0.0"
+tagline = "An extension to help declutter and manage that pesky \"Custom Properties\" tab"
+type = "add-on"
+version = "0.0.1"
+
+# TODO: Create tag list
+# TODO: Link documentation

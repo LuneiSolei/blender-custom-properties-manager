@@ -25,7 +25,6 @@ def register():
     global original_draws
 
     # Register classes
-    bpy.utils.register_class(msp.ManagerSubPanel)
     bpy.utils.register_class(ops.AddNewPropertyGroupOperator)
     bpy.utils.register_class(ops.ExpandToggleOperator)
 
@@ -60,7 +59,6 @@ def unregister():
     msp._expand_states.clear()
 
     # Unregister classes
-    bpy.utils.unregister_class(msp.ManagerSubPanel)
     bpy.utils.unregister_class(ops.AddNewPropertyGroupOperator)
     bpy.utils.unregister_class(ops.ExpandToggleOperator)
 

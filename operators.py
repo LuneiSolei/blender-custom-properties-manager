@@ -1,4 +1,5 @@
 ﻿import bpy
+from bpy.props import StringProperty
 from . import manager_sub_panel as msp
 
 class AddNewPropertyGroupOperator(bpy.types.Operator):
@@ -6,9 +7,16 @@ class AddNewPropertyGroupOperator(bpy.types.Operator):
     bl_idname = "cpm.add_new_property_group"
     bl_description = "Add a new custom property group"
     bl_options = {'REGISTER', 'UNDO'}
+    
+    data_path: StringProperty(
+        name = "Data Path",
+        description = "Path to the target object",
+        default = "Object"
+    )
 
     def execute(self, context):
-        context.view_layer["my_property"] = 1.0
+        target = getattr(bpy.types, self.data_path)
+        target["my_property"] = 1.0
         self.report({'INFO'}, "Added new custom property group")
         return {'FINISHED'}
 

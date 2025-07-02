@@ -3,20 +3,6 @@
 # Global storage for expand/collapse states
 _expand_states = {}
 
-class ManagerSubPanel(bpy.types.Panel):
-    bl_label = ""
-    bl_parent_id = "VIEWLAYER_PT_layer_custom_props"
-    bl_idname = "VIEWLAYER_PT_layer_custom_properties_manager"
-    bl_space_type = "PROPERTIES"
-    bl_region_type = "WINDOW"
-    bl_context = "view_layer"
-    bl_options = {"DEFAULT_CLOSED"}
-
-    @classmethod
-    def poll(cls, context):
-        # TODO: Check various context states
-        return context.view_layer is not None
-
 def get_data_object(context, data_path):
     """
     Resolve a data_path string to the actual object
@@ -59,7 +45,8 @@ def custom_draw_function(self, context, data_path):
 
     # TODO: Make this button work for all panels
     # Draw the "New Group" button
-    layout.operator("cpm.add_new_property_group", text = "New Group", icon = "ADD")
+    new_prop_group_op = layout.operator("cpm.add_new_property_group", text = "New Group", icon = "ADD")
+    new_prop_group_op.data_path = "view_layer"
 
     # Check if there are any properties to draw
     if not hasattr(data_object, 'keys') or not len(data_object.keys()) > 0:
@@ -148,7 +135,7 @@ def draw_property_group(layout, data_object, data_path, group_name, group_keys):
     is_expanded = _expand_states.get(expand_key, True)
 
     # Create a toggle button
-    toggle_op = header.operator("ui.expand_toggle",
+    toggle_op = header.operator("cpm.expand_toggle",
                                 text = group_name,
                                 icon = "DOWNARROW_HLT" if is_expanded else "RIGHTARROW",
                                 emboss = False)

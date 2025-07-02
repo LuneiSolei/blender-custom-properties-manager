@@ -59,7 +59,7 @@ def custom_draw_function(self, context, data_path):
 
     # TODO: Make this button work for all panels
     # Draw the "New Group" button
-    layout.operator("wm.properties_add_new_group", text = "New Group", icon = "ADD")
+    layout.operator("cpm.add_new_property_group", text = "New Group", icon = "ADD")
 
     # Check if there are any properties to draw
     if not hasattr(data_object, 'keys') or not len(data_object.keys()) > 0:

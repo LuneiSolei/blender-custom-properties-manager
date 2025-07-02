@@ -3,7 +3,7 @@ from . import manager_sub_panel as msp
 
 class AddNewPropertyGroupOperator(bpy.types.Operator):
     bl_label = "New Group"
-    bl_idname = "wm.properties_add_new_group"
+    bl_idname = "cpm.add_new_property_group"
     bl_description = "Add a new custom property group"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -14,7 +14,7 @@ class AddNewPropertyGroupOperator(bpy.types.Operator):
 
 class ExpandToggleOperator(bpy.types.Operator):
     """Toggle expand/collapse state for property groups"""
-    bl_idname = "ui.expand_toggle"
+    bl_idname = "cpm.expand_toggle"
     bl_label = "Toggle Expand"
     bl_description = "Toggle the expand/collapse state of a property group"
 

@@ -1,26 +1,4 @@
-﻿import bpy
-
-# Global storage for expand/collapse states
-_expand_states = {}
-
-def get_data_object(context, data_path):
-    """
-    Resolve a data_path string to the actual object
-
-    Args:
-        :param context: Blender context
-        :param data_path: String like "view_layer", "scene", "active_object.data", etc.
-
-    :return: The resolved object or None if not found
-    """
-    try:
-        # Handle nested paths like "active_object.data"
-        obj = context
-        for attr in data_path.split("."):
-            obj = getattr(obj, attr)
-        return obj
-    except AttributeError:
-        return None
+﻿from . import utils
 
 def custom_draw_function(self, context, data_path):
     """
@@ -34,7 +12,7 @@ def custom_draw_function(self, context, data_path):
     layout = self.layout
 
     # Get the data object dynamically
-    data_object = get_data_object(context, data_path)
+    data_object = utils.get_data_object(context, data_path)
     if not data_object:
         layout.label(text = f"No {data_path} available")
         return
@@ -57,6 +35,10 @@ def custom_draw_function(self, context, data_path):
     # Group properties by type
     regular_props = []
     cpm_groups = {}
+
+    # Draw all cpm properties
+    if hasattr(data_object, "cpm") and len(data_object.cpm) > 0:
+        utils.draw_property(True)
 
     # Draw all pre-existing properties
     for key in data_object.keys():
@@ -82,11 +64,11 @@ def custom_draw_function(self, context, data_path):
 
     # Draw regular properties
     for key in regular_props:
-        draw_property_row(layout, data_object, data_path, key, False)
+        utils.draw_property_row(layout, data_object, data_path, key, False)
 
     # Draw CPM groups as expandable sections
     for group_name, group_keys in cpm_groups.items():
-        draw_property_group(layout, data_object, data_path, group_name, group_keys)
+        utils.draw_property_group(layout, data_object, data_path, group_name, group_keys)
 
 
 def draw_property_row(layout, data_object, data_path, key, group_child):
@@ -109,40 +91,12 @@ def draw_property_row(layout, data_object, data_path, key, group_child):
 
     row.prop(data_object, f'["{key}"]', text = display_name)
 
-    # Draw the "edit property" button
-    edit_op = row.operator("wm.properties_edit", text = "", icon = "PREFERENCES", emboss = False)
-    edit_op.property_name = key
-    edit_op.data_path = data_path
-
-    # Draw the "remove property" button
-    remove_op = row.operator("wm.properties_remove", text = "", icon = "X", emboss = False)
-    remove_op.property_name = key
-    remove_op.data_path = data_path
-
-def draw_property_group(layout, data_object, data_path, group_name, group_keys):
-    """Draw an expandable group of properties"""
-    global _expand_states
-    box = layout.box()
-
-    # Header row with expand/collapse toggle
-    header = box.row()
-
-    # Create unique key for this group
-    object_id = getattr(data_object, "name", str(id(data_object)))
-    expand_key = f"_cpm_{data_path}_{object_id}_{group_name}"
-
-    # Get current expand state (defaults to True)
-    is_expanded = _expand_states.get(expand_key, True)
-
-    # Create a toggle button
-    toggle_op = header.operator("cpm.expand_toggle",
-                                text = group_name,
-                                icon = "DOWNARROW_HLT" if is_expanded else "RIGHTARROW",
-                                emboss = False)
-    toggle_op.expand_key = expand_key
-    toggle_op.current_state = is_expanded
-
-    # Only draw group contents if expanded
-    if is_expanded:
-        for key in group_keys:
-            draw_property_row(box, data_object, data_path, key, True)
+    # # Draw the "edit property" button
+    # edit_op = row.operator("wm.properties_edit", text = "", icon = "PREFERENCES", emboss = False)
+    # edit_op.property_name = key
+    # edit_op.data_path = data_path
+    #
+    # # Draw the "remove property" button
+    # remove_op = row.operator("wm.properties_remove", text = "", icon = "X", emboss = False)
+    # remove_op.property_name = key
+    # remove_op.data_path = data_path

@@ -1,6 +1,6 @@
 ﻿import bpy
 from bpy.props import StringProperty
-from . import manager_sub_panel as msp
+from . import panels as msp
 
 class AddNewPropertyGroupOperator(bpy.types.Operator):
     bl_label = "New Group"
@@ -18,6 +18,7 @@ class AddNewPropertyGroupOperator(bpy.types.Operator):
         target = getattr(bpy.types, self.data_path)
         target["my_property"] = 1.0
         self.report({'INFO'}, "Added new custom property group")
+
         return {'FINISHED'}
 
 class ExpandToggleOperator(bpy.types.Operator):
@@ -36,5 +37,6 @@ class ExpandToggleOperator(bpy.types.Operator):
     )
 
     def execute(self, context):
-        msp._expand_states[self.expand_key] = not self.current_state
+        msp.expand_states[self.expand_key] = not self.current_state
+
         return {'FINISHED'}

@@ -63,7 +63,8 @@ def draw_property_row(layout, data_object, data_path, key, use_cpm = False):
     """Draws a single property row"""
     row = layout.row()
 
-    # Determine display name
+    # Draw the property
+    row.prop(data_object, f'["{key}"]', text = key)
 
     # Draw the "edit property" button
     edit_op = row.operator("wm.properties_edit", text = "", icon = "PREFERENCES", emboss = False)

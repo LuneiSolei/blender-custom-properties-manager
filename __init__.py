@@ -1,14 +1,18 @@
 ﻿import bpy
 from collections import namedtuple
-from . import operators
+from . import ops
 from . import panels
-from . import properties
 from . import utils
 
-# CPMProperty(PropertyGroup) {
-#   prop_name: StringProperty()
-#   group_name: StringProperty() # None if null
-# }
+"""
+CPMProperty(PropertyGroup) {
+    prop_name: StringProperty()
+    group_name: StringProperty() # None if null
+
+    # Property Values
+    
+}
+"""
 
 bl_info = {
     "name": "Custom Properties Manager",

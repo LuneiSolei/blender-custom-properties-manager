@@ -1,8 +1,6 @@
 ﻿import bpy
 from collections import namedtuple
-from . import ops
-from . import panels
-from . import utils
+from . import ops, panels, utils, props
 
 """
 CPMProperty(PropertyGroup) {
@@ -27,34 +25,27 @@ bl_info = {
 # Store original draw functions
 original_draws = {}
 
-def create_flexible_draw_function(data_path):
-    """Factory function to create draw functions for different contexts"""
-    def draw_function(self, context):
-        return panels.custom_draw_function(self, context, data_path)
-    return draw_function
-
 def register():
     global original_draws
 
     # Register classes
-    bpy.utils.register_class(properties.CPMProperty)
-    bpy.utils
-    bpy.utils.register_class(operators.AddNewPropertyGroupOperator)
-    bpy.utils.register_class(operators.ExpandToggleOperator)
+    bpy.utils.register_class(props.CPMProperty)
+    bpy.utils.register_class(ops.AddNewPropertyGroupOperator)
+    bpy.utils.register_class(ops.ExpandToggleOperator)
 
     Panel = namedtuple("Panel", ["name", "data_path"])
-    panels = [
+    bl_panels = [
         Panel("VIEWLAYER_PT_layer_custom_props", "view_layer"),
         Panel("SCENE_PT_custom_props", "scene"),
         Panel("OBJECT_PT_custom_props", "active_object"),
         Panel("DATA_PT_custom_props_light", "active_object.data"),
     ]
 
-    for panel in panels:
+    for panel in bl_panels:
         if hasattr(bpy.types, panel.name):
             panel_class = getattr(bpy.types, panel.name)
             original_draws[panel.name] = panel_class.draw
-            panel_class.draw = create_flexible_draw_function(panel.data_path)
+            panel_class.draw = utils.create_flexible_draw_function(panel.data_path)
 
 def unregister():
     global original_draws
@@ -71,8 +62,8 @@ def unregister():
     utils.expand_states.clear()
 
     # Unregister classes
-    bpy.utils.unregister_class(operators.AddNewPropertyGroupOperator)
-    bpy.utils.unregister_class(operators.ExpandToggleOperator)
+    bpy.utils.unregister_class(ops.AddNewPropertyGroupOperator)
+    bpy.utils.unregister_class(ops.ExpandToggleOperator)
 
 if __name__ == "__main__":
     register()

@@ -1,10 +1,10 @@
 ﻿import bpy
 from bpy.props import StringProperty
-from . import panels as msp
+from . import utils, config
 
 class AddNewPropertyGroupOperator(bpy.types.Operator):
     bl_label = "New Group"
-    bl_idname = "cpm.add_new_property_group"
+    bl_idname = config.CPM_ADD_NEW_PROPERTY_GROUP
     bl_description = "Add a new custom property group"
     bl_options = {'REGISTER', 'UNDO'}
     
@@ -37,6 +37,6 @@ class ExpandToggleOperator(bpy.types.Operator):
     )
 
     def execute(self, context):
-        msp.expand_states[self.expand_key] = not self.current_state
+        utils.expand_states[self.expand_key] = not self.current_state
 
         return {'FINISHED'}

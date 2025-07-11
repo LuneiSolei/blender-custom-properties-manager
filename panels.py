@@ -1,6 +1,6 @@
-﻿from . import utils
+﻿from . import utils, config
 
-def custom_draw_function(self, context, data_path):
+def draw_panel(self, context, data_path):
     """
     Flexible draw function that works with different context types
 
@@ -12,25 +12,24 @@ def custom_draw_function(self, context, data_path):
     layout = self.layout
 
     # Get the data object dynamically
-    data_object = utils.get_data_object(context, data_path)
+    data_object = utils.resolve_data_object(context, data_path)
     if not data_object:
         layout.label(text = f"No {data_path} available")
         return
 
-    # Draw the original "New" button
-    new_prop_op = layout.operator("wm.properties_add", text = "New", icon = "ADD")
-    new_prop_op.data_path = "view_layer"
-
-    # TODO: Make this button work for all panels
-    # Draw the "New Group" button
-    new_prop_group_op = layout.operator("cpm.add_new_property_group", text = "New Group", icon = "ADD")
-    new_prop_group_op.data_path = "view_layer"
-
     # Check if there are any properties to draw
-    if not hasattr(data_object, 'keys') or not len(data_object.keys()) > 0:
+    if not hasattr(data_object, config.ATTR_KEYS) or not len(data_object.keys()) > 0:
         return
 
+    # Draw property buttons
+    draw_prop_buttons(layout, data_path)
     layout.separator()
+
+    # Retrieve all custom properties for the panel
+
+
+    # Convert all properties to CPM format while linking to original property
+
 
     # Group properties by type
     regular_props = []
@@ -38,7 +37,7 @@ def custom_draw_function(self, context, data_path):
 
     # Draw all cpm properties
     if hasattr(data_object, "cpm") and len(data_object.cpm) > 0:
-        utils.draw_property(True)
+        utils.add_property(True, data_object)
 
     # Draw all pre-existing properties
     for key in data_object.keys():
@@ -64,39 +63,33 @@ def custom_draw_function(self, context, data_path):
 
     # Draw regular properties
     for key in regular_props:
-        utils.draw_property_row(layout, data_object, data_path, key, False)
+        utils.draw_property_row(
+            layout,
+            data_object,
+            data_path,
+            key,
+            False)
 
     # Draw CPM groups as expandable sections
     for group_name, group_keys in cpm_groups.items():
-        utils.draw_property_group(layout, data_object, data_path, group_name, group_keys)
+        utils.draw_property_group(
+            layout,
+            data_object,
+            data_path,
+            group_name,
+            group_keys)
 
+def draw_prop_buttons(layout, data_path):
+    # Draw the original "New" button
+    new_prop_op = layout.operator(
+        config.WM_PROPERTIES_ADD,
+        text = "New",
+        icon = config.ADD_ICON)
+    new_prop_op.data_path = data_path
 
-def draw_property_row(layout, data_object, data_path, key, group_child):
-    """Helper function to draw a property row with edit/remove buttons"""
-    row = layout.row()
-
-    # Determine display name
-    if not key.startswith("cpm."):
-        # Common property
-        display_name = key
-    elif group_child:
-        cpm_name = key[4:]
-        start_index = cpm_name.find(".")
-        if start_index == -1:
-            display_name = key[4:]
-        else:
-            display_name = cpm_name[start_index + 1:]
-    else:
-        display_name = key[4:]
-
-    row.prop(data_object, f'["{key}"]', text = display_name)
-
-    # # Draw the "edit property" button
-    # edit_op = row.operator("wm.properties_edit", text = "", icon = "PREFERENCES", emboss = False)
-    # edit_op.property_name = key
-    # edit_op.data_path = data_path
-    #
-    # # Draw the "remove property" button
-    # remove_op = row.operator("wm.properties_remove", text = "", icon = "X", emboss = False)
-    # remove_op.property_name = key
-    # remove_op.data_path = data_path
+    # Draw the "New Group" button
+    new_prop_group_op = layout.operator(
+        config.CPM_ADD_NEW_PROPERTY_GROUP,
+        text ="New Group",
+        icon = config.ADD_ICON)
+    new_prop_group_op.data_path = data_path

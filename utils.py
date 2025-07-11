@@ -1,18 +1,16 @@
-﻿from . import panels
+﻿from . import panels, config, props
 
 # Global storage for expand/collapse states
 expand_states = {}
-cpm_layouts = {}
+cpm_groups = {}
 
-def get_data_object(context, data_path):
+def resolve_data_object(context, data_path):
     """
-    Resolve a data_path string to the actual object
-
+    Resolve a data_path string to the actual object.
     Args:
         :param context: Blender context
         :param data_path: String like "view_layer", "scene", "active_object.data", etc.
-
-    :return: The resolved object or None if not found
+    :return: The resolved object or None, if not found.
     """
     try:
         # Handle nested paths like "active_object.data"
@@ -23,19 +21,27 @@ def get_data_object(context, data_path):
     except AttributeError:
         return None
 
-def draw_property(layout, data_object, data_path, use_cpm = False, cpm_prop = None):
-    if use_cpm and cpm_prop:
+def add_property(layout, data_object, data_path, prop):
+    """The main draw method for custom properties"""
+    if prop is None:
+        return
+    elif type(prop) is props.CPMProperty:
         draw_property_group(layout, data_object, data_path, cpm_prop.group_name)
+    else:
+        draw_property_row
+
+def draw_property():
+    return
 
 def draw_cpm_prop(layout, data_object, data_path, cpm_prop):
     box = layout.box()
     header = box.row()
 
     expand_key = f"_cpm_{data_path}_{cpm_prop.group_name}"
-    cpm_layouts[f"cpm.{data_object}.{data_path}.{cpm_prop.group_name}"] = box
+    cpm_groups[f"cpm.{data_object}.{data_path}.{cpm_prop.group_name}"] = box
 
-
-def draw_property_group(layout, data_object, data_path, group_name, group_keys):
+def draw_property_group(layout, data_object, data_path, group_name,
+                         group_keys):
     """Draws a sub panel for a group of properties"""
     # Create a header row with expand toggle
     box = layout.box()
@@ -47,9 +53,10 @@ def draw_property_group(layout, data_object, data_path, group_name, group_keys):
 
     is_expanded = expand_states.get(expand_key)
     toggle_op = header.operator(
-        "cpm.expand_toggle",
+        config.CPM_EXPAND_TOGGLE,
         text = group_name,
-        icon = "DOWNARROW_HLT" if is_expanded else "RIGHTARROW",
+        icon = config.DOWNARROW_HLT_ICON if is_expanded
+                else config.RIGHTARROW_ICON,
         emboss = False)
     toggle_op.expand_key = expand_key
     toggle_op.current_state = is_expanded
@@ -67,12 +74,20 @@ def draw_property_row(layout, data_object, data_path, key, use_cpm = False):
     row.prop(data_object, f'["{key}"]', text = key)
 
     # Draw the "edit property" button
-    edit_op = row.operator("wm.properties_edit", text = "", icon = "PREFERENCES", emboss = False)
+    edit_op = row.operator(
+        config.WM_PROPERTIES_EDIT,
+        text = "",
+        icon = config.PREFERENCES_ICON,
+        emboss = False)
     edit_op.property_name = key
     edit_op.data_path = data_path
 
     # Draw the "remove property" button
-    remove_op = row.operator("wm.properties_remove", text = "", icon = "X", emboss = False)
+    remove_op = row.operator(
+        config.WM_PROPERTIES_REMOVE,
+        text = "",
+        icon = config.X_ICON,
+        emboss = False)
     remove_op.property_name = key
     remove_op.data_path = data_path
 
@@ -81,3 +96,9 @@ def get_property_group_layout(layout_key):
         return cpm_groups[layout_key]
     else:
         return cpm_groups.get(f"cpm.{layout_key}")
+
+def create_flexible_draw_function(data_path):
+    """Factory function to create draw functions for different contexts"""
+    def draw_function(self, context):
+        return panels.draw_panel(self, context, data_path)
+    return draw_function

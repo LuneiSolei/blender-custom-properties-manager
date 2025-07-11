@@ -1,4 +1,5 @@
-﻿from . import panels, config, props
+﻿import json
+from . import config, props
 
 # Global storage for expand/collapse states
 expand_states = {}
@@ -26,11 +27,11 @@ def add_property(layout, data_object, data_path, prop):
     if prop is None:
         return
     elif type(prop) is props.CPMProperty:
-        draw_property_group(layout, data_object, data_path, cpm_prop.group_name)
+        draw_property_group(layout, data_object, data_path, prop.group_name)
     else:
         draw_property_row
 
-def draw_property():
+def draw_property(layout, data_object, data_path, prop):
     return
 
 def draw_cpm_prop(layout, data_object, data_path, cpm_prop):
@@ -97,8 +98,13 @@ def get_property_group_layout(layout_key):
     else:
         return cpm_groups.get(f"cpm.{layout_key}")
 
-def create_flexible_draw_function(data_path):
-    """Factory function to create draw functions for different contexts"""
-    def draw_function(self, context):
-        return panels.draw_panel(self, context, data_path)
-    return draw_function
+def serialize_cpm_groups(obj, cpm_group_data):
+    """Serializes grouping data for a specified object's custom properties"""
+    if "grouped" and "ungrouped" in cpm_group_data:
+        obj[config.CPM_SERIALIZED_GROUP_DATA] = json.dumps(cpm_group_data)
+
+def deserialize_object_cpm_group_data(obj):
+    """Load grouping data for a specified object's custom properties"""
+
+    data_str = obj.get(config.CPM_SERIALIZED_GROUP_DATA, config.CPM_DEFAULT_GROUP_DATA)
+    return json.loads(data_str)

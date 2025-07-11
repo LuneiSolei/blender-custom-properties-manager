@@ -1,5 +1,7 @@
 ﻿# This file defines all constants used to help avoid "magic strings"
 # Window Manager Operators
+from collections import namedtuple
+
 WM_PROPERTIES_ADD = "wm.properties_add"
 WM_PROPERTIES_REMOVE = "wm.properties_remove"
 WM_PROPERTIES_EDIT = "wm.properties_edit"
@@ -18,3 +20,17 @@ CPM_ADD_NEW_PROPERTY = "cpm.add_new_property"
 
 # Attributes
 ATTR_KEYS = 'keys'
+
+# Panels
+Panel = namedtuple("Panel", ["name", "data_path"])
+panels = [
+    Panel("VIEWLAYER_PT_layer_custom_props", "view_layer"),
+    Panel("SCENE_PT_custom_props", "scene"),
+    Panel("OBJECT_PT_custom_props", "active_object"),
+    Panel("DATA_PT_custom_props_light", "active_object.data"),
+]
+
+# Misc.
+CPM_GROUP_DATA = "_cpm_group_data"
+CPM_SERIALIZED_GROUP_DATA = "_cpm_serialized_group_data"
+CPM_DEFAULT_GROUP_DATA = "{}"

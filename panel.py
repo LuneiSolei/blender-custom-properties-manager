@@ -2,7 +2,7 @@
 
 def draw_panel(self, context, data_path):
     """
-    Flexible draw function that works with different context types
+    Draws the panel associated with the provided context type.
 
     Args:
         :param data_path: String path to the data object (e.g., "view_layer", "scene")
@@ -21,18 +21,26 @@ def draw_panel(self, context, data_path):
     if not hasattr(data_object, config.ATTR_KEYS) or not len(data_object.keys()) > 0:
         return
 
-    # Draw property buttons
-    draw_prop_buttons(layout, data_path)
+    # Draw add buttons
+    draw_add_buttons(layout, data_path)
     layout.separator()
 
-    # Retrieve all custom properties for the panel
+    # Draw properties based on deserialized group data
+    cpm_group_data = utils.deserialize_object_cpm_group_data(data_object)
+    for key, value in cpm_group_data:
+        match value:
+            case str(group_name):
+                # TODO: Draw property in specified group
+                break
+            case dict(group):
+                for prop, group_name in group:
+                    # TODO: Draw property in specified group
+                    break
+                break
 
 
-    # Convert all properties to CPM format while linking to original property
 
-
-    # Group properties by type
-    regular_props = []
+    prop_name_to_group_name = []
     cpm_groups = {}
 
     # Draw all cpm properties
@@ -79,7 +87,7 @@ def draw_panel(self, context, data_path):
             group_name,
             group_keys)
 
-def draw_prop_buttons(layout, data_path):
+def draw_add_buttons(layout, data_path):
     # Draw the original "New" button
     new_prop_op = layout.operator(
         config.WM_PROPERTIES_ADD,

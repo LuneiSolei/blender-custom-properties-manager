@@ -1,13 +1,13 @@
 ﻿import bpy
 from bpy.props import StringProperty
-from . import utils, config
+from . import utils, config, panel
 
 class AddNewPropertyGroupOperator(bpy.types.Operator):
     bl_label = "New Group"
     bl_idname = config.CPM_ADD_NEW_PROPERTY_GROUP
     bl_description = "Add a new custom property group"
     bl_options = {'REGISTER', 'UNDO'}
-    
+
     data_path: StringProperty(
         name = "Data Path",
         description = "Path to the target object",

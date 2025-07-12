@@ -9,23 +9,24 @@ jobs:
         runs-on: ubuntu-latest
         permissions:
             contents: write
+            
         steps:
             - name: Checkout repository
-            uses: actions/checkout@v4
-            with:
+              uses: actions/checkout@v4
+              with:
                 fetch-depth: 0
 
             - name: Install pandoc
-            run: sudo apt-get update && sudo apt-get install -y pandoc
+              run: sudo apt-get update && sudo apt-get install -y pandoc
 
             - name: Build documentation
-            uses: Jetbrains/writerside-github-action@v4
-            with:
+              uses: Jetbrains/writerside-github-action@v4
+              with:
                 instance: readme/r
 
             - name: Convert HTML to Markdown
-            run: |
-            # Find the generated HTML file
+              run: |
+                # Find the generated HTML file
                 HTML_FILE=$(find artifacts/ -name "*.html" -type f | head -1)
 
                 if [ -z "$HTML_FILE" ]; then
@@ -46,7 +47,7 @@ jobs:
                 echo "README.md generated successfully ($(wc -c < README.md) bytes)"
             
             - name: Commit README
-            run: |
+              run: |
                 git config --local user.email "action@github.com"
                 git config --local user.name "Github Action"
                 git add README.md
@@ -57,5 +58,5 @@ jobs:
                 else
                     git commit -m "docs: auto-update README.md [skip ci]"
                     git push
-                    echo "README.md upated and pushed successfully"
+                    echo "README.md updated and pushed successfully"
                 fi

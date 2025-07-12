@@ -39,9 +39,9 @@ jobs:
           echo "ALGOLIA_ARTIFACT: $ALGOLIA_ARTIFACT"
 
           # Set the environment variables and outputs
-          echo "INSTANCE_ID_UPPER=$INSTANCE_ID_UPPER >> $GITHUB_ENV
+          echo "INSTANCE_ID_UPPER=$INSTANCE_ID_UPPER" >> $GITHUB_ENV
           echo "ARTIFACT=$ARTIFACT" >> $GITHUB_ENV
-          echo "ALGOLIA_ARTIFACT=$ARGOLIA_ARTIFACT" >> $GITHUB_ENV
+          echo "ALGOLIA_ARTIFACT=$ALGOLIA_ARTIFACT" >> $GITHUB_ENV
           echo "artifact=$ARTIFACT" >> $GITHUB_OUTPUT
           echo "algolia_artifact=$ALGOLIA_ARTIFACT" >> $GITHUB_OUTPUT
 
@@ -50,7 +50,6 @@ jobs:
         with:
           instance: ${{ env.INSTANCE }}
           docker-version: ${{ env.DOCKER_VERSION }}
-          is-group: ${{ env.IS_GROUP }}
           artifact: ${{ steps.define-ids.outputs.artifact }}
 
       - name: Save artifact with build results

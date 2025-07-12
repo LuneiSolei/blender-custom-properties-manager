@@ -1,0 +1,29 @@
+name: Generate README.md
+on:
+  push:
+    branches: [master]
+    paths: ['docs/**']
+
+jobs:
+  generate-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Build docs
+        uses: Jetbrains/writerside-github-action@v4
+        with:
+          instance: readme/r
+
+      - name: Extract README
+        run: |
+          # Extract and convert README to Markdown
+          pandoc -f html -t gfm artifacts/webHelp/readme.html -o README.md
+
+      - name: Commit README
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "Github Action"
+          git add README.md
+          git diff --staged --quiet || git commit -m "Auto-update README.md"
+          git push

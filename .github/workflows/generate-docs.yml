@@ -10,8 +10,8 @@ permissions:
   pages: write
 
 env:
-  INSTANCE: # Define Instance variable
-  DOCKER_VERSION: # Define docker version
+  INSTANCE: "Writerside/d"
+  DOCKER_VERSION: "243.22562"
 
 jobs:
   build:

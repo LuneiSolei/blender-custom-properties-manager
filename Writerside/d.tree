@@ -2,10 +2,9 @@
 <!DOCTYPE instance-profile
         SYSTEM "https://resources.jetbrains.com/writerside/1.0/product-profile.dtd">
 
-<instance-profile id="r"
-                 name="readme"
+<instance-profile id="d"
+                 name="documentation"
                  start-page="README.md">
 
-    <toc-element topic="starter-topic.md"/>
     <toc-element topic="README.md"/>
 </instance-profile>

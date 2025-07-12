@@ -63,7 +63,7 @@ jobs:
           retention-days: 7
           
   deploy:
-    if: github.ref == "refs/heads/master" # Only deploy to Pages from master branch
+    if: github.ref == 'refs/heads/master' # Only deploy to Pages from master branch
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

@@ -1,29 +1,61 @@
 name: Generate README.md
 on:
-  push:
-    branches: [master]
-    paths: ['docs/**']
+    push:
+        branches: [master]
+        paths: ['docs/**']
 
 jobs:
-  generate-readme:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Build docs
-        uses: Jetbrains/writerside-github-action@v4
-        with:
-          instance: readme/r
+    generate-readme:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        steps:
+            - name: Checkout repository
+            uses: actions/checkout@v4
+            with:
+                fetch-depth: 0
 
-      - name: Extract README
-        run: |
-          # Extract and convert README to Markdown
-          pandoc -f html -t gfm artifacts/webHelp/readme.html -o README.md
+            - name: Install pandoc
+            run: sudo apt-get update && sudo apt-get install -y pandoc
 
-      - name: Commit README
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "Github Action"
-          git add README.md
-          git diff --staged --quiet || git commit -m "Auto-update README.md"
-          git push
+            - name: Build documentation
+            uses: Jetbrains/writerside-github-action@v4
+            with:
+                instance: readme/r
+
+            - name: Convert HTML to Markdown
+            run: |
+            # Find the generated HTML file
+                HTML_FILE=$(find artifacts/ -name "*.html" -type f | head -1)
+
+                if [ -z "$HTML_FILE" ]; then
+                    echo "Error: No HTML file found in artifacts"
+                    ls -la artifacts/
+                    exit 1
+                fi
+
+                echo "Converting $HTML_FILE to README.md"
+                pandoc -f html -t gfm "$HTML_FILE" -o README.md
+
+                # Verify the file was created
+                if [ ! -s README.md ]; then
+                    echo "Error: README.md is empty or not created"
+                    exit 1
+                fi
+
+                echo "README.md generated successfully ($(wc -c < README.md) bytes)"
+            
+            - name: Commit README
+            run: |
+                git config --local user.email "action@github.com"
+                git config --local user.name "Github Action"
+                git add README.md
+
+                # Only commit if there are changes
+                if git diff --staged --quiet; then
+                    echo "No changes to README.md - skipping commit"
+                else
+                    git commit -m "docs: auto-update README.md [skip ci]"
+                    git push
+                    echo "README.md upated and pushed successfully"
+                fi

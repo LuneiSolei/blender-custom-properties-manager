@@ -3,6 +3,9 @@ name: Build documentation
 on:
   push:
     branches: ["master"]
+  pull_request:
+    branches: ["master"]
+    paths: ["Writerside/**"] # Only run when Writerside files change
   workflow_dispatch:
 
 permissions:
@@ -60,6 +63,7 @@ jobs:
           retention-days: 7
           
   deploy:
+    if: github.ref == 'refs/heads/master' # Only deploy to Pages from master branch
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

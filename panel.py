@@ -1,6 +1,6 @@
 ﻿import bpy
 from typing import Union
-from . import utils, config
+from . import serializer, config, CPMGroupData
 
 __all__ = ["draw_panel"]
 
@@ -57,21 +57,22 @@ def draw_panel(self, context, data_path):
     layout.separator()
 
     # Get deserialized data
-    cpm_group_data = utils.deserialize_object_cpm_group_data(data_object)
+    cpm_group_data = serializer.deserialize_object_cpm_group_data(data_object)
 
     # Check deserialized group data against custom properties
-    for key in data_object.keys():
-        if not cpm_group_data.contains(key):
-            cpm_group_data.ungrouped.append(key)
+    cpm_group_data.update(data_object)
 
     # Sort through keys for nonexistent properties.
     cpm_group_data.cleanup(data_object)
 
     # Draw properties based on associated group
-    for key, value in cpm_group_data.items():
-        _draw_property(layout, data_object, data_path, key, value)
+    for group_name, props in cpm_group_data.grouped:
+        for prop in props:
+            _draw_property(layout, data_object, data_path, prop, group_name)
 
-    utils.serialize_cpm_groups(data_object, cpm_group_data)
+    # Draw ungrouped properties
+    for prop in cpm_group_data.ungrouped:
+        _draw_property(layout, data_object, data_path, prop, "")
 
 def _resolve_data_object(context: bpy.context, data_path: str) -> Union[bpy.types.Object, None]:
     """
@@ -169,7 +170,7 @@ def _draw_property_group(
 
     # Create a unique key for this group to store the expand state
     expand_key = f"_cpm_{data_object.name}_{data_path}_{group_name}"
-    is_expanded = utils.expand_states.get(expand_key)
+    is_expanded = serializer.expand_states.get(expand_key)
 
     toggle_op = header.operator(
         config.CPM_EXPAND_TOGGLE,

@@ -1,6 +1,6 @@
 ﻿import bpy
 from bpy.props import StringProperty
-from . import utils, config, panel
+from . import serializer, config
 
 class AddNewPropertyGroupOperator(bpy.types.Operator):
     bl_label = "New Group"
@@ -37,6 +37,6 @@ class ExpandToggleOperator(bpy.types.Operator):
     )
 
     def execute(self, context):
-        utils.expand_states[self.expand_key] = not self.current_state
+        serializer.expand_states[self.expand_key] = not self.current_state
 
         return {'FINISHED'}

@@ -3,10 +3,10 @@ from typing import Dict
 
 class CPMGroupData:
     def __init__(self,
-                 grouped: list[Dict[str, list[str]]],
-                 ungrouped: list[str]):
-        self.grouped = grouped
-        self.ungrouped = ungrouped
+                 grouped: list[Dict[str, list[str]]] = None,
+                 ungrouped: list[str] = None):
+        self.grouped = grouped if grouped is not None else []
+        self.ungrouped = ungrouped if ungrouped is not None else []
 
     def __delitem__(self, key):
         if key in self.ungrouped:
@@ -47,3 +47,10 @@ class CPMGroupData:
         keys_to_remove = grouped_props_to_remove + ungrouped_props_to_remove
         for key in keys_to_remove:
             del self[key]
+
+    def update(self, data_object: bpy.types.Object):
+        """Checks data_object for properties not found in group data and
+        appends them to \"ungrouped\""""
+        for prop in data_object.keys():
+            if prop not in self:
+                self.ungrouped.append(prop)

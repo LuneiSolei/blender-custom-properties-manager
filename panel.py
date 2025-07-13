@@ -59,18 +59,31 @@ def draw_panel(self, context, data_path):
     # Get deserialized data
     cpm_group_data = utils.deserialize_object_cpm_group_data(data_object)
 
-    # TODO: Dictionary contains "grouped" and "ungrouped". "grouped" contains
-    #  a list of groups
     # Check deserialized group data against custom properties
     for key in data_object.keys():
-        if key not in cpm_group_data:
-            cpm_group_data[key] = ""
+        if (key not in cpm_group_data["grouped"]
+            or key not in cpm_group_data["ungrouped"]):
+            cpm_group_data["ungrouped"].append(key)
 
-    # Remove nonexistent properties
-    keys_to_remove = []
-    for key, value in cpm_group_data.items():
-        if key not in data_object.keys():
-            keys_to_remove.append(key)
+    # Sort through keys for nonexistent properties.
+    # For each group in "grouped", get each group of properties.
+    # For each property in that properties list, if said property is not in
+    # data_object's keys, add it to grouped_props_to_remove.
+    data_object_keys = set(data_object.keys())
+    grouped_props_to_remove = [prop
+                      for group in cpm_group_data["grouped"]
+                      for group_name, props in group.items()
+                      for prop in props
+                      if prop not in data_object_keys]
+
+    # For each property in the "ungrouped" properties list, if said property
+    # is not in data_object's keys, add it to ungrouped_props_to_remove.
+    ungrouped_props_to_remove = [prop
+                                 for prop in cpm_group_data["ungrouped"]
+                                 if prop not in data_object_keys]
+
+    # Remove properties
+    keys_to_remove = grouped_props_to_remove + ungrouped_props_to_remove
 
     for key in keys_to_remove:
         del cpm_group_data[key]
@@ -80,53 +93,6 @@ def draw_panel(self, context, data_path):
         _draw_property(layout, data_object, data_path, key, value)
 
     utils.serialize_cpm_groups(data_object, cpm_group_data)
-
-    # prop_name_to_group_name = []
-    # cpm_groups = {}
-    #
-    # # Draw all cpm properties
-    # if hasattr(data_object, "cpm") and len(data_object.cpm) > 0:
-    #     utils.add_property(True, data_object)
-    #
-    # # Draw all pre-existing properties
-    # for key in data_object.keys():
-    #     # Skip any "private" properties
-    #     if key.startswith("_"):
-    #         continue
-    #
-    #     if key.startswith("cpm."):
-    #         # Group CPM properties
-    #         cpm_name = key[4:]
-    #         end_index = cpm_name.find(".")
-    #         if end_index == -1:
-    #             group_name = cpm_name
-    #         else:
-    #             group_name = cpm_name[:end_index]
-    #
-    #         if group_name not in cpm_groups:
-    #             cpm_groups[group_name] = []
-    #
-    #         cpm_groups[group_name].append(key)
-    #     else:
-    #         regular_props.append(key)
-    #
-    # # Draw regular properties
-    # for key in regular_props:
-    #     utils.draw_property_row(
-    #         layout,
-    #         data_object,
-    #         data_path,
-    #         key,
-    #         False)
-    #
-    # # Draw CPM groups as expandable sections
-    # for group_name, group_keys in cpm_groups.items():
-    #     utils.draw_property_group(
-    #         layout,
-    #         data_object,
-    #         data_path,
-    #         group_name,
-    #         group_keys)
 
 def _resolve_data_object(context: bpy.context, data_path: str) -> Union[bpy.types.Object, None]:
     """

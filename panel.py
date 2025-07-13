@@ -1,6 +1,7 @@
 ﻿import bpy
 from typing import Union
-from . import serializer, config, CPMGroupData
+from .cpm_group_data import PropertyGroupData
+from . import serializer, config
 
 __all__ = ["draw_panel"]
 
@@ -56,14 +57,8 @@ def draw_panel(self, context, data_path):
     _draw_add_buttons(layout, data_path)
     layout.separator()
 
-    # Get deserialized data
-    cpm_group_data = serializer.deserialize_object_cpm_group_data(data_object)
-
-    # Check deserialized group data against custom properties
-    cpm_group_data.update(data_object)
-
-    # Sort through keys for nonexistent properties.
-    cpm_group_data.cleanup(data_object)
+    # Get deserialized data (data is automatically verified)
+    cpm_group_data = PropertyGroupData.get_data(data_object)
 
     # Draw properties based on associated group
     for group_name, props in cpm_group_data.grouped:

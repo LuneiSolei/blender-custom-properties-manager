@@ -1,5 +1,6 @@
-﻿import bpy
+﻿import bpy, json
 from bpy.app.handlers import persistent
+from .cpm_group_data import PropertyGroupData
 from . import ops, config, panel, serializer
 
 bl_info = {
@@ -12,41 +13,51 @@ bl_info = {
     "description": "Manage custom properties"
 }
 
-classes = {
+_classes = {
     ops.AddNewPropertyGroupOperator,
     ops.ExpandToggleOperator
 }
-
-# Store original draw functions
-original_draws = {}
+_original_draws = {}
 
 @persistent
-def serialize_all_cpm_data(dummy):
+def deserialize_on_post_load(dummy):
+    all_objects = list(bpy.data.scenes) + list(bpy.data.objects)
+    for data_object in all_objects:
+        data_str = data_object.get(config.CPM_SERIALIZED_GROUP_DATA,
+                                   config.CPM_DEFAULT_GROUP_DATA)
+        group_data = json.loads(data_str)
+        new_data = PropertyGroupData(
+            grouped = group_data.get("grouped", []),
+            ungrouped = group_data.get("ungrouped", [])
+        )
+
+        new_data.verify(data_object)
+
+@persistent
+def serialize_on_pre_save(dummy):
     """Serialize CPM group data before saving"""
 
     all_objects = list(bpy.data.scenes) + list(bpy.data.objects)
     for data_object in all_objects:
-        cpm_group_data = serializer.deserialize_object_cpm_group_data(data_object)
-        cpm_group_data.cleanup(data_object)
-        cpm_group_data.update(data_object)
+        group_data = PropertyGroupData.get_data(data_object)
 
-        try:
-            serializer.serialize_cpm_groups(data_object, cpm_group_data)
-        except Exception as e:
-            print(f"Failed to serialize CPM data for object {data_object.name}:"
-                  f" {e}")
+        data_dict = {
+            "grouped": group_data.grouped,
+            "ungrouped": group_data.ungrouped
+        }
+        data_object[config.CPM_SERIALIZED_GROUP_DATA] = json.dumps(data_dict)
 
-def create_flexible_draw_function(data_path):
+def _create_flexible_draw_function(data_path):
     """Factory function to create draw functions for different contexts"""
     def draw_function(self, context):
         return panel.draw_panel(self, context, data_path)
     return draw_function
 
 def register():
-    global original_draws
+    global _original_draws
 
     # Register classes
-    for cls in classes:
+    for cls in _classes:
         if hasattr(bpy.types, cls.__name__):
             bpy.utils.unregister_class(cls)
         bpy.utils.register_class(cls)
@@ -55,32 +66,42 @@ def register():
     for item in config.panels:
         if hasattr(bpy.types, item.name):
             panel_class = getattr(bpy.types, item.name)
-            original_draws[item.name] = panel_class.draw
-            panel_class.draw = create_flexible_draw_function(item.data_path)
+            _original_draws[item.name] = panel_class.draw
+            panel_class.draw = _create_flexible_draw_function(item.data_path)
 
-    # Register Handlers
-    if serialize_all_cpm_data in bpy.app.handlers.save_pre:
-        bpy.app.handlers.save_pre.remove(serialize_all_cpm_data)
-    bpy.app.handlers.save_pre.append(serialize_all_cpm_data)
+    # Register handlers
+    if serialize_on_pre_save in bpy.app.handlers.save_pre:
+        bpy.app.handlers.save_pre.remove(serialize_on_pre_save)
+    bpy.app.handlers.save_pre.append(serialize_on_pre_save)
+
+    if deserialize_on_post_load in bpy.app.handlers.load_post:
+        bpy.app.handlers.load_post.remove(deserialize_on_post_load)
+    bpy.app.handlers.load_post.append(deserialize_on_post_load)
 
 def unregister():
-    # TODO: Remove all cpm properties from all objects
-    global original_draws
+    global _original_draws
 
     # Restore all original draw functions
-    for panel_name, original_draw in original_draws.items():
+    for panel_name, original_draw in _original_draws.items():
         if hasattr(bpy.types, panel_name):
             getattr(bpy.types, panel_name).draw = original_draw
 
     # Clear storage
-    original_draws.clear()
+    _original_draws.clear()
 
     # Clear expand state storage
     serializer.expand_states.clear()
 
     # Unregister classes
-    for cls in classes:
+    for cls in _classes:
         bpy.utils.unregister_class(cls)
+
+    # Unregister handlers
+    if serialize_on_pre_save in bpy.app.handlers.save_pre:
+        bpy.app.handlers.save_pre.remove(serialize_on_pre_save)
+
+    if deserialize_on_post_load in bpy.app.handlers.load_post:
+        bpy.app.handlers.load_post.remove(deserialize_on_post_load)
 
 if __name__ == "__main__":
     register()

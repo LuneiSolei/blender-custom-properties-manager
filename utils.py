@@ -1,27 +1,23 @@
 ﻿import json, bpy
-from typing import Dict
-from . import config
+from . import CPMGroupData, config
 
 # Global storage for expand/collapse states
 expand_states = {}
 cpm_groups = {}
 
 def serialize_cpm_groups(data_object: bpy.types.Object,
-                         cpm_group_data: Dict[str, list[str | Dict[str, str]]]):
+                         cpm_group_data: CPMGroupData ) -> None:
     """
     Serializes grouping data for a specified object's custom properties.
     Args:
         :param data_object: (bpy.types.Object): Object containing the properties
             to be serialized.
-        :param cpm_group_data: (Dict[str, list[str | Dict[str, str]]]): Group
-            data of the object's custom properties.
+        :param cpm_group_data: (CPMGroupData): Group data to be serialized.
     """
 
-    if "grouped" and "ungrouped" in cpm_group_data:
-        data_object[config.CPM_SERIALIZED_GROUP_DATA] = json.dumps(cpm_group_data)
+    data_object[config.CPM_SERIALIZED_GROUP_DATA] = json.dumps(cpm_group_data)
 
-def deserialize_object_cpm_group_data(data_object: bpy.types.Object) -> (
-        Dict)[str, list[str | Dict[str, str]]]:
+def deserialize_object_cpm_group_data(data_object: bpy.types.Object) -> CPMGroupData:
     """
     Load grouping data for a specified object's custom properties
     Args:

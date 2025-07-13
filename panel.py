@@ -61,32 +61,11 @@ def draw_panel(self, context, data_path):
 
     # Check deserialized group data against custom properties
     for key in data_object.keys():
-        if (key not in cpm_group_data["grouped"]
-            or key not in cpm_group_data["ungrouped"]):
-            cpm_group_data["ungrouped"].append(key)
+        if not cpm_group_data.contains(key):
+            cpm_group_data.ungrouped.append(key)
 
     # Sort through keys for nonexistent properties.
-    # For each group in "grouped", get each group of properties.
-    # For each property in that properties list, if said property is not in
-    # data_object's keys, add it to grouped_props_to_remove.
-    data_object_keys = set(data_object.keys())
-    grouped_props_to_remove = [prop
-                      for group in cpm_group_data["grouped"]
-                      for group_name, props in group.items()
-                      for prop in props
-                      if prop not in data_object_keys]
-
-    # For each property in the "ungrouped" properties list, if said property
-    # is not in data_object's keys, add it to ungrouped_props_to_remove.
-    ungrouped_props_to_remove = [prop
-                                 for prop in cpm_group_data["ungrouped"]
-                                 if prop not in data_object_keys]
-
-    # Remove properties
-    keys_to_remove = grouped_props_to_remove + ungrouped_props_to_remove
-
-    for key in keys_to_remove:
-        del cpm_group_data[key]
+    cpm_group_data.cleanup(data_object)
 
     # Draw properties based on associated group
     for key, value in cpm_group_data.items():

@@ -126,6 +126,7 @@ def _draw_property_row(layout, data_object, data_path, prop_name):
     """Draws a single property row."""
     row = layout.row()
     row.prop(data_object, f'["{prop_name}"]', text = prop_name)
+    print(prop_name)
 
     # Draw the "edit property" button
     edit_op = row.operator(

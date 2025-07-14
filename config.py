@@ -1,7 +1,10 @@
 ﻿# This file defines all constants used to help avoid "magic strings"
-# Window Manager Operators
 from collections import namedtuple
 
+# Configuration
+DEBUG = False
+
+# Window Manager Operators
 WM_PROPERTIES_ADD = "wm.properties_add"
 WM_PROPERTIES_REMOVE = "wm.properties_remove"
 WM_PROPERTIES_EDIT = "wm.properties_edit"

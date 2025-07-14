@@ -1,7 +1,8 @@
 ﻿import bpy
 from typing import Union
 from .cpm_group_data import PropertyGroupData
-from . import serializer, config
+from .state import cpm_state
+from . import config
 
 __all__ = ["draw_panel"]
 
@@ -165,7 +166,7 @@ def _draw_property_group(
 
     # Create a unique key for this group to store the expand state
     expand_key = f"_cpm_{data_object.name}_{data_path}_{group_name}"
-    is_expanded = serializer.expand_states.get(expand_key)
+    is_expanded = cpm_state.expand_states.get(expand_key)
 
     toggle_op = header.operator(
         config.CPM_EXPAND_TOGGLE,

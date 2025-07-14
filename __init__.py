@@ -1,6 +1,6 @@
 ﻿import bpy, json
 from bpy.app.handlers import persistent
-from .cpm_group_data import PropertyGroupData
+from .property_group_data import PropertyGroupData
 from .state import cpm_state
 from . import ops, config, panel
 

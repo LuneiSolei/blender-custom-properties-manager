@@ -1,6 +1,6 @@
 ﻿import bpy
 from typing import Union
-from .cpm_group_data import PropertyGroupData
+from .property_group_data import PropertyGroupData
 from .state import cpm_state
 from . import config
 

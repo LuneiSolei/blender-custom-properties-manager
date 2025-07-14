@@ -1,7 +1,8 @@
 ﻿import bpy, json
 from bpy.app.handlers import persistent
 from .cpm_group_data import PropertyGroupData
-from . import ops, config, panel, serializer
+from .state import cpm_state
+from . import ops, config, panel
 
 bl_info = {
     "name": "Custom Properties Manager",
@@ -17,7 +18,6 @@ _classes = {
     ops.AddNewPropertyGroupOperator,
     ops.ExpandToggleOperator
 }
-_original_draws = {}
 
 @persistent
 def deserialize_on_post_load(dummy):
@@ -54,10 +54,8 @@ def _create_flexible_draw_function(data_path):
     return draw_function
 
 def register():
-    global _original_draws
-
     # Register classes
-    for cls in _classes:
+    for cls in cpm_state.classes:
         if hasattr(bpy.types, cls.__name__):
             bpy.utils.unregister_class(cls)
         bpy.utils.register_class(cls)
@@ -66,7 +64,7 @@ def register():
     for item in config.panels:
         if hasattr(bpy.types, item.name):
             panel_class = getattr(bpy.types, item.name)
-            _original_draws[item.name] = panel_class.draw
+            cpm_state.original_draws[item.name] = panel_class.draw
             panel_class.draw = _create_flexible_draw_function(item.data_path)
 
     # Register handlers
@@ -79,21 +77,17 @@ def register():
     bpy.app.handlers.load_post.append(deserialize_on_post_load)
 
 def unregister():
-    global _original_draws
-
     # Restore all original draw functions
-    for panel_name, original_draw in _original_draws.items():
+    for panel_name, original_draw in cpm_state.original_draws.items():
         if hasattr(bpy.types, panel_name):
             getattr(bpy.types, panel_name).draw = original_draw
 
-    # Clear storage
-    _original_draws.clear()
-
-    # Clear expand state storage
-    serializer.expand_states.clear()
+    # Clear state storage
+    cpm_state.original_draws.clear()
+    cpm_state.expand_states.clear()
 
     # Unregister classes
-    for cls in _classes:
+    for cls in cpm_state.classes:
         bpy.utils.unregister_class(cls)
 
     # Unregister handlers

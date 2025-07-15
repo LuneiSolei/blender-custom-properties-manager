@@ -1,5 +1,6 @@
 ﻿import bpy
 from typing import Union
+from bpy.props import CollectionProperty
 from .property_group_data import PropertyGroupData
 from .state import cpm_state
 from . import config
@@ -125,8 +126,12 @@ def _draw_add_buttons(layout, data_path):
 def _draw_property_row(layout, data_object, data_path, prop_name):
     """Draws a single property row."""
     row = layout.row()
+
+    # If the property's value is a list, draw a label manually. Otherwise,
+    # Blender misbehaves and just shows the item count.
+    if type(data_object[prop_name]) == list:
+        row.label(text = prop_name)
     row.prop(data_object, f'["{prop_name}"]', text = prop_name)
-    print(prop_name)
 
     # Draw the "edit property" button
     edit_op = row.operator(

@@ -42,3 +42,11 @@ class ExpandToggleOperator(bpy.types.Operator):
         cpm_state.expand_states[self.expand_key] = not self.current_state
 
         return {'FINISHED'}
+
+class EditPropertyMenu(bpy.types.Menu):
+    bl_label = "Edit Property"
+    bl_idname = "cpm.edit_property_menu"
+    bl_description = "Edit custom property menu"
+
+    def execute(self, context):
+        target = getattr(bpy.types, self.data_path)

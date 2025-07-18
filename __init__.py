@@ -1,8 +1,12 @@
 ﻿import bpy, json
 from bpy.app.handlers import persistent
-from .property_group_data import PropertyGroupData
-from .state import cpm_state
-from . import ops, config, draw
+
+from .core import config
+from .core.state import cpm_state
+from .core.property_group_data import PropertyGroupData
+from .ui import panels
+from .core import ops
+
 
 bl_info = {
     "name": "Custom Properties Manager",
@@ -51,7 +55,7 @@ def serialize_on_pre_save(dummy):
 def _create_flexible_draw_function(data_path):
     """Factory function to create draw functions for different contexts"""
     def draw_function(self, context):
-        return draw.draw_panel(self, context, data_path)
+        return panels.draw(self, context, data_path)
     return draw_function
 
 def register():

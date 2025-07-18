@@ -117,7 +117,7 @@ def _draw_property_row(layout, data_object, data_path, prop_name):
 
     # Draw the "edit property" button
     edit_op = row.operator(
-        config.WM_PROPERTIES_EDIT,
+        config.CPM_EDIT_PROPERTY_OP,
         text = "",
         icon = config.PREFERENCES_ICON,
         emboss = False)

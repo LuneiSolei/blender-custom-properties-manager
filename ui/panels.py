@@ -3,7 +3,7 @@ from ..core.property_group_data import PropertyGroupData
 from ..core.state import cpm_state
 from ..core import config, utilities
 
-__all__ = ["draw_panel"]
+__all__ = ["draw"]
 
 """
 {
@@ -32,7 +32,7 @@ __all__ = ["draw_panel"]
 }
 """
 
-def draw_panel(self, context, data_path):
+def draw(self, context, data_path):
     """
     Draws the panel associated with the provided context type.
 

@@ -1,8 +1,9 @@
 ﻿import bpy
-from typing import Union
-from . import utils, config
+from ..core.property_group_data import PropertyGroupData
+from ..core.state import cpm_state
+from ..core import config, utilities
 
-__all__ = ["draw_panel"]
+__all__ = ["draw"]
 
 """
 {
@@ -31,7 +32,7 @@ __all__ = ["draw_panel"]
 }
 """
 
-def draw_panel(self, context, data_path):
+def draw(self, context, data_path):
     """
     Draws the panel associated with the provided context type.
 
@@ -43,7 +44,7 @@ def draw_panel(self, context, data_path):
     layout = self.layout
 
     # Get the data object dynamically
-    data_object = _resolve_data_object(context, data_path)
+    data_object = utilities.resolve_data_object(context, data_path)
     if not data_object:
         layout.label(text = f"No {data_path} available")
         return
@@ -56,94 +57,18 @@ def draw_panel(self, context, data_path):
     _draw_add_buttons(layout, data_path)
     layout.separator()
 
-    # Get deserialized data
-    cpm_group_data = utils.deserialize_object_cpm_group_data(data_object)
-
-    # TODO: Dictionary contains "grouped" and "ungrouped". "grouped" contains
-    #  a list of groups
-    # Check deserialized group data against custom properties
-    for key in data_object.keys():
-        if key not in cpm_group_data:
-            cpm_group_data[key] = ""
-
-    # Remove nonexistent properties
-    keys_to_remove = []
-    for key, value in cpm_group_data.items():
-        if key not in data_object.keys():
-            keys_to_remove.append(key)
-
-    for key in keys_to_remove:
-        del cpm_group_data[key]
+    # Get deserialized data (data is automatically verified)
+    cpm_group_data = PropertyGroupData.get_data(data_object)
 
     # Draw properties based on associated group
-    for key, value in cpm_group_data.items():
-        _draw_property(layout, data_object, data_path, key, value)
+    for group_name, props in cpm_group_data.grouped:
+        for prop in props:
+            _draw_property(layout, data_object, data_path, prop, group_name)
 
-    utils.serialize_cpm_groups(data_object, cpm_group_data)
+    # Draw ungrouped properties
+    for prop in cpm_group_data.ungrouped:
+        _draw_property(layout, data_object, data_path, prop, "")
 
-    # prop_name_to_group_name = []
-    # cpm_groups = {}
-    #
-    # # Draw all cpm properties
-    # if hasattr(data_object, "cpm") and len(data_object.cpm) > 0:
-    #     utils.add_property(True, data_object)
-    #
-    # # Draw all pre-existing properties
-    # for key in data_object.keys():
-    #     # Skip any "private" properties
-    #     if key.startswith("_"):
-    #         continue
-    #
-    #     if key.startswith("cpm."):
-    #         # Group CPM properties
-    #         cpm_name = key[4:]
-    #         end_index = cpm_name.find(".")
-    #         if end_index == -1:
-    #             group_name = cpm_name
-    #         else:
-    #             group_name = cpm_name[:end_index]
-    #
-    #         if group_name not in cpm_groups:
-    #             cpm_groups[group_name] = []
-    #
-    #         cpm_groups[group_name].append(key)
-    #     else:
-    #         regular_props.append(key)
-    #
-    # # Draw regular properties
-    # for key in regular_props:
-    #     utils.draw_property_row(
-    #         layout,
-    #         data_object,
-    #         data_path,
-    #         key,
-    #         False)
-    #
-    # # Draw CPM groups as expandable sections
-    # for group_name, group_keys in cpm_groups.items():
-    #     utils.draw_property_group(
-    #         layout,
-    #         data_object,
-    #         data_path,
-    #         group_name,
-    #         group_keys)
-
-def _resolve_data_object(context: bpy.context, data_path: str) -> Union[bpy.types.Object, None]:
-    """
-    Resolve a data_path string to the actual object.
-    Args:
-        :param context: Blender context
-        :param data_path: String like "view_layer", "scene", "active_object.data", etc.
-    :return: The resolved object or None, if not found.
-    """
-    try:
-        # Handle nested paths like "active_object.data"
-        obj = context
-        for attr in data_path.split("."):
-            obj = getattr(obj, attr)
-        return obj
-    except AttributeError:
-        return None
 
 def _draw_property(
         layout: bpy.types.UILayout,
@@ -175,7 +100,7 @@ def _draw_add_buttons(layout, data_path):
 
     # Draw the "New Group" button
     new_prop_group_op = layout.operator(
-        config.CPM_ADD_NEW_PROPERTY_GROUP,
+        config.CPM_ADD_NEW_PROPERTY_GROUP_OP,
         text ="New Group",
         icon = config.ADD_ICON)
     new_prop_group_op.data_path = data_path
@@ -183,11 +108,16 @@ def _draw_add_buttons(layout, data_path):
 def _draw_property_row(layout, data_object, data_path, prop_name):
     """Draws a single property row."""
     row = layout.row()
+
+    # If the property's value is a list, draw a label manually. Otherwise,
+    # Blender misbehaves and just shows the item count.
+    if type(data_object[prop_name]) == list:
+        row.label(text = prop_name)
     row.prop(data_object, f'["{prop_name}"]', text = prop_name)
 
     # Draw the "edit property" button
     edit_op = row.operator(
-        config.WM_PROPERTIES_EDIT,
+        config.CPM_EDIT_PROPERTY_OP,
         text = "",
         icon = config.PREFERENCES_ICON,
         emboss = False)
@@ -224,10 +154,10 @@ def _draw_property_group(
 
     # Create a unique key for this group to store the expand state
     expand_key = f"_cpm_{data_object.name}_{data_path}_{group_name}"
-    is_expanded = utils.expand_states.get(expand_key)
+    is_expanded = cpm_state.expand_states.get(expand_key)
 
     toggle_op = header.operator(
-        config.CPM_EXPAND_TOGGLE,
+        config.CPM_EXPAND_TOGGLE_OP,
         text = group_name,
         icon = config.DOWNARROW_HLT_ICON if is_expanded
                else config.RIGHTARROW_ICON,

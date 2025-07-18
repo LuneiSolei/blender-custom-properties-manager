@@ -100,7 +100,7 @@ def _draw_add_buttons(layout, data_path):
 
     # Draw the "New Group" button
     new_prop_group_op = layout.operator(
-        config.CPM_ADD_NEW_PROPERTY_GROUP,
+        config.CPM_ADD_NEW_PROPERTY_GROUP_OP,
         text ="New Group",
         icon = config.ADD_ICON)
     new_prop_group_op.data_path = data_path
@@ -157,7 +157,7 @@ def _draw_property_group(
     is_expanded = cpm_state.expand_states.get(expand_key)
 
     toggle_op = header.operator(
-        config.CPM_EXPAND_TOGGLE,
+        config.CPM_EXPAND_TOGGLE_OP,
         text = group_name,
         icon = config.DOWNARROW_HLT_ICON if is_expanded
                else config.RIGHTARROW_ICON,

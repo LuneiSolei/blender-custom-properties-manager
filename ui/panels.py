@@ -1,9 +1,7 @@
 ﻿import bpy
-from typing import Union
-from bpy.props import CollectionProperty
-from .property_group_data import PropertyGroupData
-from .state import cpm_state
-from . import config
+from ..core.property_group_data import PropertyGroupData
+from ..core.state import cpm_state
+from ..core import config, utilities
 
 __all__ = ["draw_panel"]
 
@@ -46,7 +44,7 @@ def draw_panel(self, context, data_path):
     layout = self.layout
 
     # Get the data object dynamically
-    data_object = _resolve_data_object(context, data_path)
+    data_object = utilities.resolve_data_object(context, data_path)
     if not data_object:
         layout.label(text = f"No {data_path} available")
         return
@@ -71,22 +69,6 @@ def draw_panel(self, context, data_path):
     for prop in cpm_group_data.ungrouped:
         _draw_property(layout, data_object, data_path, prop, "")
 
-def _resolve_data_object(context: bpy.context, data_path: str) -> Union[bpy.types.Object, None]:
-    """
-    Resolve a data_path string to the actual object.
-    Args:
-        :param context: Blender context
-        :param data_path: String like "view_layer", "scene", "active_object.data", etc.
-    :return: The resolved object or None, if not found.
-    """
-    try:
-        # Handle nested paths like "active_object.data"
-        obj = context
-        for attr in data_path.split("."):
-            obj = getattr(obj, attr)
-        return obj
-    except AttributeError:
-        return None
 
 def _draw_property(
         layout: bpy.types.UILayout,

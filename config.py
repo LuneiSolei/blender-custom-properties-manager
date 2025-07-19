@@ -1,6 +1,8 @@
 ﻿# This file defines all constants used to help avoid "magic strings" and
 # other types of magic.
 
+# I hate this "organization".
+
 from collections import namedtuple
 
 # Configuration

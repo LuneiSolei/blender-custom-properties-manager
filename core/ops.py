@@ -121,6 +121,9 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         # Determine the property's type from Blender's provided enums
         self._set_property_type(self._data_object)
 
+        rna_ui = self._data_object.get("_RNA_UI")
+        print(self.property_name in rna_ui)
+
         # Show the menu as a popup
         return context.window_manager.invoke_props_dialog(self)
 
@@ -141,10 +144,6 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         prop_name = "default_" + self.property_type.lower()
         self._draw_aligned_row(label = config.DEFAULT_VALUE_LABEL,
                                prop_name= prop_name)
-
-        # Create min row
-
-
 
     def _set_property_type(self, data_object: bpy.types.Object):
         """

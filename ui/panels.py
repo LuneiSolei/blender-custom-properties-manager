@@ -6,33 +6,6 @@ import config
 
 __all__ = ["draw"]
 
-"""
-{
-    "grouped": [
-        "groupA": [
-            "propertyA-1",
-            "propertyA-2",
-            "propertyA-3",  
-        ],
-        "groupB": [
-            "propertyB-1",
-            "propertyB-2",
-            "propertyB-3",
-        ],
-        "groupC": [
-            "propertyC-1",
-            "propertyC-2",
-            "propertyC-3",
-        ]
-    ],
-    "ungrouped": [
-        "propertyA",
-        "propertyB",
-        "propertyC",
-    ]
-}
-"""
-
 def draw(self, context, data_path):
     """
     Draws the panel associated with the provided context type.

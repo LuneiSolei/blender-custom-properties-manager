@@ -7,7 +7,6 @@ from .core.property_group_data import PropertyGroupData
 from .ui import panels
 from .core import ops
 
-
 bl_info = {
     "name": "Custom Properties Manager",
     "author": "Lunei Solei",

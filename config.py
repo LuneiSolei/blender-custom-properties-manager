@@ -1,14 +1,18 @@
 ﻿# This file defines all constants used to help avoid "magic strings" and
 # other types of magic.
+
 from collections import namedtuple
-import bl_i18n_utils
 
 # Configuration
 DEBUG = False
+ALIGN_RIGHT = 'RIGHT'
+
+# Edit Menu
 PROP_TYPE_LABEL = "Type"
 PROP_TYPE_PROP = "property_type"
+PROP_NAME_LABEL = "Property Name"
+PROP_NAME_PROP = "property_name"
 DEFAULT_VALUE_LABEL = "Default"
-ALIGN_RIGHT = 'RIGHT'
 
 # Default property values
 DEFAULT_FLOAT_PROP = "default_float"
@@ -20,6 +24,9 @@ DEFAULT_BOOL_ARRAY_PROP = "default_bool_array"
 DEFAULT_STRING_PROP = "default_string"
 DEFAULT_DATA_BLOCK_PROP = "default_data_block"
 DEFAULT_PYTHON_PROP = "default_python"
+
+# Misc.
+DEFAULT_ATTR_NAME_PROP = "_default_attr_name"
 
 # Blender enum items
 DEFAULT_VALUE_ITEMS = ['FLOAT', 'INT', 'BOOL', 'STRING']
@@ -34,6 +41,7 @@ CUSTOM_PROPERTY_TYPE_ITEMS = (
     ('DATA_BLOCK', "Data-Block", "A data-block value"),
     ('PYTHON', "Python", "Edit a Python value directly, for unsupported property types"),
 ) # https://projects.blender.org/blender/blender/src/branch/main/scripts/startup/bl_operators/wm.py#L138
+
 PROPERTY_SUBTYPE_ITEMS = (
     ('NONE', "Plain Data", "Data values without special behavior"),
     ('PIXEL', "Pixel", "A distance on screen"),
@@ -45,6 +53,7 @@ PROPERTY_SUBTYPE_ITEMS = (
     ('POWER', "Power", ""),
     ('TEMPERATURE', "Temperature", "")
 ) #https://projects.blender.org/blender/blender/src/branch/main/scripts/startup/bl_operators/wm.py#L1397
+
 PROPERTY_SUBTYPE_VECTOR_ITEMS = (
     ('NONE', "Plain Data", "Data values without special behavior"),
     ('COLOR', "Linear Color",  "Color in the linear space"),

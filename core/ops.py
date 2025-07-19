@@ -113,20 +113,21 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         # Get the target property
         self._data_object = (utilities.resolve_data_object(context, self.data_path))
 
+        # Verify property exists in data object
         if not self.property_name in self._data_object:
             # The property does not exist in the data_object
             self.report({'ERROR'}, "Property '{}' not found".format(self.property_name))
             return {'CANCELLED'}
 
         # Determine the property's type from Blender's provided enums
-        self._set_property_type(self._data_object)
+        self._set_property_type()
 
-        rna_ui = self._data_object.get("_RNA_UI")
-        print(self.property_name in rna_ui)
+        # Determine proper default value
+        self._default_attr_name = "default_" + self.property_type.lower()
+        self._set_default_value()
 
         # Show the menu as a popup
         return context.window_manager.invoke_props_dialog(self)
-
 
     def execute(self, context):
         # context.active_object[]
@@ -138,21 +139,32 @@ class EditPropertyPopupOperator(bpy.types.Operator):
 
         # Create type row
         self._draw_aligned_row(label = config.PROP_TYPE_LABEL,
-                               prop_name = config.PROP_TYPE_PROP)
+                               attr_name = config.PROP_TYPE_PROP)
 
         # Create default value row
-        prop_name = "default_" + self.property_type.lower()
         self._draw_aligned_row(label = config.DEFAULT_VALUE_LABEL,
-                               prop_name= prop_name)
+                               attr_name = self._default_attr_name)
 
-    def _set_property_type(self, data_object: bpy.types.Object):
+    def _draw_aligned_row(self, label: str, attr_name: str):
+        row = self.layout.row()
+        split = row.split(factor = 0.5)
+
+        # Create left column
+        left_col = split.column()
+        left_col.alignment = config.ALIGN_RIGHT
+        left_col.label(text = label)
+
+        # Create right column
+        right_col = split.column()
+        right_col.prop(data = self, property = attr_name, text ="")
+
+    def _set_property_type(self):
         """
         Gets the string property type of the property of the provided object.
-            :param data_object: The Blender object the property is in.
         """
 
         # Determine property type
-        target_prop = data_object[self.property_name]
+        target_prop = self._data_object[self.property_name]
         prop_type = type(target_prop).__name__
         match prop_type:
             case "float":
@@ -183,15 +195,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
             case _:
                 self.property_type = 'FLOAT'
 
-    def _draw_aligned_row(self, label: str, prop_name: str):
-        row = self.layout.row()
-        split = row.split(factor = 0.5)
-
-        # Create left column
-        left_col = split.column()
-        left_col.alignment = config.ALIGN_RIGHT
-        left_col.label(text = label)
-
-        # Create right column
-        right_col = split.column()
-        right_col.prop(data = self, property = prop_name, text ="")
+    def _set_default_value(self):
+        ui_data = self._data_object.id_properties_ui(self.property_name)
+        current_default_value = ui_data.as_dict().get("default")
+        setattr(self, self._default_attr_name, current_default_value)

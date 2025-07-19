@@ -1,7 +1,8 @@
 ﻿import bpy
 from ..core.property_group_data import PropertyGroupData
 from ..core.state import cpm_state
-from ..core import config, utilities
+from ..core import utilities
+import config
 
 __all__ = ["draw"]
 

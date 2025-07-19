@@ -4,7 +4,8 @@ from bpy.props import (StringProperty, EnumProperty, BoolProperty,
                        IntVectorProperty, BoolVectorProperty)
 from typing import TYPE_CHECKING
 from .state import cpm_state
-from . import config, utilities
+from . import utilities
+import config
 
 class AddNewPropertyGroupOperator(bpy.types.Operator):
     bl_label = "New Group"
@@ -104,6 +105,9 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         prop_name = "default_" + self.property_type.lower()
         self._draw_aligned_row(label = config.DEFAULT_VALUE_LABEL,
                                prop_name= prop_name)
+
+        # Create min row
+
 
 
     def _set_property_type(self, data_object: bpy.types.Object):

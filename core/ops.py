@@ -5,7 +5,7 @@ from bpy.props import (StringProperty, EnumProperty, BoolProperty,
 from typing import TYPE_CHECKING
 from .state import cpm_state
 from . import utilities
-import config
+from .. import config
 
 class AddNewPropertyGroupOperator(bpy.types.Operator):
     bl_label = "New Group"

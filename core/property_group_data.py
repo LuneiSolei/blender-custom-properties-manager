@@ -1,6 +1,6 @@
 ﻿import bpy, json
 from typing import Dict, Self
-import config
+from .. import config
 
 
 class PropertyGroupData:

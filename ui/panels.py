@@ -2,7 +2,7 @@
 from ..core.property_group_data import PropertyGroupData
 from ..core.state import cpm_state
 from ..core import utilities
-import config
+from .. import config
 
 __all__ = ["draw"]
 

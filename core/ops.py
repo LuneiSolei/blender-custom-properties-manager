@@ -55,14 +55,50 @@ class EditPropertyPopupOperator(bpy.types.Operator):
 
     # Needed for PyCharm to properly type check against Blender's EnumProperty.
     # If removed, PyCharm will complain that property_type expects None.
+    # Property attributes
+    property_type: str if TYPE_CHECKING \
+        else EnumProperty(items = config.CUSTOM_PROPERTY_TYPE_ITEMS)
     data_path: str if TYPE_CHECKING else StringProperty()
     property_name: str if TYPE_CHECKING else StringProperty()
-    is_overridable_library: bool if TYPE_CHECKING else BoolProperty()
-    description: str if TYPE_CHECKING else StringProperty()
+    group_name: str if TYPE_CHECKING else StringProperty()
     use_soft_limits: bool if TYPE_CHECKING else BoolProperty()
-    property_type: str if TYPE_CHECKING else EnumProperty(
-        items = config.RNA_CUSTOM_PROPERTY_TYPE_ITEMS
-    )
+    array_length: int if TYPE_CHECKING else IntProperty()
+    precision_float: int if TYPE_CHECKING else IntProperty()
+    precision_float_array: list[int] if TYPE_CHECKING else IntVectorProperty()
+    subtype_normal: str if TYPE_CHECKING \
+        else EnumProperty(items = config.PROPERTY_SUBTYPE_ITEMS)
+    subtype_array: str if TYPE_CHECKING \
+        else EnumProperty(items = config.PROPERTY_SUBTYPE_VECTOR_ITEMS)
+    description: str if TYPE_CHECKING else StringProperty()
+    is_overridable_library: bool if TYPE_CHECKING else BoolProperty()
+
+    # Min values
+    min_float: float if TYPE_CHECKING else FloatProperty()
+    min_float_array: list[float] if TYPE_CHECKING else FloatVectorProperty()
+    min_int: int if TYPE_CHECKING else IntProperty()
+    min_int_array: list[int] if TYPE_CHECKING else IntVectorProperty()
+    soft_min_float: float if TYPE_CHECKING else FloatProperty()
+    soft_min_float_array: list[float] if TYPE_CHECKING else FloatVectorProperty()
+    soft_min_int: int if TYPE_CHECKING else IntProperty()
+    soft_min_int_array: list[int] if TYPE_CHECKING else IntVectorProperty()
+
+    # Max values
+    max_float: float if TYPE_CHECKING else FloatProperty()
+    max_float_array: list[float] if TYPE_CHECKING else FloatVectorProperty()
+    max_int: int if TYPE_CHECKING else IntProperty()
+    max_int_array: list[int] if TYPE_CHECKING else IntVectorProperty()
+    soft_max_float: float if TYPE_CHECKING else FloatProperty()
+    soft_max_float_array: list[float] if TYPE_CHECKING else FloatVectorProperty()
+    soft_max_int: int if TYPE_CHECKING else IntProperty()
+    soft_max_int_array: list[int] if TYPE_CHECKING else IntVectorProperty()
+
+    # Step values
+    step_float: float if TYPE_CHECKING else FloatProperty()
+    step_float_array: list[float] if TYPE_CHECKING else FloatVectorProperty()
+    step_int: int if TYPE_CHECKING else IntProperty()
+    step_int_array: list[int] if TYPE_CHECKING else IntVectorProperty()
+
+    # Default values
     default_float: float if TYPE_CHECKING else FloatProperty()
     default_float_array: list[float] if TYPE_CHECKING else FloatVectorProperty()
     default_int: int if TYPE_CHECKING else IntProperty()

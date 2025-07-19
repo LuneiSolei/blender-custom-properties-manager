@@ -15,6 +15,7 @@ PROP_TYPE_PROP = "property_type"
 PROP_NAME_LABEL = "Property Name"
 PROP_NAME_PROP = "property_name"
 DEFAULT_VALUE_LABEL = "Default"
+MIN_LABEL = "Min"
 
 # Default property values
 DEFAULT_FLOAT_PROP = "default_float"
@@ -29,6 +30,7 @@ DEFAULT_PYTHON_PROP = "default_python"
 
 # Misc.
 DEFAULT_ATTR_NAME_PROP = "_default_attr_name"
+MIN_ATTR_NAME_PROP = "_min_attr_name"
 
 # Blender enum items
 DEFAULT_VALUE_ITEMS = ['FLOAT', 'INT', 'BOOL', 'STRING']

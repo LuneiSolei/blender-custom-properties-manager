@@ -2,7 +2,7 @@
 from bpy.props import (StringProperty, EnumProperty, BoolProperty,
                        FloatProperty, IntProperty, FloatVectorProperty,
                        IntVectorProperty, BoolVectorProperty)
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 from .state import cpm_state
 from . import utilities
 from .. import config
@@ -110,6 +110,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
     default_python: str if TYPE_CHECKING else StringProperty()
 
     def invoke(self, context, event):
+        # Prepare the edit property menu
         # Get the target property
         self._data_object = (utilities.resolve_data_object(context, self.data_path))
 
@@ -127,18 +128,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
                          .id_properties_ui(self.property_name)
                          .as_dict())
 
-        # Set the proper attribute name for the default value based on the
-        # property type
-        utilities.set_attr(
-            obj = self,
-            name = config.DEFAULT_ATTR_NAME_PROP,
-            value = "default_" + self.property_type.lower())
-
-        # Set the correct default value
-        utilities.set_attr(
-            obj = self,
-            name = getattr(self, config.DEFAULT_ATTR_NAME_PROP),
-            value = self._ui_data.get("default"))
+        self._set_attrs()
 
         # Show the menu as a popup
         return context.window_manager.invoke_props_dialog(self)
@@ -160,8 +150,14 @@ class EditPropertyPopupOperator(bpy.types.Operator):
                                attr_name = config.PROP_NAME_PROP)
 
         # Default Value
+        attr_name = getattr(self, config.DEFAULT_ATTR_NAME_PROP)
         self._draw_aligned_row(label = config.DEFAULT_VALUE_LABEL,
-                               attr_name = self._default_attr_name)
+                               attr_name = attr_name)
+
+        # Min
+        attr_name = getattr(self, config.MIN_ATTR_NAME_PROP)
+        self._draw_aligned_row(label = config.MIN_LABEL,
+                               attr_name = attr_name)
 
     def _draw_aligned_row(self, label: str, attr_name: str) -> None:
         row = self.layout.row()
@@ -212,3 +208,26 @@ class EditPropertyPopupOperator(bpy.types.Operator):
                 self.property_type = 'DATA_BLOCK'
             case _:
                 self.property_type = 'FLOAT'
+
+    def _set_attrs(self) -> None:
+        # Set the proper attribute name for the default value based on the
+        # property type. ATTR_NAME_PROP is stored for later use.
+        utilities.set_attr(
+            obj = self,
+            name = config.DEFAULT_ATTR_NAME_PROP,
+            value = "default_" + self.property_type.lower())
+        utilities.set_attr(
+            obj = self,
+            name = getattr(self, config.DEFAULT_ATTR_NAME_PROP),
+            value = self._ui_data.get("default"))
+
+        # Set the proper attribute name for the minimum value based on the
+        # property type. ATTR_NAME_PROP is stored for later use.
+        utilities.set_attr(
+            obj = self,
+            name = config.MIN_ATTR_NAME_PROP,
+            value = "min_" + self.property_type.lower())
+        utilities.set_attr(
+            obj = self,
+            name = getattr(self, config.MIN_ATTR_NAME_PROP),
+            value = self._ui_data.get("min"))

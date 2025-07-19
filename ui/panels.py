@@ -43,7 +43,6 @@ def draw(self, context, data_path):
     for prop in cpm_group_data.ungrouped:
         _draw_property(layout, data_object, data_path, prop, "")
 
-
 def _draw_property(
         layout: bpy.types.UILayout,
         data_object: bpy.types.Object,

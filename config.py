@@ -110,13 +110,59 @@ Field = namedtuple("Field", [
     "attr_prefix",
     "ui_data_attr",
     "attr_name",
-    "value"])
+    "draw_on"])
 fields = [
-    Field("Property Name", None, None, "property_name", None),
-    Field("Type", None, None, "property_type", None),
-    Field("Default", "default_", "default", None, None),
-    Field("Min", "min_", "min", None, None),
-    Field("Max", "max_", "max", None, None),
+    Field(
+        label = "Property Name",
+        attr_prefix = None,
+        ui_data_attr = None,
+        attr_name = "property_name",
+        draw_on = 'ALL'),
+    Field(
+        label = "Type",
+        attr_prefix = None,
+        ui_data_attr = None,
+        attr_name = "property_type",
+        draw_on = 'ALL'),
+    Field(
+        label = "Default",
+        attr_prefix = "default_",
+        ui_data_attr = "default",
+        attr_name = None,
+        draw_on = 'ALL'),
+    Field(
+        label = "Min",
+        attr_prefix = "min_",
+        ui_data_attr = "min",
+        attr_name = None,
+        draw_on = ['FLOAT', 'FLOAT_ARRAY', 'INT', 'INT_ARRAY']),
+    Field(
+        label = "Max",
+        attr_prefix = "max_",
+        ui_data_attr = "max",
+        attr_name = None,
+        draw_on = ['FLOAT', 'FLOAT_ARRAY', 'INT', 'INT_ARRAY']),
+    Field(
+        label = "Soft Limits",
+        attr_prefix = None,
+        ui_data_attr = None,
+        attr_name = "use_soft_limits",
+        draw_on = ['FLOAT', 'FLOAT_ARRAY', 'INT', 'INT_ARRAY']
+    ),
+    Field(
+        label = "Soft Min",
+        attr_prefix = "soft_min_",
+        ui_data_attr = "soft_min",
+        attr_name = None,
+        draw_on = ['FLOAT', 'FLOAT_ARRAY', 'INT', 'INT_ARRAY']
+    ),
+    Field(
+        label = "Soft Max",
+        attr_prefix = "soft_max_",
+        ui_data_attr = "soft_max",
+        attr_name = None,
+        draw_on = ['FLOAT', 'FLOAT_ARRAY', 'INT', 'INT_ARRAY']
+    )
 ]
 
 # Misc.

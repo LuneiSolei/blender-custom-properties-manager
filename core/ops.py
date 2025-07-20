@@ -128,19 +128,17 @@ class EditPropertyPopupOperator(bpy.types.Operator):
                          .as_dict())
 
         # Start setting the field values
+        deferred = []
         for index, field in enumerate(config.fields):
-            # Since property_name and property_type require unique handling,
-            # do those first
-            attr_name = str
-            value = Any
-            if field.attr_name == "property_name":
-                attr_name = field.attr_name
-                value = self.property_name
-            elif field.attr_name == "property_type":
-                attr_name = field.attr_name
-                value = self._get_property_type()
-                self.property_type = value
-            else:
+            # Programmatically adjust field values. "property_name" does not need
+            # any adjustments
+            attr_name = field.attr_name
+            if field.attr_name == "property_type":
+                self.property_type = self._get_property_type()
+            elif field.attr_name == "use_soft_limits":
+                # Ensure that min/max values are retrieved first
+                deferred.append((index, field))
+            elif field.attr_name != "property_name":
                 attr_name = field.attr_prefix + self.property_type.lower()
                 value = self._ui_data.get(field.ui_data_attr)
                 setattr(self, attr_name, value)
@@ -150,10 +148,18 @@ class EditPropertyPopupOperator(bpy.types.Operator):
                 attr_prefix = field.attr_prefix,
                 ui_data_attr = field.ui_data_attr,
                 attr_name = attr_name,
-                value = value)
+                draw_on = field.draw_on)
 
-            import pprint
-            pprint.pp(config.fields[index])
+        for index, field in deferred:
+            # Perform "use_soft_limits" calculations
+            self.use_soft_limits = self._is_use_soft_limits()
+
+            config.fields[index] = config.Field(
+                label = field.label,
+                attr_prefix = field.attr_prefix,
+                ui_data_attr = field.ui_data_attr,
+                attr_name = field.attr_name,
+                draw_on = field.draw_on)
 
         # Show the menu as a popup
         return context.window_manager.invoke_props_dialog(self)
@@ -167,17 +173,29 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         layout = self.layout
 
         for field in config.fields:
-            row = self.layout.row()
-            split = row.split(factor = 0.5)
+            if not self.property_type in field.draw_on and not field.draw_on == 'ALL':
+                continue
 
-            # Create left column
-            left_col = split.column()
-            left_col.alignment = config.ALIGN_RIGHT
-            left_col.label(text = field.label)
+            prop_row = self._draw_aligned_prop(field)
+            if (field.ui_data_attr == "soft_max" or
+                field.ui_data_attr == "soft_min"):
+                prop_row.enabled = self.use_soft_limits
 
-            # Create right column
-            right_col = split.column()
-            right_col.prop(data = self, property = field.attr_name, text = "")
+
+    def _draw_aligned_prop(self, field: config.Field) -> bpy.types.UILayout:
+        row = self.layout.row()
+        split = row.split(factor = 0.5)
+
+        # Create left column
+        left_col = split.column()
+        left_col.alignment = config.ALIGN_RIGHT
+        left_col.label(text = field.label)
+
+        # Create right column
+        right_col = split.column()
+        right_col.prop(data = self, property = field.attr_name, text = "")
+
+        return row
 
     def _get_property_type(self) -> str:
         """
@@ -195,7 +213,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
                 return 'INT'
             case "bool":
                 return 'BOOL'
-            case "string":
+            case "str":
                 return 'STRING'
             case "IDPropertyArray":
                 # Property is an array type
@@ -216,3 +234,18 @@ class EditPropertyPopupOperator(bpy.types.Operator):
                 return 'DATA_BLOCK'
             case _:
                 return 'FLOAT'
+
+    def _is_use_soft_limits(self) -> bool:
+        attr_names = {
+            "min": None,
+            "soft_min": None,
+            "max": None,
+            "soft_max": None}
+
+        # Get hard and soft min/max values
+        for field in config.fields:
+            if field.ui_data_attr in attr_names:
+                attr_names[field.ui_data_attr] = getattr(self, field.attr_name)
+
+        return (attr_names["min"] != attr_names["soft_min"] or
+                attr_names["max"] != attr_names["soft_max"])

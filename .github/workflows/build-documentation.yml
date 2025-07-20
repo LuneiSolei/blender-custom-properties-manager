@@ -3,7 +3,6 @@
 on:
   pull_request:
     branches: ["master"]
-    paths: ["Writerside/**"] # Only run when Writerside files change
   workflow_dispatch:
 
 env:

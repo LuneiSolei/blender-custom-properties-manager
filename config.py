@@ -28,10 +28,6 @@ DEFAULT_STRING_PROP = "default_string"
 DEFAULT_DATA_BLOCK_PROP = "default_data_block"
 DEFAULT_PYTHON_PROP = "default_python"
 
-# Misc.
-DEFAULT_ATTR_NAME_PROP = "_default_attr_name"
-MIN_ATTR_NAME_PROP = "_min_attr_name"
-
 # Blender enum items
 DEFAULT_VALUE_ITEMS = ['FLOAT', 'INT', 'BOOL', 'STRING']
 CUSTOM_PROPERTY_TYPE_ITEMS = (
@@ -100,13 +96,27 @@ CPM_EDIT_PROPERTY_MENU = "CPM_MT_edit_property"
 # Attributes
 ATTR_KEYS = 'keys'
 
-# Panels
+# Named Tuples
 Panel = namedtuple("Panel", ["name", "data_path"])
 panels = [
     Panel("VIEWLAYER_PT_layer_custom_props", "view_layer"),
     Panel("SCENE_PT_custom_props", "scene"),
     Panel("OBJECT_PT_custom_props", "active_object"),
     Panel("DATA_PT_custom_props_light", "active_object.data"),
+]
+
+Field = namedtuple("Field", [
+    "label",
+    "attr_prefix",
+    "ui_data_attr",
+    "attr_name",
+    "value"])
+fields = [
+    Field("Property Name", None, None, "property_name", None),
+    Field("Type", None, None, "property_type", None),
+    Field("Default", "default_", "default", None, None),
+    Field("Min", "min_", "min", None, None),
+    Field("Max", "max_", "max", None, None),
 ]
 
 # Misc.

@@ -1,8 +1,11 @@
-﻿import bpy
+﻿from operator import indexOf
+
+import bpy
 from bpy.props import (StringProperty, EnumProperty, BoolProperty,
                        FloatProperty, IntProperty, FloatVectorProperty,
                        IntVectorProperty, BoolVectorProperty)
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
+from collections import namedtuple
 from .state import cpm_state
 from . import utilities
 from .. import config
@@ -45,7 +48,6 @@ class ExpandToggleOperator(bpy.types.Operator):
         cpm_state.expand_states[self.expand_key] = not self.current_state
 
         return {'FINISHED'}
-
 
 # noinspection PyAttributeOutsideInit
 class EditPropertyPopupOperator(bpy.types.Operator):
@@ -120,15 +122,38 @@ class EditPropertyPopupOperator(bpy.types.Operator):
             self.report({'ERROR'}, "Property '{}' not found".format(self.property_name))
             return {'CANCELLED'}
 
-        # Determine the property's type from Blender's provided enums
-        self._set_property_type()
-
         # Retrieve Blender's already stored UI data for the property
         self._ui_data = (self._data_object
                          .id_properties_ui(self.property_name)
                          .as_dict())
 
-        self._set_attrs()
+        # Start setting the field values
+        for index, field in enumerate(config.fields):
+            # Since property_name and property_type require unique handling,
+            # do those first
+            attr_name = str
+            value = Any
+            if field.attr_name == "property_name":
+                attr_name = field.attr_name
+                value = self.property_name
+            elif field.attr_name == "property_type":
+                attr_name = field.attr_name
+                value = self._get_property_type()
+                self.property_type = value
+            else:
+                attr_name = field.attr_prefix + self.property_type.lower()
+                value = self._ui_data.get(field.ui_data_attr)
+                setattr(self, attr_name, value)
+
+            config.fields[index] = config.Field(
+                label = field.label,
+                attr_prefix = field.attr_prefix,
+                ui_data_attr = field.ui_data_attr,
+                attr_name = attr_name,
+                value = value)
+
+            import pprint
+            pprint.pp(config.fields[index])
 
         # Show the menu as a popup
         return context.window_manager.invoke_props_dialog(self)
@@ -141,40 +166,23 @@ class EditPropertyPopupOperator(bpy.types.Operator):
     def draw(self, context):
         layout = self.layout
 
-        # Type
-        self._draw_aligned_row(label = config.PROP_TYPE_LABEL,
-                               attr_name = config.PROP_TYPE_PROP)
+        for field in config.fields:
+            row = self.layout.row()
+            split = row.split(factor = 0.5)
 
-        # Property Name
-        self._draw_aligned_row(label = config.PROP_NAME_LABEL,
-                               attr_name = config.PROP_NAME_PROP)
+            # Create left column
+            left_col = split.column()
+            left_col.alignment = config.ALIGN_RIGHT
+            left_col.label(text = field.label)
 
-        # Default Value
-        attr_name = getattr(self, config.DEFAULT_ATTR_NAME_PROP)
-        self._draw_aligned_row(label = config.DEFAULT_VALUE_LABEL,
-                               attr_name = attr_name)
+            # Create right column
+            right_col = split.column()
+            right_col.prop(data = self, property = field.attr_name, text = "")
 
-        # Min
-        attr_name = getattr(self, config.MIN_ATTR_NAME_PROP)
-        self._draw_aligned_row(label = config.MIN_LABEL,
-                               attr_name = attr_name)
-
-    def _draw_aligned_row(self, label: str, attr_name: str) -> None:
-        row = self.layout.row()
-        split = row.split(factor = 0.5)
-
-        # Create left column
-        left_col = split.column()
-        left_col.alignment = config.ALIGN_RIGHT
-        left_col.label(text = label)
-
-        # Create right column
-        right_col = split.column()
-        right_col.prop(data = self, property = attr_name, text ="")
-
-    def _set_property_type(self) -> None:
+    def _get_property_type(self) -> str:
         """
-        Gets the string property type of the property of the provided object.
+        Gets the type of the property.
+        :return: The property's type as determined by Blender.
         """
 
         # Determine property type
@@ -182,52 +190,29 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         prop_type = type(target_prop).__name__
         match prop_type:
             case "float":
-                self.property_type = 'FLOAT'
+                return 'FLOAT'
             case "int":
-                self.property_type = 'INT'
+                return 'INT'
             case "bool":
-                self.property_type = 'BOOL'
+                return 'BOOL'
             case "string":
-                self.property_type = 'STRING'
+                return 'STRING'
             case "IDPropertyArray":
                 # Property is an array type
                 if len(target_prop) > 0:
                     if isinstance(target_prop[0], float):
-                        self.property_type = 'FLOAT_ARRAY'
+                        return 'FLOAT_ARRAY'
                     elif isinstance(target_prop[0], int):
-                        self.property_type = 'INT_ARRAY'
+                        return 'INT_ARRAY'
                     elif isinstance(target_prop[0], bool):
-                        self.property_type = 'BOOL_ARRAY'
+                        return 'BOOL_ARRAY'
                     else:
-                        self.property_type = 'FLOAT_ARRAY'
+                        return 'FLOAT_ARRAY'
                 else:
-                    self.property_type = 'FLOAT_ARRAY'
+                    return 'FLOAT_ARRAY'
             case "IDPropertyGroup":
-                self.property_type = 'PYTHON'
+                return 'PYTHON'
             case _ if isinstance(target_prop, bpy.types.ID):
-                self.property_type = 'DATA_BLOCK'
+                return 'DATA_BLOCK'
             case _:
-                self.property_type = 'FLOAT'
-
-    def _set_attrs(self) -> None:
-        # Set the proper attribute name for the default value based on the
-        # property type. ATTR_NAME_PROP is stored for later use.
-        utilities.set_attr(
-            obj = self,
-            name = config.DEFAULT_ATTR_NAME_PROP,
-            value = "default_" + self.property_type.lower())
-        utilities.set_attr(
-            obj = self,
-            name = getattr(self, config.DEFAULT_ATTR_NAME_PROP),
-            value = self._ui_data.get("default"))
-
-        # Set the proper attribute name for the minimum value based on the
-        # property type. ATTR_NAME_PROP is stored for later use.
-        utilities.set_attr(
-            obj = self,
-            name = config.MIN_ATTR_NAME_PROP,
-            value = "min_" + self.property_type.lower())
-        utilities.set_attr(
-            obj = self,
-            name = getattr(self, config.MIN_ATTR_NAME_PROP),
-            value = self._ui_data.get("min"))
+                return 'FLOAT'

@@ -119,6 +119,13 @@ fields = [
         attr_name = "property_name",
         draw_on = 'ALL'),
     Field(
+        label = "Group Name",
+        attr_prefix = None,
+        ui_data_attr = None,
+        attr_name = "group_name",
+        draw_on = 'ALL'
+    ),
+    Field(
         label = "Type",
         attr_prefix = None,
         ui_data_attr = None,
@@ -183,6 +190,20 @@ fields = [
         ui_data_attr = "subtype",
         attr_name = None,
         draw_on = ['FLOAT', 'FLOAT_ARRAY']
+    ),
+    Field(
+        label = "Description",
+        attr_prefix = None,
+        ui_data_attr = "description",
+        attr_name = "description",
+        draw_on = 'ALL'
+    ),
+    Field(
+        label = "Library Overridable",
+        attr_prefix = None,
+        ui_data_attr = None,
+        attr_name = "is_overridable_library",
+        draw_on = 'ALL'
     )
 ]
 

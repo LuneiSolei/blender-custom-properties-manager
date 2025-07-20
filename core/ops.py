@@ -2,7 +2,6 @@
 from bpy.props import (StringProperty, EnumProperty, BoolProperty,
                        FloatProperty, IntProperty, FloatVectorProperty,
                        IntVectorProperty, BoolVectorProperty)
-from typing import TYPE_CHECKING
 from .state import cpm_state
 from . import utilities as utils
 from .. import config
@@ -55,17 +54,17 @@ class EditPropertyPopupOperator(bpy.types.Operator):
     # Needed for PyCharm to properly type check against Blender's EnumProperty.
     # If removed, PyCharm will complain that property_type expects None.
     # Property attributes
-    property_type:          utils.blender_prop(str, EnumProperty,
-                                items = config.CUSTOM_PROPERTY_TYPE_ITEMS)
     data_path:              utils.blender_prop(str, StringProperty)
     property_name:          utils.blender_prop(str, StringProperty)
+    property_type:          utils.blender_prop(str, EnumProperty,
+                                items = config.CUSTOM_PROPERTY_TYPE_ITEMS)
     group_name:             utils.blender_prop(str, StringProperty)
     use_soft_limits:        utils.blender_prop(bool, BoolProperty)
     array_length:           utils.blender_prop(int, IntProperty)
     precision_float:        utils.blender_prop(int, IntProperty)
     precision_float_array:  utils.blender_prop(int, IntProperty)
     subtype_float:          utils.blender_prop(str, EnumProperty,
-                                items = config.CUSTOM_PROPERTY_TYPE_ITEMS)
+                                items = config.PROPERTY_SUBTYPE_ITEMS)
     subtype_float_array:    utils.blender_prop(str, EnumProperty,
                                 items = config.PROPERTY_SUBTYPE_VECTOR_ITEMS)
     description:            utils.blender_prop(str, StringProperty)
@@ -129,16 +128,26 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         for index, field in enumerate(config.fields):
             # Programmatically adjust field values. "property_name" does not need
             # any adjustments
+            no_adjustments = ["property_name", "group_name"]
             attr_name = field.attr_name
-            if field.attr_name == "property_type":
+            if field.attr_name in no_adjustments:
+                continue
+            elif field.attr_name == "property_type":
                 self.property_type = self._get_property_type()
             elif field.attr_name == "use_soft_limits":
                 # Ensure that min/max values are retrieved first
                 deferred.append((index, field))
-            elif field.attr_name != "property_name":
+            elif field.attr_name == "is_overridable_library":
+                override_str = f'["{self.property_name}"]'
+                self.is_overridable_library = (
+                    self._data_object
+                    .is_property_overridable_library(override_str))
+            elif field.attr_name == "description":
+                value = self._ui_data.get(field.ui_data_attr, "")
+                setattr(self, attr_name, value)
+            else:
                 attr_name = field.attr_prefix + self.property_type.lower()
                 value = self._ui_data.get(field.ui_data_attr)
-                print(attr_name, value)
                 setattr(self, attr_name, value)
 
             new_field = config.Field(
@@ -148,9 +157,6 @@ class EditPropertyPopupOperator(bpy.types.Operator):
                 attr_name = attr_name,
                 draw_on = field.draw_on)
             config.fields[index] = new_field
-
-            # FIXME: Blender only uses a single value for min, max, soft_min,
-            #  and soft_max in its UI data
 
         for index, field in deferred:
             # Perform "use_soft_limits" calculations
@@ -167,7 +173,8 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         return context.window_manager.invoke_props_dialog(self)
 
     def execute(self, context):
-        # context.active_object[]
+        # NOTE: self.property_overridable_library_set('["prop"]',
+        #  True/False) is how you change the "is_overridable_library" attribute
 
         return {'FINISHED'}
 

@@ -6,7 +6,7 @@
 from collections import namedtuple
 
 # Configuration
-DEBUG = False
+DEBUG = True
 ALIGN_RIGHT = 'RIGHT'
 
 # Edit Menu
@@ -119,6 +119,13 @@ fields = [
         attr_name = "property_name",
         draw_on = 'ALL'),
     Field(
+        label = "Group Name",
+        attr_prefix = None,
+        ui_data_attr = None,
+        attr_name = "group_name",
+        draw_on = 'ALL'
+    ),
+    Field(
         label = "Type",
         attr_prefix = None,
         ui_data_attr = None,
@@ -162,6 +169,41 @@ fields = [
         ui_data_attr = "soft_max",
         attr_name = None,
         draw_on = ['FLOAT', 'FLOAT_ARRAY', 'INT', 'INT_ARRAY']
+    ),
+    Field(
+        label = "Step",
+        attr_prefix = "step_",
+        ui_data_attr = "step",
+        attr_name = None,
+        draw_on = ['FLOAT', 'FLOAT_ARRAY', 'INT', 'INT_ARRAY']
+    ),
+    Field(
+        label = "Precision",
+        attr_prefix = "precision_",
+        ui_data_attr = "precision",
+        attr_name = None,
+        draw_on = ['FLOAT', 'FLOAT_ARRAY']
+    ),
+    Field(
+        label = "Subtype",
+        attr_prefix = "subtype_",
+        ui_data_attr = "subtype",
+        attr_name = None,
+        draw_on = ['FLOAT', 'FLOAT_ARRAY']
+    ),
+    Field(
+        label = "Description",
+        attr_prefix = None,
+        ui_data_attr = "description",
+        attr_name = "description",
+        draw_on = 'ALL'
+    ),
+    Field(
+        label = "Library Overridable",
+        attr_prefix = None,
+        ui_data_attr = None,
+        attr_name = "is_overridable_library",
+        draw_on = 'ALL'
     )
 ]
 

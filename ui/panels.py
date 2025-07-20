@@ -57,7 +57,7 @@ def _draw_property(
     """
     match group_name:
         case "":
-            _draw_property_row(layout, data_object, data_path, prop_name)
+            _draw_property_row(layout, data_object, data_path, prop_name, "")
         case dict(group):
             for prop, group_name in group:
                 _draw_property_group(layout, data_object, data_path, prop_name,
@@ -78,7 +78,7 @@ def _draw_add_buttons(layout, data_path):
         icon = config.ADD_ICON)
     new_prop_group_op.data_path = data_path
 
-def _draw_property_row(layout, data_object, data_path, prop_name):
+def _draw_property_row(layout, data_object, data_path, prop_name, group_name):
     """Draws a single property row."""
     row = layout.row()
 
@@ -96,6 +96,7 @@ def _draw_property_row(layout, data_object, data_path, prop_name):
         emboss = False)
     edit_op.property_name = prop_name
     edit_op.data_path = data_path
+    edit_op.group_name = group_name
 
     # Draw the "remove property" button
     remove_op = row.operator(
@@ -140,5 +141,6 @@ def _draw_property_group(
 
     # Only draw the group's contents if expanded
     if is_expanded:
-        for key in group_data:
-            _draw_property_row(layout, data_object, data_path, key)
+        for prop_name in group_data:
+            _draw_property_row(layout, data_object, data_path, prop_name,
+                               group_name)

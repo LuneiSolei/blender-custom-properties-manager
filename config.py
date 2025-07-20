@@ -6,7 +6,7 @@
 from collections import namedtuple
 
 # Configuration
-DEBUG = False
+DEBUG = True
 ALIGN_RIGHT = 'RIGHT'
 
 # Edit Menu
@@ -162,6 +162,27 @@ fields = [
         ui_data_attr = "soft_max",
         attr_name = None,
         draw_on = ['FLOAT', 'FLOAT_ARRAY', 'INT', 'INT_ARRAY']
+    ),
+    Field(
+        label = "Step",
+        attr_prefix = "step_",
+        ui_data_attr = "step",
+        attr_name = None,
+        draw_on = ['FLOAT', 'FLOAT_ARRAY', 'INT', 'INT_ARRAY']
+    ),
+    Field(
+        label = "Precision",
+        attr_prefix = "precision_",
+        ui_data_attr = "precision",
+        attr_name = None,
+        draw_on = ['FLOAT', 'FLOAT_ARRAY']
+    ),
+    Field(
+        label = "Subtype",
+        attr_prefix = "subtype_",
+        ui_data_attr = "subtype",
+        attr_name = None,
+        draw_on = ['FLOAT', 'FLOAT_ARRAY']
     )
 ]
 

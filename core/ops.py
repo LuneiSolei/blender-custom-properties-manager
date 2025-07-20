@@ -1,13 +1,10 @@
-﻿from operator import indexOf
-
-import bpy
+﻿import bpy
 from bpy.props import (StringProperty, EnumProperty, BoolProperty,
                        FloatProperty, IntProperty, FloatVectorProperty,
                        IntVectorProperty, BoolVectorProperty)
-from typing import TYPE_CHECKING, Any
-from collections import namedtuple
+from typing import TYPE_CHECKING
 from .state import cpm_state
-from . import utilities
+from . import utilities as utils
 from .. import config
 
 class AddNewPropertyGroupOperator(bpy.types.Operator):
@@ -58,63 +55,63 @@ class EditPropertyPopupOperator(bpy.types.Operator):
     # Needed for PyCharm to properly type check against Blender's EnumProperty.
     # If removed, PyCharm will complain that property_type expects None.
     # Property attributes
-    property_type: str if TYPE_CHECKING \
-        else EnumProperty(items = config.CUSTOM_PROPERTY_TYPE_ITEMS)
-    data_path: str if TYPE_CHECKING else StringProperty()
-    property_name: str if TYPE_CHECKING else StringProperty()
-    group_name: str if TYPE_CHECKING else StringProperty()
-    use_soft_limits: bool if TYPE_CHECKING else BoolProperty()
-    array_length: int if TYPE_CHECKING else IntProperty()
-    precision_float: int if TYPE_CHECKING else IntProperty()
-    precision_float_array: list[int] if TYPE_CHECKING else IntVectorProperty()
-    subtype_normal: str if TYPE_CHECKING \
-        else EnumProperty(items = config.PROPERTY_SUBTYPE_ITEMS)
-    subtype_array: str if TYPE_CHECKING \
-        else EnumProperty(items = config.PROPERTY_SUBTYPE_VECTOR_ITEMS)
-    description: str if TYPE_CHECKING else StringProperty()
-    is_overridable_library: bool if TYPE_CHECKING else BoolProperty()
+    property_type:          utils.blender_prop(str, EnumProperty,
+                                items = config.CUSTOM_PROPERTY_TYPE_ITEMS)
+    data_path:              utils.blender_prop(str, StringProperty)
+    property_name:          utils.blender_prop(str, StringProperty)
+    group_name:             utils.blender_prop(str, StringProperty)
+    use_soft_limits:        utils.blender_prop(bool, BoolProperty)
+    array_length:           utils.blender_prop(int, IntProperty)
+    precision_float:        utils.blender_prop(int, IntProperty)
+    precision_float_array:  utils.blender_prop(int, IntProperty)
+    subtype_float:          utils.blender_prop(str, EnumProperty,
+                                items = config.CUSTOM_PROPERTY_TYPE_ITEMS)
+    subtype_float_array:    utils.blender_prop(str, EnumProperty,
+                                items = config.PROPERTY_SUBTYPE_VECTOR_ITEMS)
+    description:            utils.blender_prop(str, StringProperty)
+    is_overridable_library: utils.blender_prop(bool, BoolProperty)
 
     # Min values
-    min_float: float if TYPE_CHECKING else FloatProperty()
-    min_float_array: list[float] if TYPE_CHECKING else FloatVectorProperty()
-    min_int: int if TYPE_CHECKING else IntProperty()
-    min_int_array: list[int] if TYPE_CHECKING else IntVectorProperty()
-    soft_min_float: float if TYPE_CHECKING else FloatProperty()
-    soft_min_float_array: list[float] if TYPE_CHECKING else FloatVectorProperty()
-    soft_min_int: int if TYPE_CHECKING else IntProperty()
-    soft_min_int_array: list[int] if TYPE_CHECKING else IntVectorProperty()
+    min_float:              utils.blender_prop(float, FloatProperty)
+    min_float_array:        utils.blender_prop(float, FloatProperty)
+    min_int:                utils.blender_prop(int, IntProperty)
+    min_int_array:          utils.blender_prop(int, IntProperty)
+    soft_min_float:         utils.blender_prop(float, FloatProperty)
+    soft_min_float_array:   utils.blender_prop(float, FloatProperty)
+    soft_min_int:           utils.blender_prop(int, IntProperty)
+    soft_min_int_array:     utils.blender_prop(int, IntProperty)
 
     # Max values
-    max_float: float if TYPE_CHECKING else FloatProperty()
-    max_float_array: list[float] if TYPE_CHECKING else FloatVectorProperty()
-    max_int: int if TYPE_CHECKING else IntProperty()
-    max_int_array: list[int] if TYPE_CHECKING else IntVectorProperty()
-    soft_max_float: float if TYPE_CHECKING else FloatProperty()
-    soft_max_float_array: list[float] if TYPE_CHECKING else FloatVectorProperty()
-    soft_max_int: int if TYPE_CHECKING else IntProperty()
-    soft_max_int_array: list[int] if TYPE_CHECKING else IntVectorProperty()
+    max_float:              utils.blender_prop(float, FloatProperty)
+    max_float_array:        utils.blender_prop(float, FloatProperty)
+    max_int:                utils.blender_prop(int, IntProperty)
+    max_int_array:          utils.blender_prop(int, IntProperty)
+    soft_max_float:         utils.blender_prop(float, FloatProperty)
+    soft_max_float_array:   utils.blender_prop(float, FloatProperty)
+    soft_max_int:           utils.blender_prop(int, IntProperty)
+    soft_max_int_array:     utils.blender_prop(int, IntProperty)
 
     # Step values
-    step_float: float if TYPE_CHECKING else FloatProperty()
-    step_float_array: list[float] if TYPE_CHECKING else FloatVectorProperty()
-    step_int: int if TYPE_CHECKING else IntProperty()
-    step_int_array: list[int] if TYPE_CHECKING else IntVectorProperty()
+    step_float:             utils.blender_prop(float, FloatProperty)
+    step_float_array:       utils.blender_prop(float, FloatProperty)
+    step_int:               utils.blender_prop(int, IntProperty)
+    step_int_array:         utils.blender_prop(int, IntProperty)
 
     # Default values
-    default_float: float if TYPE_CHECKING else FloatProperty()
-    default_float_array: list[float] if TYPE_CHECKING else FloatVectorProperty()
-    default_int: int if TYPE_CHECKING else IntProperty()
-    default_int_array: list[int] if TYPE_CHECKING else IntVectorProperty()
-    default_bool: bool if TYPE_CHECKING else BoolProperty()
-    default_bool_array: list[bool] if TYPE_CHECKING else BoolVectorProperty()
-    default_string: str if TYPE_CHECKING else StringProperty()
-    default_data_block: str if TYPE_CHECKING else StringProperty()
-    default_python: str if TYPE_CHECKING else StringProperty()
+    default_float:          utils.blender_prop(float, FloatProperty)
+    default_float_array:    utils.blender_prop(list[float], FloatVectorProperty)
+    default_int:            utils.blender_prop(int, IntProperty)
+    default_int_array:      utils.blender_prop(list[int], IntVectorProperty)
+    default_bool:           utils.blender_prop(bool, BoolProperty)
+    default_bool_array:     utils.blender_prop(bool, BoolVectorProperty)
+    default_string:         utils.blender_prop(str, StringProperty)
+    default_data_block:     utils.blender_prop(str, StringProperty)
+    default_python:         utils.blender_prop(str, StringProperty)
 
     def invoke(self, context, event):
         # Prepare the edit property menu
         # Get the target property
-        self._data_object = (utilities.resolve_data_object(context, self.data_path))
+        self._data_object = (utils.resolve_data_object(context, self.data_path))
 
         # Verify property exists in data object
         if not self.property_name in self._data_object:
@@ -141,14 +138,19 @@ class EditPropertyPopupOperator(bpy.types.Operator):
             elif field.attr_name != "property_name":
                 attr_name = field.attr_prefix + self.property_type.lower()
                 value = self._ui_data.get(field.ui_data_attr)
+                print(attr_name, value)
                 setattr(self, attr_name, value)
 
-            config.fields[index] = config.Field(
+            new_field = config.Field(
                 label = field.label,
                 attr_prefix = field.attr_prefix,
                 ui_data_attr = field.ui_data_attr,
                 attr_name = attr_name,
                 draw_on = field.draw_on)
+            config.fields[index] = new_field
+
+            # FIXME: Blender only uses a single value for min, max, soft_min,
+            #  and soft_max in its UI data
 
         for index, field in deferred:
             # Perform "use_soft_limits" calculations

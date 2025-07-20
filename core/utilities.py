@@ -1,5 +1,6 @@
 ﻿import bpy
-from typing import Union, Any
+from typing import Union, Any, TYPE_CHECKING, Type, Callable
+
 
 def resolve_data_object(context: bpy.context, data_path: str) -> Union[
     bpy.types.Object, None]:
@@ -17,8 +18,23 @@ def resolve_data_object(context: bpy.context, data_path: str) -> Union[
         obj = getattr(obj, attr)
     return obj
 
-def set_attr(obj: object, name: str, value: Any) -> None:
-    setattr(obj, name, value)
+def blender_prop(
+    type_hint: Type[Any],
+    prop_class: Callable[..., Any],
+    **kwargs: Any
+) -> Any:
+    """
+    Helper to create a single Blender property with type checking.
+        :param type_hint: The Python type for type checking (str, int, float, etc.).
+        :param prop_class: The Blender property class (StringProperty,
+            IntProperty, etc.).
+        :param kwargs: Additional keyword arguments to pass to the Blender
+            property constructor.
+        :return:
+            During TYPE_CHECKING: The type_hint for IDEs.
+            During runtime: An instance of the prop_class.
+    """
+    return type_hint if TYPE_CHECKING else prop_class(**kwargs)
 
 def get_ui_data(data_object: bpy.types.Object, prop_name: str) -> None:
     return data_object.id_properties_ui(prop_name).as_dict()

@@ -1,4 +1,4 @@
-﻿from . import config
+﻿from .. import config
 
 class CPMState:
     def __init__(self):

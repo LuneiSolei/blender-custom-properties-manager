@@ -1,36 +1,10 @@
 ﻿import bpy
 from ..core.property_group_data import PropertyGroupData
 from ..core.state import cpm_state
-from ..core import config, utilities
+from ..core import utilities
+from .. import config
 
 __all__ = ["draw"]
-
-"""
-{
-    "grouped": [
-        "groupA": [
-            "propertyA-1",
-            "propertyA-2",
-            "propertyA-3",  
-        ],
-        "groupB": [
-            "propertyB-1",
-            "propertyB-2",
-            "propertyB-3",
-        ],
-        "groupC": [
-            "propertyC-1",
-            "propertyC-2",
-            "propertyC-3",
-        ]
-    ],
-    "ungrouped": [
-        "propertyA",
-        "propertyB",
-        "propertyC",
-    ]
-}
-"""
 
 def draw(self, context, data_path):
     """
@@ -68,7 +42,6 @@ def draw(self, context, data_path):
     # Draw ungrouped properties
     for prop in cpm_group_data.ungrouped:
         _draw_property(layout, data_object, data_path, prop, "")
-
 
 def _draw_property(
         layout: bpy.types.UILayout,

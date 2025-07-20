@@ -1,12 +1,11 @@
 ﻿import bpy, json
 from bpy.app.handlers import persistent
 
-from .core import config
+from . import config
 from .core.state import cpm_state
 from .core.property_group_data import PropertyGroupData
 from .ui import panels
 from .core import ops
-
 
 bl_info = {
     "name": "Custom Properties Manager",

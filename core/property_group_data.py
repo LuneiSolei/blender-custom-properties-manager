@@ -1,6 +1,7 @@
 ﻿import bpy, json
 from typing import Dict, Self
-from . import config
+from .. import config
+
 
 class PropertyGroupData:
     _cache = {}

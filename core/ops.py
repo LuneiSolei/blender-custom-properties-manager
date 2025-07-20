@@ -181,7 +181,6 @@ class EditPropertyPopupOperator(bpy.types.Operator):
                 field.ui_data_attr == "soft_min"):
                 prop_row.enabled = self.use_soft_limits
 
-
     def _draw_aligned_prop(self, field: config.Field) -> bpy.types.UILayout:
         row = self.layout.row()
         split = row.split(factor = 0.5)

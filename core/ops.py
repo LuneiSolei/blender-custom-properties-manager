@@ -107,6 +107,17 @@ class EditPropertyPopupOperator(bpy.types.Operator):
     default_data_block:     utils.blender_prop(str, StringProperty)
     default_python:         utils.blender_prop(str, StringProperty)
 
+    # True values
+    value_float:            utils.blender_prop(float, FloatProperty)
+    value_float_array:      utils.blender_prop(list[float], FloatVectorProperty)
+    value_int:              utils.blender_prop(int, IntProperty)
+    value_int_array:        utils.blender_prop(list[int], IntVectorProperty)
+    value_bool:             utils.blender_prop(bool, BoolProperty)
+    value_bool_array:       utils.blender_prop(bool, BoolVectorProperty)
+    value_string:           utils.blender_prop(str, StringProperty)
+    value_data_block:       utils.blender_prop(str, StringProperty)
+    value_python:           utils.blender_prop(str, StringProperty)
+
     def invoke(self, context, event):
         # Prepare the edit property menu
         # Get the target property
@@ -145,6 +156,10 @@ class EditPropertyPopupOperator(bpy.types.Operator):
             elif field.attr_name == "description":
                 value = self._ui_data.get(field.ui_data_attr, "")
                 setattr(self, attr_name, value)
+            elif field.attr_prefix == "value_":
+                attr_name = field.attr_prefix + self.property_type.lower()
+                value = self._data_object[self.property_name]
+                setattr(self, attr_name, value)
             else:
                 attr_name = field.attr_prefix + self.property_type.lower()
                 value = self._ui_data.get(field.ui_data_attr)
@@ -175,6 +190,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
     def execute(self, context):
         # NOTE: self.property_overridable_library_set('["prop"]',
         #  True/False) is how you change the "is_overridable_library" attribute
+
 
         return {'FINISHED'}
 

@@ -24,31 +24,11 @@ _classes = {
 
 @persistent
 def deserialize_on_post_load(dummy):
-    all_objects = list(bpy.data.scenes) + list(bpy.data.objects)
-    for data_object in all_objects:
-        data_str = data_object.get(config.CPM_SERIALIZED_GROUP_DATA,
-                                   config.CPM_DEFAULT_GROUP_DATA)
-        group_data = json.loads(data_str)
-        new_data = GroupData(
-            grouped = group_data.get("grouped", []),
-            ungrouped = group_data.get("ungrouped", [])
-        )
-
-        new_data.verify(data_object)
+    GroupData.deserialize()
 
 @persistent
 def serialize_on_pre_save(dummy):
-    """Serialize CPM group data before saving"""
-
-    all_objects = list(bpy.data.scenes) + list(bpy.data.objects)
-    for data_object in all_objects:
-        group_data = GroupData.get_data(data_object)
-
-        data_dict = {
-            "grouped": group_data.grouped,
-            "ungrouped": group_data.ungrouped
-        }
-        data_object[config.CPM_SERIALIZED_GROUP_DATA] = json.dumps(data_dict)
+    GroupData.serialize()
 
 def _create_flexible_draw_function(data_path):
     """Factory function to create draw functions for different contexts"""

@@ -297,6 +297,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         # Update in group data
         group_data = GroupData.get_data(self._data_object)
 
+
     # def _change_group_name(self):
     #     group_data = GroupData().get_data(self._data_object)
     #     transfer_to_ungrouped = [

@@ -102,21 +102,6 @@ class GroupData:
         return ""
 
     @classmethod
-    def _update_cache(cls, group_data: Self, data_object_name: str) -> None:
-        """
-        Updates the cached group data.
-
-        :param group_data: (PropertyGroupData) The data to use for updating.
-        :param data_object_name: (str) The name of the blender object the
-        data belongs to.
-
-        :return: None
-        """
-        if (data_object_name in cls._cache
-                and not cls._cache[data_object_name] == group_data):
-            cls._cache[data_object_name] = group_data
-
-    @classmethod
     def get_data(cls, data_object: bpy.types.Object) -> Self:
         """
         INTERNAL ONLY!
@@ -143,48 +128,53 @@ class GroupData:
 
         return new_data
 
-    def _serialize(self, data_object: bpy.types.Object) -> None:
+    @classmethod
+    def serialize(cls) -> None:
         """
-        Serializes grouping data for a specified object's custom properties
-        into a private property on the blender object.
-
-        :param data_object: (bpy.types.Object): Object containing the properties
-        to be serialized.
-
-        :return: None
+        Serializes grouping data for all Blender objects. The data is
+        transformed into a dictionary and then serialized as a string
+        property per object.
         """
-
-        # Verify the data
-        self.verify(data_object)
-
-        # Convert to dictionary
-        data_dict = {
-            "grouped": self.grouped,
-            "ungrouped": self.ungrouped,
-        }
-        data_object[config.CPM_SERIALIZED_GROUP_DATA] = json.dumps(data_dict)
+        all_objects = list(bpy.data.scenes) + list(bpy.data.objects)
+        for data_object in all_objects:
+            # Store each individual object's grouping data as a
+            # StringProperty on said object.
+            group_data = GroupData.get_data(data_object)
+            data_dict = {
+                "grouped": group_data.grouped,
+                "ungrouped": group_data.ungrouped
+            }
+            data_object[config.CPM_SERIALIZED_GROUP_DATA] = json.dumps(data_dict)
 
     @classmethod
-    def _deserialize(cls, data_object: bpy.types.Object) -> None:
+    def deserialize(cls) -> None:
         """
         Deserializes grouping data for a specified object's custom properties
         using the designated private property that's already stored on the
         object as the data source.
+        """
 
-        :param: data_object (bpy.types.Object): Object containing properties
-        to be serialized.
+        all_objects = list(bpy.data.scenes) + list(bpy.data.objects)
+        for data_object in all_objects:
+            data_str = data_object.get(config.CPM_SERIALIZED_GROUP_DATA,
+                                       config.CPM_DEFAULT_GROUP_DATA)
+            group_data = json.loads(data_str)
+            new_data = GroupData(
+                grouped = group_data.get("grouped", []),
+                ungrouped = group_data.get("ungrouped", []))
+            new_data.verify(data_object)
+
+    @classmethod
+    def _update_cache(cls, group_data: Self, data_object_name: str) -> None:
+        """
+        Updates the cached group data.
+
+        :param group_data: (PropertyGroupData) The data to use for updating.
+        :param data_object_name: (str) The name of the blender object the
+        data belongs to.
 
         :return: None
         """
-
-        data_str = data_object.get(config.CPM_SERIALIZED_GROUP_DATA,
-                                   config.CPM_DEFAULT_GROUP_DATA)
-        group_data = json.loads(data_str)
-        new_data = GroupData(
-            grouped = group_data.get("grouped", []),
-            ungrouped = group_data.get("ungrouped", [])
-        )
-
-        cls._cache[data_object.name] = new_data
-
-        return None
+        if (data_object_name in cls._cache
+                and not cls._cache[data_object_name] == group_data):
+            cls._cache[data_object_name] = group_data

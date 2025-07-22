@@ -2,8 +2,7 @@
 from typing import Dict, Self
 from .. import config
 
-
-class PropertyGroupData:
+class GroupData:
     _cache = {}
 
     def __init__(self,
@@ -93,7 +92,14 @@ class PropertyGroupData:
                 self.ungrouped.append(prop)
 
         # Update the cache with any modified data
-        PropertyGroupData._update_cache(self, data_object)
+        GroupData._update_cache(self, data_object)
+
+    def get_group(self, prop_name: str) -> str:
+        for group_name, _ in self.grouped:
+            if prop_name in group_name:
+                return group_name
+
+        return ""
 
     @classmethod
     def _update_cache(cls, group_data: Self, data_object_name: str) -> None:
@@ -125,12 +131,12 @@ class PropertyGroupData:
         if data_object.name in cls._cache:
             # Object is cached, get the data
             cached_data = cls._cache[data_object.name]
-            new_data = PropertyGroupData(
+            new_data = GroupData(
                 grouped=cached_data.get("grouped", []),
                 ungrouped=cached_data.get("ungrouped", [])
             )
         else:
-            new_data = PropertyGroupData()
+            new_data = GroupData()
 
         # Verify the newly formed CPMGroupedData
         new_data.verify(data_object)
@@ -174,7 +180,7 @@ class PropertyGroupData:
         data_str = data_object.get(config.CPM_SERIALIZED_GROUP_DATA,
                                    config.CPM_DEFAULT_GROUP_DATA)
         group_data = json.loads(data_str)
-        new_data = PropertyGroupData(
+        new_data = GroupData(
             grouped = group_data.get("grouped", []),
             ungrouped = group_data.get("ungrouped", [])
         )

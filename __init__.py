@@ -2,7 +2,7 @@
 from bpy.app.handlers import persistent
 from . import config
 from .core.state import cpm_state
-from .core.property_group_data import PropertyGroupData
+from .core.group_data import GroupData
 from .ui import panels
 from .core import ops
 
@@ -29,7 +29,7 @@ def deserialize_on_post_load(dummy):
         data_str = data_object.get(config.CPM_SERIALIZED_GROUP_DATA,
                                    config.CPM_DEFAULT_GROUP_DATA)
         group_data = json.loads(data_str)
-        new_data = PropertyGroupData(
+        new_data = GroupData(
             grouped = group_data.get("grouped", []),
             ungrouped = group_data.get("ungrouped", [])
         )
@@ -42,7 +42,7 @@ def serialize_on_pre_save(dummy):
 
     all_objects = list(bpy.data.scenes) + list(bpy.data.objects)
     for data_object in all_objects:
-        group_data = PropertyGroupData.get_data(data_object)
+        group_data = GroupData.get_data(data_object)
 
         data_dict = {
             "grouped": group_data.grouped,

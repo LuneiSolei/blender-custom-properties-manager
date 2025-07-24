@@ -1,13 +1,15 @@
-﻿import bpy, json
+﻿import weakref
+
+import bpy, json
 from typing import Dict, Self
+from .reporting_mixin import ReportingMixin
 from .. import config
 
-class GroupData:
+class GroupData(ReportingMixin):
     _cache = {}
 
-    def __init__(self,
-                 grouped: list[Dict[str, list[str]]] = None,
-                 ungrouped: list[str] = None) -> None:
+    def __init__(self, grouped: list[Dict[str, list[str]]] = None,
+                 ungrouped: list[str] = None, *args, **kwargs) -> None:
         """
         Initialize PropertyGroupData.
 
@@ -17,6 +19,7 @@ class GroupData:
 
         :return: None
         """
+        super().__init__(*args, **kwargs)
         self.grouped = grouped if grouped is not None else []
         self.ungrouped = ungrouped if ungrouped is not None else []
 
@@ -36,7 +39,7 @@ class GroupData:
             self.ungrouped.remove(prop_name)
 
         for group in self.grouped:
-            for props in group.values():
+            for group_name, props in group.items():
                 if prop_name in props:
                     props.remove(prop_name)
 
@@ -56,6 +59,69 @@ class GroupData:
                    for group in self.grouped
                    for props in group.values())
 
+    def update_property_name(
+        self,
+        *,
+        prop_name: str,
+        new_name: str,
+    ) -> None:
+        """
+        Updates the property name.
+
+        :param prop_name: The name of the property to update.
+        :param new_name: The new name of the property.
+        """
+        # Ensure property exists in group data
+        if not prop_name in self:
+            self.report({'ERROR'}, f"Property '{prop_name}' not found in "
+                                   f"object '{self._operator.data_object_name}'")
+            return
+
+        # Determine if property is in grouped or ungrouped category
+        found = False
+        for group in self.grouped:
+            # Property is in the grouped category
+            for group_name, props in group.items():
+                if prop_name in props:
+                    index = props.index(prop_name)
+                    props[index] = new_name
+                    found = True
+                    break
+            if found:
+                break
+
+        if not found and prop_name in self.ungrouped:
+            index = self.ungrouped.index(prop_name)
+            self.ungrouped[index] = new_name
+            found = True
+
+    def update_property_index(
+            self,
+            *,
+            prop_name: str,
+            new_index: int
+    ) -> None:
+        """
+        Updates the property index.
+
+        :param prop_name: The name of the property to update.
+        :param new_index: The index to set the property to.
+        """
+
+        # group = self.get_group_name(prop_name)
+        # if group and prop_name in self.grouped[group]:
+        #     old_index = self.grouped[group].index(prop_name)
+        #
+        #     # Remove form old index first, otherwise indices are off
+        #     del self.grouped[group][old_index]
+        #     self.grouped[group].insert(new_index, prop_name)
+        # if group and prop_name in self.ungrouped:
+        #     old_index = self.ungrouped.index(prop_name)
+        #
+        #     # Remove form old index first, otherwise indices are off
+        #     del self.ungrouped[old_index]
+        #     self.ungrouped.insert(new_index, prop_name)
+
     def verify(self, data_object: bpy.types.Object) -> None:
         """
         Verifies the group data of the provided blender object. During this
@@ -71,7 +137,7 @@ class GroupData:
         data_object_keys = set(data_object.keys())
         grouped_props_to_remove = [prop
                                    for group in self.grouped
-                                   for group_name, props in group.items()
+                                   for _, props in group.items()
                                    for prop in props
                                    if prop not in data_object_keys
                                    or prop.startswith("_")]
@@ -94,10 +160,11 @@ class GroupData:
         # Update the cache with any modified data
         GroupData._update_cache(self, data_object)
 
-    def get_group(self, prop_name: str) -> str:
-        for group_name, _ in self.grouped:
-            if prop_name in group_name:
-                return group_name
+    def get_group_name(self, prop_name: str) -> str:
+        for group in self.grouped:
+            for group_name, props in group.items():
+                if prop_name in props:
+                    return group_name
 
         return ""
 
@@ -113,19 +180,21 @@ class GroupData:
 
         :return: The group data for the provided blender object.
         """
-        if data_object.name in cls._cache:
+        # Use object's memory pointer as cache key
+        object_pointer = data_object.as_pointer()
+
+        if object_pointer in cls._cache:
             # Object is cached, get the data
-            cached_data = cls._cache[data_object.name]
+            cached_data = cls._cache[object_pointer]
             new_data = GroupData(
-                grouped=cached_data.get("grouped", []),
-                ungrouped=cached_data.get("ungrouped", [])
+                grouped = cached_data.get("grouped", []),
+                ungrouped = cached_data.get("ungrouped", [])
             )
         else:
             new_data = GroupData()
 
         # Verify the newly formed CPMGroupedData
         new_data.verify(data_object)
-
         return new_data
 
     @classmethod
@@ -165,16 +234,19 @@ class GroupData:
             new_data.verify(data_object)
 
     @classmethod
-    def _update_cache(cls, group_data: Self, data_object_name: str) -> None:
+    def _update_cache(cls, group_data: Self, data_object:
+    bpy.types.Object) -> None:
         """
         Updates the cached group data.
 
         :param group_data: (PropertyGroupData) The data to use for updating.
-        :param data_object_name: (str) The name of the blender object the
-        data belongs to.
-
-        :return: None
+        :param data_object: (bpy.types.Object) The Blender 
+        object the data belongs to.
         """
-        if (data_object_name in cls._cache
-                and not cls._cache[data_object_name] == group_data):
-            cls._cache[data_object_name] = group_data
+        object_pointer = data_object.as_pointer()
+        if (object_pointer not in cls._cache or
+            cls._cache[object_pointer] != group_data):
+            cls._cache[object_pointer] = {
+                "grouped": group_data.grouped,
+                "ungrouped": group_data.ungrouped
+            }

@@ -2,11 +2,11 @@
 from bpy.props import (StringProperty, EnumProperty, BoolProperty,
                        FloatProperty, IntProperty, FloatVectorProperty,
                        IntVectorProperty, BoolVectorProperty)
-
 from .group_data import GroupData
 from .state import cpm_state
 from . import utilities as utils
 from .. import config
+from ..ui import panels
 
 class AddNewPropertyGroupOperator(bpy.types.Operator):
     bl_label = "New Group"
@@ -124,6 +124,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         # Prepare the edit property menu
         # Store relevant data
         self._data_object = (utils.resolve_data_object(context, self.data_path))
+        self.data_object_name = self._data_object.name
         self._current_property_name = self.property_name
 
         # Verify property exists in data object
@@ -195,6 +196,11 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         #  True/False) is how you change the "is_overridable_library" attribute
         # Apply modified properties
         self._apply_property_name()
+
+        # Redraw Custom Properties panel
+        for area in context.screen.areas:
+            if area.type == 'PROPERTIES':
+                area.tag_redraw()
 
         return {'FINISHED'}
 
@@ -289,14 +295,25 @@ class EditPropertyPopupOperator(bpy.types.Operator):
             self.report({'ERROR'}, f"Property '{new_name}' already exists")
             return
 
-        # Replace value and UI data
-        old_value = self._data_object[old_name]
-        self._data_object[new_name] = old_value
-        self._data_object.id_properties_ui(new_name).update(**self._ui_data)
+        # Ensure we're not trying to rename an IDPropertyGroup
+        if type(self._data_object[old_name]).__name__ == "IDPropertyGroup":
+            self.report({'ERROR'}, f"Cannot rename '{old_name}' to '"
+                                   f"{new_name}'. Renaming IDPropertyGroup "
+                                   f"types is currently not supported.")
+            return
 
-        # Update in group data
+        # Update the property in CPM's dataset
         group_data = GroupData.get_data(self._data_object)
+        group_data.set_operator(self)
+        group_data.get_group_name(old_name)
+        group_data.update_property_name(
+            prop_name = old_name,
+            new_name = new_name)
 
+        # Update the property in the data object itself
+        self._data_object[new_name] = self._data_object[old_name]
+        self._data_object.id_properties_ui(new_name).update(**self._ui_data)
+        del self._data_object[old_name]
 
     # def _change_group_name(self):
     #     group_data = GroupData().get_data(self._data_object)

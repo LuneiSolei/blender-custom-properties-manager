@@ -96,7 +96,7 @@ CPM_EDIT_PROPERTY_MENU = "CPM_MT_edit_property"
 # Attributes
 ATTR_KEYS = 'keys'
 
-# Named Tuples
+# Panels
 Panel = namedtuple("Panel", ["name", "data_path"])
 panels = [
     Panel("VIEWLAYER_PT_layer_custom_props", "view_layer"),
@@ -105,13 +105,14 @@ panels = [
     Panel("DATA_PT_custom_props_light", "active_object.data"),
 ]
 
+# Property Fields
 Field = namedtuple("Field", [
     "label",
     "attr_prefix",
     "ui_data_attr",
     "attr_name",
     "draw_on"])
-fields = [
+fields = [ # Fields are drawn in the order they are listed here
     Field(
         label = "Property Name",
         attr_prefix = None,
@@ -131,6 +132,13 @@ fields = [
         ui_data_attr = None,
         attr_name = "property_type",
         draw_on = 'ALL'),
+    Field(
+        label = "Value",
+        attr_prefix = "value_",
+        ui_data_attr = None,
+        attr_name = None,
+        draw_on = 'ALL'
+    ),
     Field(
         label = "Default",
         attr_prefix = "default_",

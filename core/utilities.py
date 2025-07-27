@@ -38,3 +38,6 @@ def blender_prop(
 
 def get_ui_data(data_object: bpy.types.Object, prop_name: str) -> None:
     return data_object.id_properties_ui(prop_name).as_dict()
+
+def get_properties(data_object: bpy.types.Object) -> None:
+    return data_object.properties

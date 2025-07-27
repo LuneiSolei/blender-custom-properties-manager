@@ -1,5 +1,5 @@
 ﻿import bpy
-from ..core.property_group_data import PropertyGroupData
+from ..core.group_data import GroupData
 from ..core.state import cpm_state
 from ..core import utilities
 from .. import config
@@ -32,7 +32,7 @@ def draw(self, context, data_path):
     layout.separator()
 
     # Get deserialized data (data is automatically verified)
-    cpm_group_data = PropertyGroupData.get_data(data_object)
+    cpm_group_data = GroupData.get_data(data_object)
 
     # Draw properties based on associated group
     for group_name, props in cpm_group_data.grouped:

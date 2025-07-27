@@ -216,6 +216,5 @@ fields = [ # Fields are drawn in the order they are listed here
 ]
 
 # Misc.
-CPM_GROUP_DATA = "_cpm_group_data"
 CPM_SERIALIZED_GROUP_DATA = "_cpm_serialized_group_data"
 CPM_DEFAULT_GROUP_DATA = "{}"

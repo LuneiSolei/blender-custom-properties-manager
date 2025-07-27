@@ -1,7 +1,6 @@
-﻿import weakref
-
-import bpy, json
+﻿import bpy, json
 from typing import Dict, Self
+from itertools import chain
 from .reporting_mixin import ReportingMixin
 from .. import config
 
@@ -24,8 +23,8 @@ class GroupData(ReportingMixin):
         self.ungrouped = ungrouped if ungrouped is not None else []
 
         # Check if config.CPM_GROUP_DATA
-        if config.CPM_GROUP_DATA in self:
-            del self[config.CPM_GROUP_DATA]
+        if config.CPM_SERIALIZED_GROUP_DATA in self:
+            del self[config.CPM_SERIALIZED_GROUP_DATA]
 
     def __delitem__(self, prop_name) -> None:
         """
@@ -62,12 +61,14 @@ class GroupData(ReportingMixin):
     def update_property_name(
         self,
         *,
+        data_object: bpy.types.Object,
         prop_name: str,
-        new_name: str,
+        new_name: str
     ) -> None:
         """
-        Updates the property name.
+        Updates name of the property.
 
+        :param data_object: Blender data object the property belongs to.
         :param prop_name: The name of the property to update.
         :param new_name: The new name of the property.
         """
@@ -95,32 +96,56 @@ class GroupData(ReportingMixin):
             self.ungrouped[index] = new_name
             found = True
 
-    def update_property_index(
-            self,
-            *,
-            prop_name: str,
-            new_index: int
+        self._update_cache(self, data_object)
+
+    def update_property_group(
+        self,
+        *,
+        data_object: bpy.types.Object,
+        prop_name: str,
+        new_group: str
     ) -> None:
         """
-        Updates the property index.
+        Updates the group the property belongs to.
 
+        :param data_object: Blender data object the property belongs to.
         :param prop_name: The name of the property to update.
-        :param new_index: The index to set the property to.
+        :param new_group: The name of the group to attach the property to.
         """
+        # Remove property from old group
+        old_group = self.get_group_name(prop_name)
+        if old_group == "":
+            self.report({'INFO'}, f"Property '{prop_name}' found in ungrouped.")
+            index = self.ungrouped.index(prop_name)
+            self.ungrouped.pop(index)
+        else:
+            for group_name, props in chain.from_iterable(
+                    group.items() for group in self.grouped):
+                if prop_name in props:
+                    prop_index = props.index(prop_name)
+                    props.pop(prop_index)
+                    break
 
-        # group = self.get_group_name(prop_name)
-        # if group and prop_name in self.grouped[group]:
-        #     old_index = self.grouped[group].index(prop_name)
-        #
-        #     # Remove form old index first, otherwise indices are off
-        #     del self.grouped[group][old_index]
-        #     self.grouped[group].insert(new_index, prop_name)
-        # if group and prop_name in self.ungrouped:
-        #     old_index = self.ungrouped.index(prop_name)
-        #
-        #     # Remove form old index first, otherwise indices are off
-        #     del self.ungrouped[old_index]
-        #     self.ungrouped.insert(new_index, prop_name)
+        # Place property into the new group
+        if not new_group:
+            # Property goes into ungrouped category
+            self.ungrouped.append(prop_name)
+        else:
+            self.report({'INFO'}, f"Placing property '{prop_name}' in group '{new_group}'.")
+            # Property goes into grouped category
+            found = False
+            for group_name, props in chain.from_iterable(
+                group.items() for group in self.grouped):
+                if group_name == new_group:
+                    props.append(prop_name)
+                    found = True
+                    break
+
+            # Group does not exist, create it
+            if not found:
+                self.grouped.append({new_group: [prop_name]})
+
+        self._update_cache(self, data_object)
 
     def verify(self, data_object: bpy.types.Object) -> None:
         """
@@ -161,10 +186,10 @@ class GroupData(ReportingMixin):
         GroupData._update_cache(self, data_object)
 
     def get_group_name(self, prop_name: str) -> str:
-        for group in self.grouped:
-            for group_name, props in group.items():
-                if prop_name in props:
-                    return group_name
+        for group_name, props in chain.from_iterable(
+            group.items() for group in self.grouped):
+            if prop_name in props:
+                return group_name
 
         return ""
 

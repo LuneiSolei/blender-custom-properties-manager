@@ -1,4 +1,5 @@
 ﻿import bpy
+from itertools import chain
 from ..core.group_data import GroupData
 from ..core.state import cpm_state
 from ..core import utilities
@@ -32,36 +33,27 @@ def draw(self, context, data_path):
     layout.separator()
 
     # Get deserialized data (data is automatically verified)
-    cpm_group_data = GroupData.get_data(data_object)
+    group_data = GroupData.get_data(data_object)
 
     # Draw properties based on associated group
-    for group_name, props in cpm_group_data.grouped:
-        for prop in props:
-            _draw_property(layout, data_object, data_path, prop, group_name)
+    for group_name, props in chain.from_iterable(
+            group.items() for group in group_data.grouped):
+        for prop_name in props:
+            _draw_property_group(
+                layout,
+                data_object,
+                data_path,
+                group_name,
+                props)
 
     # Draw ungrouped properties
-    for prop in cpm_group_data.ungrouped:
-        _draw_property(layout, data_object, data_path, prop, "")
-
-def _draw_property(
-        layout: bpy.types.UILayout,
-        data_object: bpy.types.Object,
-        data_path: str,
-        prop_name: str,
-        group_name: str):
-    """
-    Draws a property.
-    Args:
-        :param prop_name: String name of the property.
-        :param group_name: String name of the group prop_name belongs to.
-    """
-    match group_name:
-        case "":
-            _draw_property_row(layout, data_object, data_path, prop_name, "")
-        case dict(group):
-            for prop, group_name in group:
-                _draw_property_group(layout, data_object, data_path, prop_name,
-                                     group_name)
+    for prop_name in group_data.ungrouped:
+        _draw_property_row(
+            layout,
+            data_object,
+            data_path,
+            prop_name,
+            group_name = "")
 
 def _draw_add_buttons(layout, data_path):
     # Draw the original "New" button
@@ -113,7 +105,7 @@ def _draw_property_group(
         data_object: bpy.types.Object,
         data_path: str,
         group_name: str,
-        group_data: dict):
+        props: list ):
     """
     Draws a sub panel for a group of properties.
     Args:
@@ -121,14 +113,14 @@ def _draw_property_group(
         :param data_object: Blender object.
         :param data_path: String path to the data object (e.g., "view_layer", "scene")
         :param group_name: String name of the group.
-        :param group_data: Dictionary of the group's properties.
+        :param props: A list of the group's properties.
     """
     box = layout.box()
     header = box.row()
 
     # Create a unique key for this group to store the expand state
     expand_key = f"_cpm_{data_object.name}_{data_path}_{group_name}"
-    is_expanded = cpm_state.expand_states.get(expand_key)
+    is_expanded = cpm_state.expand_states.get(expand_key, True)
 
     toggle_op = header.operator(
         config.CPM_EXPAND_TOGGLE_OP,
@@ -141,6 +133,6 @@ def _draw_property_group(
 
     # Only draw the group's contents if expanded
     if is_expanded:
-        for prop_name in group_data:
-            _draw_property_row(layout, data_object, data_path, prop_name,
+        for prop_name in props:
+            _draw_property_row(box, data_object, data_path, prop_name,
                                group_name)

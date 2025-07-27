@@ -125,7 +125,10 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         # Store relevant data
         self._data_object = (utils.resolve_data_object(context, self.data_path))
         self.data_object_name = self._data_object.name
-        self._current_property_name = self.property_name
+        self._current = {
+            "name": self.property_name,
+            "group": self.group_name,
+        }
 
         # Verify property exists in data object
         if not self.property_name in self._data_object:
@@ -195,7 +198,8 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         # NOTE: self.property_overridable_library_set('["prop"]',
         #  True/False) is how you change the "is_overridable_library" attribute
         # Apply modified properties
-        self._apply_property_name()
+        self._apply_name()
+        self._apply_group()
 
         # Redraw Custom Properties panel
         for area in context.screen.areas:
@@ -284,8 +288,8 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         return (attr_names["min"] != attr_names["soft_min"] or
                 attr_names["max"] != attr_names["soft_max"])
 
-    def _apply_property_name(self):
-        old_name = self._current_property_name
+    def _apply_name(self):
+        old_name = self._current["name"]
         new_name = self.property_name
         if old_name == new_name:
             return
@@ -307,6 +311,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         group_data.set_operator(self)
         group_data.get_group_name(old_name)
         group_data.update_property_name(
+            data_object = self._data_object,
             prop_name = old_name,
             new_name = new_name)
 
@@ -315,26 +320,16 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         self._data_object.id_properties_ui(new_name).update(**self._ui_data)
         del self._data_object[old_name]
 
-    # def _change_group_name(self):
-    #     group_data = GroupData().get_data(self._data_object)
-    #     transfer_to_ungrouped = [
-    #         self.group_name == "",
-    #         self.group_name in group_data.grouped
-    #     ]
-    #     transfer_to_grouped = [
-    #         self.group_name != ""
-    #     ]
-    #
-    #     if all(transfer_to_ungrouped):
-    #         # Transfer from grouped to ungrouped properties
-    #         group_data.get_group(self.property_name)
-    #         del group_data.grouped[self.group_name][self.property_name]
-    #         if self.property_name not in group_data.ungrouped:
-    #             group_data.ungrouped.append(self.property_name)
-    #     elif all(transfer_to_grouped):
-    #         # Transfer from ungrouped to grouped properties
-    #         del group_data.ungrouped[self.property_name]
-    #         if self.group_name in group_data.grouped:
-    #             (group_data.grouped
-    #             .setdefault(self.group_name, [])
-    #             .append(self.property_name))
+    def _apply_group(self):
+        old_group = self._current["group"]
+        new_group = self.group_name
+        if old_group == new_group:
+            return
+
+        # Update property in CPM's dataset
+        group_data = GroupData.get_data(self._data_object)
+        group_data.set_operator(self)
+        group_data.update_property_name(
+            data_object = self._data_object,
+            prop_name = self.property_name,
+            new_name = new_group)

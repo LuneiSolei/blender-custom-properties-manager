@@ -6,6 +6,7 @@ from .group_data import GroupData
 from .state import cpm_state
 from . import utilities as utils
 from .. import config
+from ..ui import panels
 
 class AddNewPropertyGroupOperator(bpy.types.Operator):
     bl_label = "New Group"
@@ -52,11 +53,8 @@ class EditPropertyPopupOperator(bpy.types.Operator):
     bl_idname = config.CPM_EDIT_PROPERTY_OP
     bl_description = "Edit custom property menu"
 
-    # NOTE: This redundancy in attributes is required by Blender's API due to
-    #  the .prop() method requiring explicit naming of the attribute that
-    #  holds the relevant value. I hate this approach, but any working
-    #  alternatives that I can come up with are just as redundant and/or
-    #  overly complex.
+    # Needed for PyCharm to properly type check against Blender's EnumProperty.
+    # If removed, PyCharm will complain that property_type expects None.
     # Property attributes
     data_path:              utils.blender_prop(str, StringProperty)
     property_name:          utils.blender_prop(str, StringProperty)
@@ -169,18 +167,29 @@ class EditPropertyPopupOperator(bpy.types.Operator):
                 attr_name = field.attr_prefix + self.property_type.lower()
                 value = self._data_object[self.property_name]
                 setattr(self, attr_name, value)
-                prop_value = self._data_object[self.property_name]
-                setattr(self, attr_name, prop_value)
             else:
                 attr_name = field.attr_prefix + self.property_type.lower()
                 value = self._ui_data.get(field.ui_data_attr)
                 setattr(self, attr_name, value)
 
-            config.fields[index].attr_name = attr_name
+            new_field = config.Field(
+                label = field.label,
+                attr_prefix = field.attr_prefix,
+                ui_data_attr = field.ui_data_attr,
+                attr_name = attr_name,
+                draw_on = field.draw_on)
+            config.fields[index] = new_field
 
         for index, field in deferred:
             # Perform "use_soft_limits" calculations
             self.use_soft_limits = self._is_use_soft_limits()
+
+            config.fields[index] = config.Field(
+                label = field.label,
+                attr_prefix = field.attr_prefix,
+                ui_data_attr = field.ui_data_attr,
+                attr_name = field.attr_name,
+                draw_on = field.draw_on)
 
         # Show the menu as a popup
         return context.window_manager.invoke_props_dialog(self)
@@ -206,23 +215,25 @@ class EditPropertyPopupOperator(bpy.types.Operator):
             if not self.property_type in field.draw_on and not field.draw_on == 'ALL':
                 continue
 
-            # Draw an aligned property field
-            row = self.layout.row()
-            split = row.split(factor=0.5)
-
-            # Create left column
-            left_col = split.column()
-            left_col.alignment = config.ALIGN_RIGHT
-            left_col.label(text=field.label)
-
-            # Create right column
-            right_col = split.column()
-            right_col.prop(data=self, property=field.attr_name, text="")
-
-            # Set enabled status for soft limits
+            prop_row = self._draw_aligned_prop(field)
             if (field.ui_data_attr == "soft_max" or
                 field.ui_data_attr == "soft_min"):
-                row.enabled = self.use_soft_limits
+                prop_row.enabled = self.use_soft_limits
+
+    def _draw_aligned_prop(self, field: config.Field) -> bpy.types.UILayout:
+        row = self.layout.row()
+        split = row.split(factor = 0.5)
+
+        # Create left column
+        left_col = split.column()
+        left_col.alignment = config.ALIGN_RIGHT
+        left_col.label(text = field.label)
+
+        # Create right column
+        right_col = split.column()
+        right_col.prop(data = self, property = field.attr_name, text = "")
+
+        return row
 
     def _get_property_type(self) -> str:
         """
@@ -318,8 +329,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         # Update property in CPM's dataset
         group_data = GroupData.get_data(self._data_object)
         group_data.set_operator(self)
-        group_data.update_property_group(
+        group_data.update_property_name(
             data_object = self._data_object,
             prop_name = self.property_name,
             new_name = new_group)
-            new_group = new_group)

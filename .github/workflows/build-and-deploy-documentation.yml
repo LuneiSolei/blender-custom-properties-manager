@@ -91,6 +91,6 @@ jobs:
           path: dir
 
       - name: Deploy to GitHub Pages
-        if: ${{ inputs.dry_run }}
+        if: ${{ !inputs.dry_run }}
         id: deployment
         uses: actions/deploy-pages@v4

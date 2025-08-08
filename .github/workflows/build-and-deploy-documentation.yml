@@ -4,6 +4,12 @@ on:
     branches: ["master"]
     paths: ["Writerside/**"] # Only run when Writerside files change
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run deployment validation only (no actual deploy)'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   id-token: write

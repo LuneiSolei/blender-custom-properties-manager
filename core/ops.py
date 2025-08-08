@@ -6,7 +6,6 @@ from .group_data import GroupData
 from .state import cpm_state
 from . import utilities as utils
 from .. import config
-from ..ui import panels
 
 class AddNewPropertyGroupOperator(bpy.types.Operator):
     bl_label = "New Group"
@@ -54,7 +53,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
     bl_description = "Edit custom property menu"
 
     # Needed for PyCharm to properly type check against Blender's EnumProperty.
-    # If removed, PyCharm will complain that property_type expects None.
+    # If removed, PyCharm will complain about the PyTypes.
     # Property attributes
     data_path:              utils.blender_prop(str, StringProperty)
     property_name:          utils.blender_prop(str, StringProperty)
@@ -121,75 +120,14 @@ class EditPropertyPopupOperator(bpy.types.Operator):
     value_python:           utils.blender_prop(str, StringProperty)
 
     def invoke(self, context, event):
-        # Prepare the edit property menu
-        # Store relevant data
-        self._data_object = (utils.resolve_data_object(context, self.data_path))
-        self.data_object_name = self._data_object.name
-        self._current = {
-            "name": self.property_name,
-            "group": self.group_name,
-        }
-
-        # Verify property exists in data object
-        if not self.property_name in self._data_object:
-            # The property does not exist in the data_object
-            self.report({'ERROR'}, "Property '{}' not found".format(self.property_name))
+        # Initialize the edit property menu
+        if not self._validate():
             return {'CANCELLED'}
 
-        # Retrieve Blender's already stored UI data for the property
-        self._ui_data = (self._data_object
-                         .id_properties_ui(self.property_name)
-                         .as_dict())
+        if not self._load_prop_ui_data():
+            return {'CANCELLED'}
 
-        # Start setting the field values
-        deferred = []
-        for index, field in enumerate(config.fields):
-            # Programmatically adjust field values. "property_name" does not need
-            # any adjustments
-            no_adjustments = ["property_name", "group_name"]
-            attr_name = field.attr_name
-            if field.attr_name in no_adjustments:
-                continue
-            elif field.attr_name == "property_type":
-                self.property_type = self._get_property_type()
-            elif field.attr_name == "use_soft_limits":
-                # Ensure that min/max values are retrieved first
-                deferred.append((index, field))
-            elif field.attr_name == "is_overridable_library":
-                override_str = f'["{self.property_name}"]'
-                self.is_overridable_library = (
-                    self._data_object
-                    .is_property_overridable_library(override_str))
-            elif field.attr_name == "description":
-                value = self._ui_data.get(field.ui_data_attr, "")
-                setattr(self, attr_name, value)
-            elif field.attr_prefix == "value_":
-                attr_name = field.attr_prefix + self.property_type.lower()
-                value = self._data_object[self.property_name]
-                setattr(self, attr_name, value)
-            else:
-                attr_name = field.attr_prefix + self.property_type.lower()
-                value = self._ui_data.get(field.ui_data_attr)
-                setattr(self, attr_name, value)
-
-            new_field = config.Field(
-                label = field.label,
-                attr_prefix = field.attr_prefix,
-                ui_data_attr = field.ui_data_attr,
-                attr_name = attr_name,
-                draw_on = field.draw_on)
-            config.fields[index] = new_field
-
-        for index, field in deferred:
-            # Perform "use_soft_limits" calculations
-            self.use_soft_limits = self._is_use_soft_limits()
-
-            config.fields[index] = config.Field(
-                label = field.label,
-                attr_prefix = field.attr_prefix,
-                ui_data_attr = field.ui_data_attr,
-                attr_name = field.attr_name,
-                draw_on = field.draw_on)
+        self._setup_fields()
 
         # Show the menu as a popup
         return context.window_manager.invoke_props_dialog(self)
@@ -208,13 +146,88 @@ class EditPropertyPopupOperator(bpy.types.Operator):
 
         return {'FINISHED'}
 
-    def draw(self, context):
-        layout = self.layout
+    def _validate(self) -> bool:
+        """Validate input data and prepare object references"""
+        self._data_object = utils.resolve_data_object(bpy.context, self.data_path)
+        if not self._data_object:
+            self.report({'ERROR'}, "Data object '{}' not found".format(self.data_path))
+            return False
+
+        self.data_object_name = self._data_object.name
+        self._current = {
+            "name": self.property_name,
+            "group": self.group_name,
+        }
+
+        if self.property_name not in self._data_object:
+            self.report({'ERROR'}, "Property '{}' not found".format(self.property_name))
+            return False
+
+        return True
+
+    def _load_prop_ui_data(self):
+        """Load existing property UI data"""
+        self._ui_data = (self._data_object
+                         .id_properties_ui(self.property_name)
+                         .as_dict())
+
+        return True
+
+    def _setup_fields(self):
+        """Setup field values form existing property data"""
+        self._processed_fields = []
+        deferred_fields = []
 
         for field in config.fields:
-            if not self.property_type in field.draw_on and not field.draw_on == 'ALL':
+            # Create a copy of the field to avoid modifying the original
+            processed_field = self._process_field(field)
+            if field.attr_name == "use_soft_limits":
+                deferred_fields.append(processed_field)
+            else:
+                self._processed_fields.append(processed_field)
+
+        # Process deferred fields
+        for field in deferred_fields:
+            self.use_soft_limits = self._is_use_soft_limits()
+            self._processed_fields.append(field)
+
+    def _process_field(self, field: config.Field) -> config.Field:
+        """Process individual field and set its value"""
+        attr_name = field.attr_name
+        if field.attr_name == "property_type":
+            self.property_type = self._get_property_type()
+            attr_name = field.attr_name
+        elif field.attr_name == "is_overridable_library":
+            override_str = f'["{self.property_name}"]'
+            self.is_overridable_library = (
+                self._data_object.is_property_overridable_library(override_str))
+            attr_name = field.attr_name
+        elif field.attr_name == "description":
+            value = self._ui_data.get(field.ui_data_attr, "")
+            setattr(self, attr_name, value)
+        elif field.attr_prefix == "value_":
+            attr_name = f"{field.attr_prefix}{self.property_type.lower()}"
+            value = self._data_object[self.property_name]
+            setattr(self, attr_name, value)
+        else:
+            attr_name = f"{field.attr_prefix}{self.property_type.lower()}"
+            value = self._ui_data.get(field.ui_data_attr)
+            if value is not None:
+                setattr(self, attr_name, value)
+
+        return config.Field(
+            label = field.label,
+            attr_prefix = field.attr_prefix,
+            ui_data_attr = field.ui_data_attr,
+            attr_name = attr_name,
+            draw_on = field.draw_on)
+
+    def draw(self, context):
+        for field in self._processed_fields:
+            if not self._should_draw_field(field):
                 continue
 
+            # Enable/Disable the soft min/max fields
             prop_row = self._draw_aligned_prop(field)
             if (field.ui_data_attr == "soft_max" or
                 field.ui_data_attr == "soft_min"):
@@ -274,19 +287,17 @@ class EditPropertyPopupOperator(bpy.types.Operator):
                 return 'FLOAT'
 
     def _is_use_soft_limits(self) -> bool:
-        attr_names = {
-            "min": None,
-            "soft_min": None,
-            "max": None,
-            "soft_max": None}
+        limit_attrs = {}
+        for field in self._processed_fields:
+            if field.ui_data_attr in ["min", "soft_min", "max", "soft_max"]:
+                limit_attrs[field.ui_data_attr] = getattr(self, field.attr_name)
 
-        # Get hard and soft min/max values
-        for field in config.fields:
-            if field.ui_data_attr in attr_names:
-                attr_names[field.ui_data_attr] = getattr(self, field.attr_name)
+        return (limit_attrs.get("min") != limit_attrs.get("soft_min") or
+                limit_attrs.get("max") != limit_attrs.get("soft_max"))
 
-        return (attr_names["min"] != attr_names["soft_min"] or
-                attr_names["max"] != attr_names["soft_max"])
+    def _should_draw_field(self, field: config.Field) -> bool:
+        """Determine if the field should be drawn based on property type"""
+        return self.property_type in field.draw_on or field.draw_on == "ALL"
 
     def _apply_name(self):
         old_name = self._current["name"]
@@ -321,6 +332,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         del self._data_object[old_name]
 
     def _apply_group(self):
+        # Make sure the group name has changed
         old_group = self._current["group"]
         new_group = self.group_name
         if old_group == new_group:
@@ -329,7 +341,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         # Update property in CPM's dataset
         group_data = GroupData.get_data(self._data_object)
         group_data.set_operator(self)
-        group_data.update_property_name(
+        group_data.update_property_group(
             data_object = self._data_object,
             prop_name = self.property_name,
-            new_name = new_group)
+            new_group = new_group)

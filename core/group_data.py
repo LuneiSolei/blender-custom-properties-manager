@@ -41,6 +41,7 @@ class GroupData(ReportingMixin):
             for group_name, props in group.items():
                 if prop_name in props:
                     props.remove(prop_name)
+                    break
 
     def __contains__(self, prop_name: str) -> bool:
         """
@@ -113,8 +114,7 @@ class GroupData(ReportingMixin):
         :param new_group: The name of the group to attach the property to.
         """
         # Remove property from old group
-        old_group = self.get_group_name(prop_name)
-        if old_group == "":
+        if not self.get_group_name(prop_name):
             self.report({'INFO'}, f"Property '{prop_name}' found in ungrouped.")
             index = self.ungrouped.index(prop_name)
             self.ungrouped.pop(index)
@@ -124,6 +124,8 @@ class GroupData(ReportingMixin):
                 if prop_name in props:
                     prop_index = props.index(prop_name)
                     props.pop(prop_index)
+                    if len(props) == 0:
+                        del self.grouped[group_name]
                     break
 
         # Place property into the new group
@@ -218,7 +220,7 @@ class GroupData(ReportingMixin):
         else:
             new_data = GroupData()
 
-        # Verify the newly formed CPMGroupedData
+        # Verify the newly formed GroupData
         new_data.verify(data_object)
         return new_data
 

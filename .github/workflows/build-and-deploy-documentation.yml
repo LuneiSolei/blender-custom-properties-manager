@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: 'Run deployment validation only (no actual deploy)'
+        description: 'No real deployment. Validation only.'
         required: false
         default: false
         type: boolean
@@ -91,5 +91,6 @@ jobs:
           path: dir
 
       - name: Deploy to GitHub Pages
+        if: ${{ inputs.dry_run }}
         id: deployment
         uses: actions/deploy-pages@v4

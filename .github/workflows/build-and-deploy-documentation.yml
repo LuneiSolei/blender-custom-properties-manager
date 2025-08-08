@@ -16,6 +16,9 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      artifact: ${{ steps.define-ids.outputs.artifact }}
+      algolia_artifact: ${{ steps.define-ids.outputs.algolia_artifact }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

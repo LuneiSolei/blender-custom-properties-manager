@@ -157,6 +157,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         self._current = {
             "name": self.property_name,
             "group": self.group_name,
+            "type": self.property_type,
         }
 
         if self.property_name not in self._data_object:
@@ -175,6 +176,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
 
     def _setup_fields(self):
         """Setup field values form existing property data"""
+        self.property_type = self._get_property_type()
         self._processed_fields = []
         deferred_fields = []
 
@@ -195,7 +197,6 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         """Process individual field and set its value"""
         attr_name = field.attr_name
         if field.attr_name == "property_type":
-            self.property_type = self._get_property_type()
             attr_name = field.attr_name
         elif field.attr_name == "is_overridable_library":
             override_str = f'["{self.property_name}"]'
@@ -209,7 +210,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
             attr_name = f"{field.attr_prefix}{self.property_type.lower()}"
             value = self._data_object[self.property_name]
             setattr(self, attr_name, value)
-        else:
+        elif field.attr_prefix:
             attr_name = f"{field.attr_prefix}{self.property_type.lower()}"
             value = self._ui_data.get(field.ui_data_attr)
             if value is not None:
@@ -300,6 +301,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         return self.property_type in field.draw_on or field.draw_on == "ALL"
 
     def _apply_name(self):
+        # Make sure the property name has changed
         old_name = self._current["name"]
         new_name = self.property_name
         if old_name == new_name:
@@ -320,7 +322,6 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         # Update the property in CPM's dataset
         group_data = GroupData.get_data(self._data_object)
         group_data.set_operator(self)
-        group_data.get_group_name(old_name)
         group_data.update_property_name(
             data_object = self._data_object,
             prop_name = old_name,
@@ -345,3 +346,14 @@ class EditPropertyPopupOperator(bpy.types.Operator):
             data_object = self._data_object,
             prop_name = self.property_name,
             new_group = new_group)
+
+    def _apply_type(self):
+        # Make sure the property type has changed
+        old_type = self._current["type"]
+        new_type = self.property_type
+        if old_type == new_type:
+            return
+
+        # Update the property in the data object
+        self._ui_data["type"] = new_type
+        self._data_object.id_properties_ui(self.property_name).update(**self._ui_data)

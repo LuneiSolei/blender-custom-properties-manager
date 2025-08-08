@@ -119,13 +119,10 @@ class GroupData(ReportingMixin):
             index = self.ungrouped.index(prop_name)
             self.ungrouped.pop(index)
         else:
-            for group_name, props in chain.from_iterable(
-                    group.items() for group in self.grouped):
+            for group_name, props in chain.from_iterable(group.items() for group in self.grouped):
                 if prop_name in props:
                     prop_index = props.index(prop_name)
                     props.pop(prop_index)
-                    if len(props) == 0:
-                        del self.grouped[group_name]
                     break
 
         # Place property into the new group
@@ -133,7 +130,7 @@ class GroupData(ReportingMixin):
             # Property goes into ungrouped category
             self.ungrouped.append(prop_name)
         else:
-            self.report({'INFO'}, f"Placing property '{prop_name}' in group '{new_group}'.")
+            self.report({'INFO'}, f"Placed property '{prop_name}' in group '{new_group}'.")
             # Property goes into grouped category
             found = False
             for group_name, props in chain.from_iterable(
@@ -148,6 +145,17 @@ class GroupData(ReportingMixin):
                 self.grouped.append({new_group: [prop_name]})
 
         self._update_cache(self, data_object)
+
+    def update_property_type(
+            self,
+            *,
+            data_object: bpy.types.Object,
+            prop_name: str,
+            new_type: str
+    ) -> None:
+        """Updates the type of the property."""
+
+
 
     def verify(self, data_object: bpy.types.Object) -> None:
         """
@@ -270,10 +278,15 @@ class GroupData(ReportingMixin):
         :param data_object: (bpy.types.Object) The Blender 
         object the data belongs to.
         """
+        # Clean up any remaining empty groups
+        group_data.grouped = [group_dict for group_dict in group_data.grouped
+                              if any(len(props) > 0 for props in group_dict.values())]
+
+        # Store the group data under the relevant data object's cache
         object_pointer = data_object.as_pointer()
-        if (object_pointer not in cls._cache or
-            cls._cache[object_pointer] != group_data):
-            cls._cache[object_pointer] = {
-                "grouped": group_data.grouped,
-                "ungrouped": group_data.ungrouped
-            }
+        current_data = {
+            "grouped": group_data.grouped,
+            "ungrouped": group_data.ungrouped
+        }
+        if object_pointer not in cls._cache or cls._cache[object_pointer] != current_data:
+            cls._cache[object_pointer] = current_data

@@ -86,7 +86,7 @@ jobs:
         uses: actions/configure-pages@v4
 
       - name: Package and upload Pages artifact
-        if: ${{ !input.dry_run }}
+        if: ${{ !inputs.dry_run }}
         uses: actions/upload-pages-artifact@v3
         with:
           path: dir

@@ -1,0 +1,54 @@
+name: Branch Update Check
+on:
+  pull_request:
+    branches:
+      - master
+      - dev
+
+jobs:
+  update-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - with:
+          fetch-depth: 0
+
+      - name: Check if branch is up to date
+        run: |
+          SOURCE_BRANCH="${{ github.head_ref }}"
+          TARGET_BRANCH="${{ github.base_ref }}"
+          COMMITS_BEHIND=$(git rev-list --count origin/$SOURCE_BRANCH..origin/$TARGET_BRANCH)
+          COMMITS_AHEAD=$(git rev-list --count origin/$TARGET_BRANCH..origin/$SOURCE_BRANCH)
+
+          echo "Checking if $SOURCE_BRANCH is up to date with $TARGET_BRANCH..."
+
+          # Fetch latest changes
+          git fetch origin $TARGET_BRANCH
+          git fetch origin $SOURCE_BRANCH
+
+          # Display branch status
+          echo "Branch Status:"
+          echo "  * SOURCE: $SOURCE_BRANCH"
+          echo "  * TARGET: $TARGET_BRANCH"
+          echo "  * COMMITS BEHIND: $COMMITS_BEHIND"
+          echo "  * COMMITS AHEAD: $COMMITS_AHEAD"
+
+          # Verify branch is actually up to date
+          if [ "$COMMITS_BEHIND" -eq 0 ]; then
+            echo "$SOURCE_BRANCH is up to date with $TARGET_BRANCH"
+            exit 0
+          else
+            echo "$SOURCE_BRANCH is $COMMITS_BEHIND commit(s) behind $TARGET_BRANCH"
+            echo ""
+            echo "Missing Commits:"
+            git log --oneline --graph origin/$SOURCE_BRANCH..origin/$TARGET_BRANCH
+            echo ""
+            echo "To fix this:"
+            echo "1. git checkout $SOURCE_BRANCH"
+            echo "2. git pull origin $TARGET_BRANCH"
+            echo "3. git push origin $SOURCE_BRANCH"
+            echo ""
+            echo "Make sure to resolve all conflicts before merging"
+            exit 1
+          fi
+            

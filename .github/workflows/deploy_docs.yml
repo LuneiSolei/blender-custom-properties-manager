@@ -1,0 +1,49 @@
+﻿name: deploy_docs.yml
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - Writerside/** # Only run when Writerside files change
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  pages: write
+
+env:
+  INSTANCE: ${{ vars.INSTANCE }}
+  DOCKER_VERSION: ${{ vars.DOCKER_VERSION }}
+
+jobs:
+  prerequisite_build:
+    uses: LuneiSolei/blender-custom-properties-manager/.github/workflows/build_docs.yml@v1
+    
+  deploy_docs:
+    if: github.ref == 'refs/heads/master' # Only deploy to Pages from master branch
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: prerequisite_build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: docs
+          path: artifacts
+
+      - name: Unzip artifact
+        run: unzip -O UTF-8 -qq "artifacts/${{ needs.prerequisite_build.outputs.artifact }}" -d dir
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Package and upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dir
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -17,7 +17,7 @@ env:
 
 jobs:
   prerequisite_build:
-    uses: LuneiSolei/blender-custom-properties-manager/.github/workflows/build_docs.yml@v1
+    uses: ./.github/workflows/build_docs.yml
     
   deploy_docs:
     if: github.ref == 'refs/heads/master' # Only deploy to Pages from master branch

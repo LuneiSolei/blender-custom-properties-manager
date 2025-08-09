@@ -5,7 +5,6 @@ on:
       - master
       - dev
   workflow_dispatch:
-    
 
 jobs:
   update-check:
@@ -22,18 +21,18 @@ jobs:
             SOURCE_BRANCH="${{ github.ref_name }}"
             TARGET_BRANCH="$SOURCE_BRANCH"
           else
-            SOURCE_BRANCH="${{ github.head_ref }}"
-            TARGET_BRANCH="${{ github.base_ref }}"
+            SOURCE_BRANCH="${{ github.event.pull_request.head.ref }}"
+            TARGET_BRANCH="${{ github.event.pull_request.base.ref }}"
           fi
-          
-          COMMITS_BEHIND=$(git rev-list --count origin/$SOURCE_BRANCH..origin/$TARGET_BRANCH)
-          COMMITS_AHEAD=$(git rev-list --count origin/$TARGET_BRANCH..origin/$SOURCE_BRANCH)
 
           echo "Checking if $SOURCE_BRANCH is up to date with $TARGET_BRANCH..."
 
           # Fetch latest changes
-          git fetch origin $TARGET_BRANCH
-          git fetch origin $SOURCE_BRANCH
+          git fetch origin $TARGET_BRANCH:$TARGET_BRANCH
+          git fetch origin $SOURCE_BRANCH:$TARGET_BRANCH
+
+          COMMITS_BEHIND=$(git rev-list --count $SOURCE_BRANCH..$TARGET_BRANCH)
+          COMMITS_AHEAD=$(git rev-list --count $TARGET_BRANCH..$SOURCE_BRANCH)
 
           # Display branch status
           echo "Branch Status:"
@@ -50,7 +49,7 @@ jobs:
             echo "$SOURCE_BRANCH is $COMMITS_BEHIND commit(s) behind $TARGET_BRANCH"
             echo ""
             echo "Missing Commits:"
-            git log --oneline --graph origin/$SOURCE_BRANCH..origin/$TARGET_BRANCH
+            git log --oneline --graph $SOURCE_BRANCH..$TARGET_BRANCH
             echo ""
             echo "To fix this:"
             echo "1. git checkout $SOURCE_BRANCH"

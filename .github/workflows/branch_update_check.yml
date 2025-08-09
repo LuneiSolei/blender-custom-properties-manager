@@ -13,13 +13,20 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+          ref: ${{ github.event_name == "pull_request" && github.event.pull_request.head.sha || github.sha }}
 
       - name: Check if branch is up to date
         run: |
           # Get the branch refs based on the name of the event that triggered the workflow
-          if (( "${{ github.event_name }}" == "workflow_dispatch" )); then
+          if (( "${{ github.event_name }}" = "workflow_dispatch" )); then
             SOURCE_BRANCH="${{ github.ref_name }}"
-            TARGET_BRANCH="$SOURCE_BRANCH"
+
+            # Determine target branch based on source branch name
+            if (( "$SOURCE_BRANCH" =~ ^(master|dev)/ )); then
+              TARGET_BRANCH="master"
+            else
+              TARGET_BRANCH="dev"
+            fi
           else
             SOURCE_BRANCH="${{ github.event.pull_request.head.ref }}"
             TARGET_BRANCH="${{ github.event.pull_request.base.ref }}"

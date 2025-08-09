@@ -5,8 +5,8 @@ on:
     paths: ["Writerside/**"] # Only run when Writerside files change
   workflow_dispatch:
     inputs:
-      dry_run:
-        description: 'No real deployment. Validation only.'
+      build_only:
+        description: 'Build only.'
         required: false
         default: false
         type: boolean
@@ -20,7 +20,7 @@ env:
   DOCKER_VERSION: "243.22562"
 
 jobs:
-  build:
+  build-docs:
     runs-on: ubuntu-latest
     outputs:
       artifact: ${{ steps.define-ids.outputs.artifact }}
@@ -65,12 +65,12 @@ jobs:
           path: artifacts/*
           retention-days: 7
 
-  deploy:
+  deploy-docs:
     if: github.ref == 'refs/heads/master' # Only deploy to Pages from master branch
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    needs: build
+    needs: build-docs
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
@@ -86,12 +86,12 @@ jobs:
         uses: actions/configure-pages@v4
 
       - name: Package and upload Pages artifact
-        if: ${{ !inputs.dry_run }}
+        if: ${{ !inputs.build_only }}
         uses: actions/upload-pages-artifact@v3
         with:
           path: dir
 
       - name: Deploy to GitHub Pages
-        if: ${{ !inputs.dry_run }}
+        if: ${{ !inputs.build_only }}
         id: deployment
         uses: actions/deploy-pages@v4

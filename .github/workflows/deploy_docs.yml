@@ -11,10 +11,6 @@ permissions:
   id-token: write
   pages: write
 
-env:
-  INSTANCE: ${{ vars.INSTANCE }}
-  DOCKER_VERSION: ${{ vars.DOCKER_VERSION }}
-
 jobs:
   prerequisite_build:
     uses: ./.github/workflows/build_docs.yml

@@ -1,5 +1,6 @@
 name: build_docs.yml
 on:
+  workflow_dispatch:
   workflow_call:
     outputs:
       artifact:

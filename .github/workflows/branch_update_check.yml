@@ -5,6 +5,7 @@ on:
       - master
       - dev
   workflow_dispatch:
+    
 
 jobs:
   update-check:
@@ -16,8 +17,15 @@ jobs:
 
       - name: Check if branch is up to date
         run: |
-          SOURCE_BRANCH="${{ github.head_ref }}"
-          TARGET_BRANCH="${{ github.base_ref }}"
+          # Get the branch refs based on the name of the event that triggered the workflow
+          if (( "${{ github.event_name }}" == "workflow_dispatch" )); then
+            SOURCE_BRANCH="${{ github.ref }}"
+            TARGET_BRANCH=SOURCE_BRANCH
+          else
+            SOURCE_BRANCH="${{ github.head_ref }}"
+            TARGET_BRANCH="${{ github.base_ref }}"
+          fi
+          
           COMMITS_BEHIND=$(git rev-list --count origin/$SOURCE_BRANCH..origin/$TARGET_BRANCH)
           COMMITS_AHEAD=$(git rev-list --count origin/$TARGET_BRANCH..origin/$SOURCE_BRANCH)
 
@@ -52,4 +60,3 @@ jobs:
             echo "Make sure to resolve all conflicts before merging"
             exit 1
           fi
-            

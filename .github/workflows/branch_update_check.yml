@@ -18,7 +18,7 @@ jobs:
       - name: Check if branch is up to date
         run: |
           # Get the branch refs based on the name of the event that triggered the workflow
-          if (( "${{ github.event_name }}" = "workflow_dispatch" )); then
+          if (( "${{ github.event_name }}" == "workflow_dispatch" )); then
             SOURCE_BRANCH="${{ github.ref_name }}"
 
             # Determine target branch based on source branch name

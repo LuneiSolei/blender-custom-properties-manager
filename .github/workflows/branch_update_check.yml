@@ -36,7 +36,7 @@ jobs:
 
           # Fetch latest changes
           git fetch origin $TARGET_BRANCH:$TARGET_BRANCH
-          git fetch origin $SOURCE_BRANCH:$TARGET_BRANCH
+          git fetch origin $SOURCE_BRANCH:$SOURCE_BRANCH
 
           COMMITS_BEHIND=$(git rev-list --count $SOURCE_BRANCH..$TARGET_BRANCH)
           COMMITS_AHEAD=$(git rev-list --count $TARGET_BRANCH..$SOURCE_BRANCH)

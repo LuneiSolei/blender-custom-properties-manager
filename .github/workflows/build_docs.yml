@@ -1,4 +1,4 @@
-name: build_docs.yml
+name: Build Docs
 on:
   workflow_dispatch:
   workflow_call:

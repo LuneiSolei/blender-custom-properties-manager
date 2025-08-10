@@ -1,10 +1,11 @@
 ﻿name: Deploy Docs
 on:
+  pull_request:
+    branches: master
+    paths: Writerside/**
   push:
-    branches:
-      - master
-    paths:
-      - Writerside/** # Only run when Writerside files change
+    branches: master
+    paths: Writerside/**
   workflow_dispatch:
 
 permissions:

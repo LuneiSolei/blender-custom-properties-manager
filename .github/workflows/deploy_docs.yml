@@ -1,10 +1,11 @@
-﻿name: deploy_docs.yml
+﻿name: Deploy Docs
 on:
+  pull_request:
+    branches: [master, dev]
+    paths: Writerside/**
   push:
-    branches:
-      - master
-    paths:
-      - Writerside/** # Only run when Writerside files change
+    branches: [master, dev]
+    paths: Writerside/**
   workflow_dispatch:
 
 permissions:

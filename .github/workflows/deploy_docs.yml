@@ -1,10 +1,10 @@
 ﻿name: Deploy Docs
 on:
   pull_request:
-    branches: [master, dev]
+    branches: [master]
     paths: Writerside/**
   push:
-    branches: [master, dev]
+    branches: [master]
     paths: Writerside/**
   workflow_dispatch:
 
@@ -17,7 +17,6 @@ jobs:
     uses: ./.github/workflows/build_docs.yml
     
   deploy_docs:
-    if: github.ref == 'refs/heads/master' # Only deploy to Pages from master branch
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

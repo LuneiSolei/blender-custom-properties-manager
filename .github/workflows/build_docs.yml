@@ -12,8 +12,8 @@ on:
         value: ${{ jobs.build_docs.outputs.algolia_artifact }}
 
 env:
-  INSTANCE: ${{ vars.INSTANCE }}
-  DOCKER_VERSION: ${{ vars.DOCKER_VERSION }}
+  INSTANCE: Writerside/d
+  DOCKER_VERSION: 243.22562
 
 jobs:
   build_docs:

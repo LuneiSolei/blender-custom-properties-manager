@@ -1,3 +1,5 @@
+name: Documentation Status Checks
+
 on:
   pull_request:
     branches: [master, dev]
@@ -5,14 +7,20 @@ on:
   push:
     branches: [master, dev]
     paths: Writerside/**
-  workflow_dispatch:
+
+permissions:
+  id-token: write
+  pages: write
 
 jobs:
   build_docs_check:
     uses: ./.github/workflows/build_docs.yml
 
   deploy_docs_check:
+    needs: build_docs_check
     uses: ./.github/workflows/deploy_docs.yml
+    with:
+      artifact_name: ${{ needs.build_docs_check.outputs.artifact }}
     
   status-check:
     needs: [build_docs_check, deploy_docs_check]

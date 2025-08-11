@@ -3,6 +3,11 @@ on:
   pull_request:
     branches: dev
   workflow_call:
+    inputs:
+      event_name:
+        description: "The name of the event that triggered workflow calling this workflow. In other words, the parent workflow"
+        required: true
+        type: string
     outputs:
       artifact:
         description: "The uploaded docs artifact."
@@ -10,6 +15,9 @@ on:
       algolia_artifact:
         description: "The uploaded Algolia artifact."
         value: ${{ jobs.build_docs.outputs.algolia_artifact }}
+      docs_changed:
+        description: "True if documentation files have changed. False if not"
+        value: ${{ jobs.build_docs.outputs.docs_changed }}
 
 env:
   INSTANCE: Writerside/d
@@ -21,11 +29,37 @@ jobs:
     outputs:
       artifact: ${{ steps.define-ids.outputs.artifact }}
       algolia_artifact: ${{ steps.define-ids.outputs.algolia_artifact }}
+      docs_changed: ${{ steps.detect_changes.outputs.docs_changed }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Check for changes to docs
+        id: detect_changes
+        run: |
+          if [ "${{ inputs.event_name }}" == "workflow_dispatch" ]; then
+            echo "docs_changed=true" >> $GITHUB_OUTPUT
+            echo "Manual Trigger. Treating as changed"
+          elif [ "${{ inputs.event_name }}" == "push" ]; then
+            # For pushes, check if any Writerside/ files were changed
+            if git diff --name-only HEAD~1 HEAD | grep -q "^Writerside/"; then
+              echo "docs_changed=true" >> $GITHUB_OUTPUT
+              echo "Documentation changes detected in push"
+            else
+              echo  "docs_changed=false" >> $GITHUB_OUPUT
+              echo "No documentation changes detected in push"
+          else
+            # For PRs, check if files in Writerside/ are different from base
+            if git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -q "^Writerside/"; then
+              echo "docs_changed=true" >> $GITHUB_OUTPUT
+              echo "Documentation changes detected in PR"
+            else
+              echo "docs_changed=false" >> $GITHUB_OUTPUT
+              echo "No documentation changes in PR"
+            fi
+          fi
 
       - name: Define instance id and artifacts
         id: define-ids

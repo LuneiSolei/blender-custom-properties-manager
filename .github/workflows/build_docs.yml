@@ -50,6 +50,7 @@ jobs:
             else
               echo  "docs_changed=false" >> $GITHUB_OUPUT
               echo "No documentation changes detected in push"
+            fi
           else
             # For PRs, check if files in Writerside/ are different from base
             if git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -q "^Writerside/"; then

@@ -24,7 +24,7 @@ jobs:
     with:
       artifact_name: ${{ needs.build_docs_check.outputs.artifact }}
     
-  status-check:
+  status_check:
     needs: [build_docs_check, deploy_docs_check]
     runs-on: ubuntu-latest
     if: always()

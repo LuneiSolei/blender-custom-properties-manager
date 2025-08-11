@@ -3,10 +3,8 @@ name: Documentation Status Checks
 on:
   pull_request:
     branches: [master, dev]
-    paths: Writerside/**
   push:
     branches: [master, dev]
-    paths: Writerside/**
   workflow_dispatch:
 
 permissions:
@@ -16,10 +14,12 @@ permissions:
 jobs:
   build_docs_check:
     uses: ./.github/workflows/build_docs.yml
+    with:
+      event_name: ${{ github.event_name }}
 
   deploy_docs_check:
-    if: github.ref == 'refs/heads/master' # Only call deploy workflow from master
     needs: build_docs_check
+    if: needs.build_docs_check.outputs.docs_changed == 'true' && github.ref == 'refs/heads/master'
     uses: ./.github/workflows/deploy_docs.yml
     with:
       artifact_name: ${{ needs.build_docs_check.outputs.artifact }}

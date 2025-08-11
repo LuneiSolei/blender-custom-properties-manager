@@ -18,6 +18,7 @@ jobs:
     uses: ./.github/workflows/build_docs.yml
 
   deploy_docs_check:
+    if: github.ref == "refs/heads/master" # Only call deploy workflow from master
     needs: build_docs_check
     uses: ./.github/workflows/deploy_docs.yml
     with:

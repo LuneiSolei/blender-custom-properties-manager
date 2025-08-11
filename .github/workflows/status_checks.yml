@@ -1,0 +1,47 @@
+name: Documentation Status Checks
+
+on:
+  pull_request:
+    branches: [master, dev]
+    paths: Writerside/**
+  push:
+    branches: [master, dev]
+    paths: Writerside/**
+
+permissions:
+  id-token: write
+  pages: write
+
+jobs:
+  build_docs_check:
+    uses: ./.github/workflows/build_docs.yml
+
+  deploy_docs_check:
+    needs: build_docs_check
+    uses: ./.github/workflows/deploy_docs.yml
+    with:
+      artifact_name: ${{ needs.build_docs_check.outputs.artifact }}
+    
+  status-check:
+    needs: [build_docs_check, deploy_docs_check]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check status
+        run: |
+          echo "Build Status: ${{ needs.build_docs_check.result }}"
+          echo "Deploy Status: ${{ needs.deploy_docs_check.result }}"
+
+          # Build must always succeed
+          if [ "${{ needs.build_docs_check.result }}" != "success" ]; then
+            echo "Build failed"
+            exit 1
+          fi
+
+          # Deploy should succeed if it ran, or be skipped if not needed
+          if ["${{ needs.deploy_docs_check.result }} != "success" ] && [ "${{ needs.deploy_docs_check.result }} != "skipped" ]; then
+            echo "Deploy failed"
+            exit 1
+          fi
+
+          echo "All checks passed"

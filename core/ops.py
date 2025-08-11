@@ -16,8 +16,7 @@ class AddNewPropertyGroupOperator(bpy.types.Operator):
     data_path: StringProperty(
         name = "Data Path",
         description = "Path to the target object",
-        default = "Object"
-    )
+        default = "Object")
 
     def execute(self, context):
         target = getattr(bpy.types, self.data_path)
@@ -157,7 +156,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         self._current = {
             "name": self.property_name,
             "group": self.group_name,
-            "type": self.property_type,
+            "type": self.property_type
         }
 
         if self.property_name not in self._data_object:
@@ -175,7 +174,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         return True
 
     def _setup_fields(self):
-        """Setup field values form existing property data"""
+        """Setup field values from existing property data"""
         self.property_type = self._get_property_type()
         self._processed_fields = []
         deferred_fields = []
@@ -210,6 +209,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
             attr_name = f"{field.attr_prefix}{self.property_type.lower()}"
             value = self._data_object[self.property_name]
             setattr(self, attr_name, value)
+            self._current["value"] = value
         elif field.attr_prefix:
             attr_name = f"{field.attr_prefix}{self.property_type.lower()}"
             value = self._ui_data.get(field.ui_data_attr)
@@ -357,3 +357,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         # Update the property in the data object
         self._ui_data["type"] = new_type
         self._data_object.id_properties_ui(self.property_name).update(**self._ui_data)
+
+    def _apply_value(self):
+        # Make sure the property value has changed
+        old_value = self._current["value"]

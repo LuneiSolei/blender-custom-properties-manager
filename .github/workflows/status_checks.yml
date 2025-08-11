@@ -14,6 +14,8 @@ permissions:
 jobs:
   build_docs_check:
     uses: ./.github/workflows/build_docs.yml
+    with:
+      event_name: ${{ github.event_name }}
 
   deploy_docs_check:
     needs: build_docs_check

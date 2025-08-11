@@ -1,26 +1,21 @@
 ﻿name: Deploy Docs
 on:
-  pull_request:
-    branches: [master]
-    paths: Writerside/**
-  push:
-    branches: [master]
-    paths: Writerside/**
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      artifact_name:
+        description: "Name of the docs artifact to deploy"
+        required: true
+        type: string
 
 permissions:
   id-token: write
   pages: write
 
 jobs:
-  prerequisite_build:
-    uses: ./.github/workflows/build_docs.yml
-    
   deploy_docs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    needs: prerequisite_build
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
@@ -30,7 +25,7 @@ jobs:
           path: artifacts
 
       - name: Unzip artifact
-        run: unzip -O UTF-8 -qq "artifacts/${{ needs.prerequisite_build.outputs.artifact }}" -d dir
+        run: unzip -O UTF-8 -qq "artifacts/${{ inputs.artifact_name }}" -d dir
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

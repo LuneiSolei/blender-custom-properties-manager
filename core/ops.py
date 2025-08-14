@@ -56,7 +56,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
     # Property attributes
     data_path:              utils.blender_prop(str, StringProperty)
     property_name:          utils.blender_prop(str, StringProperty)
-    type:          utils.blender_prop(str, EnumProperty,
+    type:                   utils.blender_prop(str, EnumProperty,
                                 items = config.CUSTOM_PROPERTY_TYPE_ITEMS)
     group_name:             utils.blender_prop(str, StringProperty)
     use_soft_limits:        utils.blender_prop(bool, BoolProperty)
@@ -179,7 +179,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         self._processed_fields = []
         deferred_fields = []
 
-        for field in config.fields:
+        for field in fields:
             # Create a copy of the field to avoid modifying the original
             processed_field = self._process_field(field)
             if field.attr_name == "use_soft_limits":
@@ -192,7 +192,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
             self.use_soft_limits = self._is_use_soft_limits()
             self._processed_fields.append(field)
 
-    def _process_field(self, field: config.Field) -> config.Field:
+    def _process_field(self, field: Field) -> Field:
         """Process individual field and set its value"""
         attr_name = field.attr_name
         if field.id == "type":
@@ -215,7 +215,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
             if value is not None:
                 setattr(self, attr_name, value)
 
-        return config.Field(
+        return Field(
             id = field.id,
             label = field.label,
             attr_prefix = field.attr_prefix,
@@ -234,7 +234,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
                 field.ui_data_attr == "soft_min"):
                 prop_row.enabled = self.use_soft_limits
 
-    def _draw_aligned_prop(self, field: config.Field) -> bpy.types.UILayout:
+    def _draw_aligned_prop(self, field: Field) -> bpy.types.UILayout:
         row = self.layout.row()
         split = row.split(factor = 0.5)
 
@@ -296,7 +296,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         return (limit_attrs.get("min") != limit_attrs.get("soft_min") or
                 limit_attrs.get("max") != limit_attrs.get("soft_max"))
 
-    def _should_draw_field(self, field: config.Field) -> bool:
+    def _should_draw_field(self, field: Field) -> bool:
         """Determine if the field should be drawn based on property type"""
         return self.type in field.draw_on or field.draw_on == "ALL"
 

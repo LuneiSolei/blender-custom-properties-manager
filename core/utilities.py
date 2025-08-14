@@ -2,8 +2,7 @@
 from typing import Union, Any, TYPE_CHECKING, Type, Callable
 
 
-def resolve_data_object(context: bpy.context, data_path: str) -> Union[
-    bpy.types.Object, None]:
+def resolve_data_object(context, data_path: str) -> Union[bpy.types.Object, None]:
     """
     Resolve a data_path string to the actual object.
     Args:

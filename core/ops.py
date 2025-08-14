@@ -56,7 +56,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
     # Property attributes
     data_path:              utils.blender_prop(str, StringProperty)
     property_name:          utils.blender_prop(str, StringProperty)
-    property_type:          utils.blender_prop(str, EnumProperty,
+    type:          utils.blender_prop(str, EnumProperty,
                                 items = config.CUSTOM_PROPERTY_TYPE_ITEMS)
     group_name:             utils.blender_prop(str, StringProperty)
     use_soft_limits:        utils.blender_prop(bool, BoolProperty)
@@ -137,6 +137,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         # Apply modified properties
         self._apply_name()
         self._apply_group()
+        self._apply_type()
 
         # Redraw Custom Properties panel
         for area in context.screen.areas:
@@ -156,7 +157,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         self._current = {
             "name": self.property_name,
             "group": self.group_name,
-            "type": self.property_type
+            "type": self.type
         }
 
         if self.property_name not in self._data_object:
@@ -175,7 +176,6 @@ class EditPropertyPopupOperator(bpy.types.Operator):
 
     def _setup_fields(self):
         """Setup field values from existing property data"""
-        self.property_type = self._get_property_type()
         self._processed_fields = []
         deferred_fields = []
 
@@ -194,29 +194,31 @@ class EditPropertyPopupOperator(bpy.types.Operator):
 
     def _process_field(self, field: config.Field) -> config.Field:
         """Process individual field and set its value"""
+
+        print("processing field '{name}'".format(name = field.id))
         attr_name = field.attr_name
-        if field.attr_name == "property_type":
-            attr_name = field.attr_name
-        elif field.attr_name == "is_overridable_library":
+        if field.id == "type":
+            self.type = self._get_property_type()
+        elif field.id == "overridable_library":
             override_str = f'["{self.property_name}"]'
             self.is_overridable_library = (
                 self._data_object.is_property_overridable_library(override_str))
-            attr_name = field.attr_name
-        elif field.attr_name == "description":
+        elif field.id == "description":
             value = self._ui_data.get(field.ui_data_attr, "")
             setattr(self, attr_name, value)
-        elif field.attr_prefix == "value_":
-            attr_name = f"{field.attr_prefix}{self.property_type.lower()}"
+        elif field.id == "value":
+            attr_name = f"{field.attr_prefix}{self.type.lower()}"
             value = self._data_object[self.property_name]
             setattr(self, attr_name, value)
             self._current["value"] = value
         elif field.attr_prefix:
-            attr_name = f"{field.attr_prefix}{self.property_type.lower()}"
+            attr_name = f"{field.attr_prefix}{self.type.lower()}"
             value = self._ui_data.get(field.ui_data_attr)
             if value is not None:
                 setattr(self, attr_name, value)
 
         return config.Field(
+            id = field.id,
             label = field.label,
             attr_prefix = field.attr_prefix,
             ui_data_attr = field.ui_data_attr,
@@ -258,6 +260,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         # Determine property type
         target_prop = self._data_object[self.property_name]
         prop_type = type(target_prop).__name__
+        print(f"Property '{self.property_name}' type: {prop_type}, value: {target_prop}")
         match prop_type:
             case "float":
                 return 'FLOAT'
@@ -298,7 +301,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
 
     def _should_draw_field(self, field: config.Field) -> bool:
         """Determine if the field should be drawn based on property type"""
-        return self.property_type in field.draw_on or field.draw_on == "ALL"
+        return self.type in field.draw_on or field.draw_on == "ALL"
 
     def _apply_name(self):
         # Make sure the property name has changed
@@ -350,7 +353,7 @@ class EditPropertyPopupOperator(bpy.types.Operator):
     def _apply_type(self):
         # Make sure the property type has changed
         old_type = self._current["type"]
-        new_type = self.property_type
+        new_type = self.type
         if old_type == new_type:
             return
 

@@ -194,8 +194,6 @@ class EditPropertyPopupOperator(bpy.types.Operator):
 
     def _process_field(self, field: config.Field) -> config.Field:
         """Process individual field and set its value"""
-
-        print("processing field '{name}'".format(name = field.id))
         attr_name = field.attr_name
         if field.id == "type":
             self.type = self._get_property_type()
@@ -260,7 +258,6 @@ class EditPropertyPopupOperator(bpy.types.Operator):
         # Determine property type
         target_prop = self._data_object[self.property_name]
         prop_type = type(target_prop).__name__
-        print(f"Property '{self.property_name}' type: {prop_type}, value: {target_prop}")
         match prop_type:
             case "float":
                 return 'FLOAT'

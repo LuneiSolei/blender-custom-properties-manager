@@ -2,12 +2,10 @@
 from itertools import chain
 from ..core.group_data import GroupData
 from ..core.state import cpm_state
-from ..core import utilities
+from ..core import utilities as utils
 from .. import config
 
-__all__ = ["draw"]
-
-def draw(self, context, data_path):
+def draw_panels(self, context, data_path):
     """
     Draws the panel associated with the provided context type.
 
@@ -19,7 +17,7 @@ def draw(self, context, data_path):
     layout = self.layout
 
     # Get the data object dynamically
-    data_object = utilities.resolve_data_object(context, data_path)
+    data_object = utils.resolve_data_object(context, data_path)
     if not data_object:
         layout.label(text = f"No {data_path} available")
         return
@@ -85,9 +83,10 @@ def _draw_property_row(layout, data_object, data_path, prop_name, group_name):
         text = "",
         icon = config.PREFERENCES_ICON,
         emboss = False)
-    edit_op.property_name = prop_name
+    edit_op.name = prop_name
     edit_op.data_path = data_path
-    edit_op.group_name = group_name
+    edit_op.group = group_name
+    edit_op.type = utils.get_property_type_from_value(data_object[prop_name])
 
     # Draw the "remove property" button
     remove_op = row.operator(
@@ -96,7 +95,7 @@ def _draw_property_row(layout, data_object, data_path, prop_name, group_name):
         icon = config.X_ICON,
         emboss = False
     )
-    remove_op.property_name = prop_name
+    remove_op.name = prop_name
     remove_op.data_path = data_path
 
 def _draw_property_group(

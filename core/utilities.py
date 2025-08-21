@@ -1,5 +1,6 @@
 ﻿import bpy
-from typing import Union, Any, TYPE_CHECKING, Type, Callable
+from typing import Union, Any
+from .. import config
 
 
 def resolve_data_object(context, data_path: str) -> Union[bpy.types.Object, None]:
@@ -17,26 +18,40 @@ def resolve_data_object(context, data_path: str) -> Union[bpy.types.Object, None
         obj = getattr(obj, attr)
     return obj
 
-def blender_prop(
-    type_hint: Type[Any],
-    prop_class: Callable[..., Any],
-    **kwargs: Any
-) -> Any:
+def get_property_type_from_value(value: Any) -> config.blender_property_types:
     """
-    Helper to create a single Blender property with type checking.
-        :param type_hint: The Python type for type checking (str, int, float, etc.).
-        :param prop_class: The Blender property class (StringProperty,
-            IntProperty, etc.).
-        :param kwargs: Additional keyword arguments to pass to the Blender
-            property constructor.
-        :return:
-            During TYPE_CHECKING: The type_hint for IDEs.
-            During runtime: An instance of the prop_class.
+    Gets the type of the property that the value represents.
+    :param value: The value to get the type from.
+    :return: The property's type as determined by Blender.
     """
-    return type_hint if TYPE_CHECKING else prop_class(**kwargs)
 
-def get_ui_data(data_object: bpy.types.Object, prop_name: str) -> None:
-    return data_object.id_properties_ui(prop_name).as_dict()
-
-def get_properties(data_object: bpy.types.Object) -> None:
-    return data_object.properties
+    # Determine property type
+    prop_type = type(value).__name__
+    match prop_type:
+        case "float":
+            return 'FLOAT'
+        case "int":
+            return 'INT'
+        case "bool":
+            return 'BOOL'
+        case "str":
+            return 'STRING'
+        case "IDPropertyArray":
+            # Property is an array type
+            if len(value) > 0:
+                if isinstance(value[0], float):
+                    return 'FLOAT_ARRAY'
+                elif isinstance(value[0], int):
+                    return 'INT_ARRAY'
+                elif isinstance(value[0], bool):
+                    return 'BOOL_ARRAY'
+                else:
+                    return 'FLOAT_ARRAY'
+            else:
+                return 'FLOAT_ARRAY'
+        case "IDPropertyGroup":
+            return 'PYTHON'
+        case _ if isinstance(value, bpy.types.ID):
+            return 'DATA_BLOCK'
+        case _:
+            return 'FLOAT'

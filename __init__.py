@@ -1,10 +1,10 @@
-﻿import bpy, json
+﻿import bpy
 from bpy.app.handlers import persistent
+from . import ops
 from . import config
-from .core.state import cpm_state
-from .core.group_data import GroupData
-from .ui import panels
-from .core import ops
+from .core import GroupData
+from .core import cpm_state
+from .ui import draw_panels
 
 bl_info = {
     "name": "Custom Properties Manager",
@@ -18,8 +18,8 @@ bl_info = {
 
 _classes = {
     ops.AddNewPropertyGroupOperator,
-    ops.ExpandToggleOperator,
-    ops.EditPropertyPopupOperator
+    ops.EditPropertyMenuOperator,
+    ops.ExpandToggleOperator
 }
 
 @persistent
@@ -33,7 +33,7 @@ def serialize_on_pre_save(dummy):
 def _create_flexible_draw_function(data_path):
     """Factory function to create draw functions for different contexts"""
     def draw_function(self, context):
-        return panels.draw(self, context, data_path)
+        return draw_panels(self, context, data_path)
     return draw_function
 
 def register():
@@ -63,7 +63,7 @@ def unregister():
     # Restore all original draw functions
     for panel_name, original_draw in cpm_state.original_draws.items():
         if hasattr(bpy.types, panel_name):
-            getattr(bpy.types, panel_name).draw = original_draw
+            getattr(bpy.types, panel_name).draw_panels = original_draw
 
     # Clear state storage
     cpm_state.original_draws.clear()

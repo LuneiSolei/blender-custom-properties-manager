@@ -4,6 +4,7 @@
 # I hate this "organization".
 
 from collections import namedtuple
+from typing import Literal
 
 # Configuration
 DEBUG = True
@@ -29,6 +30,17 @@ DEFAULT_DATA_BLOCK_PROP = "default_data_block"
 DEFAULT_PYTHON_PROP = "default_python"
 
 # Blender enum items
+blender_property_types = Literal[
+    'FLOAT',
+    'FLOAT_ARRAY',
+    'INT',
+    'INT_ARRAY',
+    'BOOL',
+    'BOOL_ARRAY',
+    'STRING',
+    'DATA_BLOCK',
+    'PYTHON'
+]
 DEFAULT_VALUE_ITEMS = ['FLOAT', 'INT', 'BOOL', 'STRING']
 CUSTOM_PROPERTY_TYPE_ITEMS = (
     ('FLOAT', "Float", "A single floating-point value"),

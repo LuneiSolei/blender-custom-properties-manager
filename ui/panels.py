@@ -95,7 +95,7 @@ def _draw_property_row(layout, data_object, data_path, prop_name, group_name):
         icon = config.X_ICON,
         emboss = False
     )
-    remove_op.name = prop_name
+    remove_op.property_name = prop_name
     remove_op.data_path = data_path
 
 def _draw_property_group(

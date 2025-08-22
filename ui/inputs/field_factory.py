@@ -4,9 +4,9 @@ from .int_field import IntField
 from .text_field import TextField
 from .float_field import FloatField
 from .bool_field import BoolField
-from .array_fields.float_array_field import FloatArrayField
-from .array_fields.int_array_field import IntArrayField
-from .array_fields.bool_array_field import BoolArrayField
+from .arrays.float_array_field import FloatArrayField
+from .arrays.int_array_field import IntArrayField
+from .arrays.bool_array_field import BoolArrayField
 
 class FieldFactory:
 

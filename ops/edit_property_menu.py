@@ -1,8 +1,8 @@
 ﻿from typing import Any
 
 import bpy
-from ..ui.input_fields.field_factory import FieldFactory
-from ..ui.input_fields.field import Field
+from ..ui.inputs.field_factory import FieldFactory
+from ..ui.inputs.field import Field
 from bpy.props import (StringProperty, EnumProperty, BoolProperty,
                        FloatProperty, IntProperty, FloatVectorProperty,
                        IntVectorProperty, BoolVectorProperty)
@@ -145,7 +145,7 @@ class EditPropertyMenuOperator(bpy.types.Operator):
     def _setup_fields(self):
         """Setup field values from existing property data"""
 
-        # Determine which input_fields need to be populated and drawn
+        # Determine which inputs need to be populated and drawn
         field = FieldFactory().create_field("STRING")
         field.create(
             name = "",
@@ -168,7 +168,7 @@ class EditPropertyMenuOperator(bpy.types.Operator):
         #     else:
         #         self._processed_fields.append(processed_field)
         #
-        # # Process deferred input_fields
+        # # Process deferred inputs
         # for field in deferred_fields:
         #     self.use_soft_limits = self._is_use_soft_limits()
         #     self._processed_fields.append(field)
@@ -224,7 +224,7 @@ class EditPropertyMenuOperator(bpy.types.Operator):
             if not self._should_draw_field(field):
                 continue
 
-            # Enable/Disable the soft min/max input_fields
+            # Enable/Disable the soft min/max inputs
             prop_row = self._draw_aligned_prop(field)
             if (field.ui_data_attr == "soft_max" or
                 field.ui_data_attr == "soft_min"):

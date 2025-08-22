@@ -122,8 +122,8 @@ class EditPropertyMenuOperator(bpy.types.Operator):
 
         self.data_object_name = self._data_object.name
 
-        if self.property_name not in self._data_object:
-            self.report({'ERROR'}, "Property '{}' not found".format(self.property_name))
+        if self.name not in self._data_object:
+            self.report({'ERROR'}, "Property '{}' not found".format(self.name))
             return False
 
         return True
@@ -131,13 +131,13 @@ class EditPropertyMenuOperator(bpy.types.Operator):
     def _load_prop_ui_data(self):
         """Load existing property UI data"""
         self._ui_data = (self._data_object
-                         .id_properties_ui(self.property_name)
+                         .id_properties_ui(self.name)
                          .as_dict())
 
         return True
 
     def _get_property_data(self):
-        self.value = self._data_object[self.property_name]
+        self.value = self._data_object[self.name]
 
         # noinspection PyTypeChecker
         self.type = utils.get_property_type_from_value(self.value)
@@ -179,22 +179,22 @@ class EditPropertyMenuOperator(bpy.types.Operator):
         # attr_name = field.attr_name
         # match field.id:
         #     case "name":
-        #         self._current["name"] = self.property_name
+        #         self._current["name"] = self.name
         #     case "description":
         #         self._current["description"] = self.description
         #     case "group":
         #         self._current["group"] = self.group_name
         #     case "type":
-        #         value = self._data_object[self.property_name]
+        #         value = self._data_object[self.name]
         #         self._current["type"] = self.type
         #
         # return
 
         # if field.id == "type":
-        #     value = self._data_object[self.property_name]
+        #     value = self._data_object[self.name]
         #     self.type = utils.get_property_type_from_value(value)
         # elif field.id == "overridable_library":
-        #     override_str = f'["{self.property_name}"]'
+        #     override_str = f'["{self.name}"]'
         #     self.is_overridable_library = (
         #         self._data_object.is_property_overridable_library(override_str))
         # elif field.id == "description":
@@ -202,7 +202,7 @@ class EditPropertyMenuOperator(bpy.types.Operator):
         #     setattr(self, attr_name, value)
         # elif field.id == "value":
         #     attr_name = f"{field.attr_prefix}{self.type.lower()}"
-        #     value = self._data_object[self.property_name]
+        #     value = self._data_object[self.name]
         #     setattr(self, attr_name, value)
         #     self._current["value"] = value
         # elif field.attr_prefix:
@@ -261,7 +261,7 @@ class EditPropertyMenuOperator(bpy.types.Operator):
     def _apply_name(self):
         # Make sure the property name has changed
         old_name = self._current["name"]
-        new_name = self.property_name
+        new_name = self.name
         if old_name == new_name:
             return
 
@@ -293,7 +293,7 @@ class EditPropertyMenuOperator(bpy.types.Operator):
     def _apply_group(self):
         # Make sure the group name has changed
         old_group = self._current["group"]
-        new_group = self.group_name
+        new_group = self.group
         if old_group == new_group:
             return
 
@@ -302,7 +302,7 @@ class EditPropertyMenuOperator(bpy.types.Operator):
         group_data.set_operator(self)
         group_data.update_property_group(
             data_object = self._data_object,
-            prop_name = self.property_name,
+            prop_name = self.name,
             new_group = new_group)
 
     def _apply_type(self):
@@ -315,7 +315,7 @@ class EditPropertyMenuOperator(bpy.types.Operator):
         # Update the property in the data object
         if self.type == 'FLOAT':
             return bpy.props.FloatProperty(
-                name = self.property_name,
+                name = self.name,
                 description = self.description,
                 translation_context = "",
                 min = self.min,

@@ -9,6 +9,7 @@ from ..core import GroupData
 from ..core import utils
 from .. import config
 
+
 class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin):
 
     def invoke(self, context, event):
@@ -71,15 +72,20 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
         """Setup field values from existing property data"""
 
         # Determine which inputs need to be populated and drawn
-        field = FieldFactory().create_field("STRING")
-        field.create(
-            name = "",
+        string_field = FieldFactory().create_field(
+            field_type = 'STRING',
+            name = "name",
             label = "Property Name",
             draw_on = "ALL",
             attr_prefix = None,
             ui_data_attr = None,
-            attr_name = None
+            attr_name = "name"
         )
+
+        self._processed_fields = []
+        deferred_fields = []
+
+        self._processed_fields.append(string_field)
 
         # fields = Field.create_fields()
         # self._processed_fields = []
@@ -152,7 +158,7 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
             # Enable/Disable the soft min/max inputs
             prop_row = self._draw_aligned_prop(field)
             if (field.ui_data_attr == "soft_max" or
-                field.ui_data_attr == "soft_min"):
+                    field.ui_data_attr == "soft_min"):
                 prop_row.enabled = self.use_soft_limits
 
     def _draw_aligned_prop(self, field: Field) -> bpy.types.UILayout:

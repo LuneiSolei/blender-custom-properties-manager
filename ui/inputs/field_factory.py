@@ -9,27 +9,21 @@ from .arrays.int_array_field import IntArrayField
 from .arrays.bool_array_field import BoolArrayField
 
 class FieldFactory:
+    _field_types = {
+        'FLOAT': FloatField,
+        'INT': IntField,
+        'BOOL': BoolField,
+        'STRING': TextField,
+        'FLOAT_ARRAY': FloatArrayField,
+        'INT_ARRAY': IntArrayField,
+        'BOOL_ARRAY': BoolArrayField,
+        'PYTHON': TextField
+    }
 
     @staticmethod
-    def create_field(field_type: str) -> Optional[Field]:
-        match field_type:
-            case 'FLOAT':
-                return FloatField()
-            case 'INT':
-                return IntField()
-            case 'BOOL':
-                return BoolField()
-            case 'STRING':
-                return TextField()
-            case 'FLOAT_ARRAY':
-                return FloatArrayField()
-            case 'INT_ARRAY':
-                return IntArrayField()
-            case 'BOOL_ARRAY':
-                return BoolArrayField()
-            case 'PYTHON':
-                return TextField()
-            case _:
-                raise NotImplementedError
+    def create_field(field_type: str, **kwargs) -> Optional[Field]:
+        if field_type not in FieldFactory._field_types:
+            raise NotImplementedError(f"Field type {field_type} is not currently supported")
 
-        return None
+        field_class = FieldFactory._field_types[field_type]
+        return field_class(**kwargs)

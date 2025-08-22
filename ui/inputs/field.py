@@ -9,8 +9,7 @@ class Field(ABC):
     ui_data_attr: Optional[str] = None
     attr_name: Optional[str] = None
 
-    @abstractmethod
-    def create(
+    def __init__(
         self, *,
         name: str,
         label: str,

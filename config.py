@@ -9,25 +9,6 @@ from typing import Literal
 # Configuration
 DEBUG = True
 
-# Edit Menu
-PROP_TYPE_LABEL = "Type"
-PROP_TYPE_PROP = "property_type"
-PROP_NAME_LABEL = "Property Name"
-PROP_NAME_PROP = "property_name"
-DEFAULT_VALUE_LABEL = "Default"
-MIN_LABEL = "Min"
-
-# Default property values
-DEFAULT_FLOAT_PROP = "default_float"
-DEFAULT_FLOAT_ARRAY_PROP = "default_float_array"
-DEFAULT_INT_PROP = "default_int"
-DEFAULT_INT_ARRAY_PROP = "default_int_array"
-DEFAULT_BOOL_PROP = "default_bool"
-DEFAULT_BOOL_ARRAY_PROP = "default_bool_array"
-DEFAULT_STRING_PROP = "default_string"
-DEFAULT_DATA_BLOCK_PROP = "default_data_block"
-DEFAULT_PYTHON_PROP = "default_python"
-
 # Blender enum items
 blender_property_types = Literal[
     'FLOAT',

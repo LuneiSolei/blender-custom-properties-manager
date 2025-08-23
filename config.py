@@ -8,7 +8,6 @@ from typing import Literal
 
 # Configuration
 DEBUG = True
-ALIGN_RIGHT = 'RIGHT'
 
 # Edit Menu
 PROP_TYPE_LABEL = "Type"

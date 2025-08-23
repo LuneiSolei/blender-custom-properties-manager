@@ -167,7 +167,7 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
 
         # Create left column
         left_col = split.column()
-        left_col.alignment = config.ALIGN_RIGHT
+        left_col.alignment = 'RIGHT'
         left_col.label(text = field.label)
 
         # Create right column

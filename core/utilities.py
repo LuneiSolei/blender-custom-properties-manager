@@ -18,40 +18,44 @@ def resolve_data_object(context, data_path: str) -> Union[bpy.types.Object, None
         obj = getattr(obj, attr)
     return obj
 
-def get_property_type_from_value(value: Any) -> config.blender_property_types:
+def get_property_type_from_value(value: Any) -> str:
     """
     Gets the type of the property that the value represents.
     :param value: The value to get the type from.
     :return: The property's type as determined by Blender.
     """
 
-    # Determine property type
+    types = {
+        "float": 'FLOAT',
+        "float_array": 'FLOAT_ARRAY',
+        "int": 'INT',
+        "int_array": 'INT_ARRAY',
+        "bool": 'BOOL',
+        "bool_array": 'BOOL_ARRAY',
+        "str": 'STRING',
+        "IDPropertyGroup": 'PYTHON',
+        "data_block": 'DATA_BLOCK'
+    }
     prop_type = type(value).__name__
-    match prop_type:
-        case "float":
-            return 'FLOAT'
-        case "int":
-            return 'INT'
-        case "bool":
-            return 'BOOL'
-        case "str":
-            return 'STRING'
-        case "IDPropertyArray":
-            # Property is an array type
-            if len(value) > 0:
-                if isinstance(value[0], float):
-                    return 'FLOAT_ARRAY'
-                elif isinstance(value[0], int):
-                    return 'INT_ARRAY'
-                elif isinstance(value[0], bool):
-                    return 'BOOL_ARRAY'
-                else:
-                    return 'FLOAT_ARRAY'
-            else:
-                return 'FLOAT_ARRAY'
-        case "IDPropertyGroup":
-            return 'PYTHON'
-        case _ if isinstance(value, bpy.types.ID):
-            return 'DATA_BLOCK'
-        case _:
-            return 'FLOAT'
+
+    if prop_type in types:
+        # Property is of a standard type
+        return types[prop_type]
+    elif prop_type == "IDPropertyArray":
+        # Property is of an array type
+        has_values = len(value) > 0
+
+        if has_values and isinstance(value[0], float):
+            return types["float_array"]
+        elif has_values and isinstance(value[0], int):
+            return types["int_array"]
+        elif has_values and isinstance(value[0], bool):
+            return types["bool_array"]
+        else:
+            return types["float_array"]
+    elif isinstance(value, bpy.types.ID):
+        # Property is of a data_block type
+        return types["data_block"]
+    else:
+        # Property type could not be determined. Theoretically, this should never happen
+        return types["float"]

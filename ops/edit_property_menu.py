@@ -4,8 +4,8 @@ import bpy
 # CPM imports
 from .edit_property_menu_mixin import EditPropertyMenuOperatorMixin
 from ..core import GroupData, utils
-from ..ui.inputs.field import Field
-from ..ui.inputs.field_factory import FieldFactory
+from ..ui.fields.field import Field
+from ..ui.fields.field_factory import FieldFactory
 
 class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin):
 
@@ -68,7 +68,7 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
     def _setup_fields(self):
         """Setup field values from existing property data"""
 
-        # Determine which inputs need to be populated and drawn
+        # Determine which fields need to be populated and drawn
         string_field = FieldFactory().create_field(
             field_type='STRING',
             name="name",
@@ -96,7 +96,7 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
         #     else:
         #         self._processed_fields.append(processed_field)
         #
-        # # Process deferred inputs
+        # # Process deferred fields
         # for field in deferred_fields:
         #     self.use_soft_limits = self._is_use_soft_limits()
         #     self._processed_fields.append(field)
@@ -152,7 +152,7 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
             if not self._should_draw_field(field):
                 continue
 
-            # Enable/Disable the soft min/max inputs
+            # Enable/Disable the soft min/max fields
             prop_row = self._draw_aligned_prop(field)
             if (field.ui_data_attr == "soft_max" or
                     field.ui_data_attr == "soft_min"):

@@ -83,7 +83,7 @@ def _draw_property_row(layout, data_object, data_path, prop_name, group_name):
     edit_op = row.operator(
         consts.ops.CPM_EDIT_PROPERTY,
         text="",
-        icon=consts.icons.PREFERENCES_ICON,
+        icon=consts.icons.PREFERENCES,
         emboss=False)
     edit_op.name = prop_name
     edit_op.data_path = data_path

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/custom_property_manager.iml" filepath="$PROJECT_DIR$/.idea/custom_property_manager.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/custom-properties-manager.iml" filepath="$PROJECT_DIR$/.idea/custom-properties-manager.iml" />
     </modules>
   </component>
 </project>

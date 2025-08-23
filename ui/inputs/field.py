@@ -1,5 +1,5 @@
-from abc import ABC, abstractmethod
-from typing import Union, List, Optional
+from abc import ABC
+from typing import List, Optional, Union
 
 class Field(ABC):
     name: str
@@ -10,13 +10,13 @@ class Field(ABC):
     attr_name: Optional[str] = None
 
     def __init__(
-        self, *,
-        name: str,
-        label: str,
-        draw_on: Union[str, List[str]],
-        attr_prefix: Optional[str],
-        ui_data_attr: Optional[str],
-        attr_name: Optional[str]
+            self, *,
+            name: str,
+            label: str,
+            draw_on: Union[str, List[str]],
+            attr_prefix: Optional[str],
+            ui_data_attr: Optional[str],
+            attr_name: Optional[str]
     ):
         self.name = name
         self.label = label

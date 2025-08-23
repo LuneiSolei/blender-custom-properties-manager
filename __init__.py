@@ -1,9 +1,8 @@
 ﻿import bpy
 from bpy.app.handlers import persistent
-from . import ops
-from . import consts
-from .core import GroupData
-from .core import cpm_state
+
+from . import consts, ops
+from .core import GroupData, cpm_state
 from .ui import draw_panels
 
 bl_info = {
@@ -32,8 +31,10 @@ def serialize_on_pre_save(dummy):
 
 def _create_flexible_draw_function(data_path):
     """Factory function to create draw functions for different contexts"""
+
     def draw_function(self, context):
         return draw_panels(self, context, data_path)
+
     return draw_function
 
 def register():

@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+
 from ..field import Field
 
 class ArrayField(Field, ABC):

@@ -1,12 +1,13 @@
 from typing import Optional
-from .field import Field
-from .int_field import IntField
-from .text_field import TextField
-from .float_field import FloatField
-from .bool_field import BoolField
+
+from .arrays.bool_array_field import BoolArrayField
 from .arrays.float_array_field import FloatArrayField
 from .arrays.int_array_field import IntArrayField
-from .arrays.bool_array_field import BoolArrayField
+from .bool_field import BoolField
+from .field import Field
+from .float_field import FloatField
+from .int_field import IntField
+from .text_field import TextField
 
 class FieldFactory:
     _field_types = {

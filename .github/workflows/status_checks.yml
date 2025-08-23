@@ -2,9 +2,9 @@ name: Documentation Status Checks
 
 on:
   pull_request:
-    branches: [master, dev]
+    branches: [ master, dev ]
   push:
-    branches: [master, dev]
+    branches: [ master, dev ]
   workflow_dispatch:
 
 permissions:
@@ -23,9 +23,9 @@ jobs:
     uses: ./.github/workflows/deploy_docs.yml
     with:
       artifact_name: ${{ needs.build_docs_check.outputs.artifact }}
-    
+
   status_check:
-    needs: [build_docs_check, deploy_docs_check]
+    needs: [ build_docs_check, deploy_docs_check ]
     runs-on: ubuntu-latest
     if: always()
     steps:

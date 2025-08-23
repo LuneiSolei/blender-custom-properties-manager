@@ -1,8 +1,8 @@
 import bpy
-from .. import consts
-from .. import config
 
-#noinspection PyTypeHints
+from .. import consts
+
+# noinspection PyTypeHints
 class AddNewPropertyGroupOperator(bpy.types.Operator):
     bl_label = "New Group"
     bl_idname = consts.ops.CPM_ADD_PROPERTY_GROUP
@@ -10,9 +10,9 @@ class AddNewPropertyGroupOperator(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     data_path: bpy.props.StringProperty(
-        name = "Data Path",
-        description = "Path to the target object",
-        default = "Object")
+        name="Data Path",
+        description="Path to the target object",
+        default="Object")
 
     def execute(self, context):
         target = getattr(bpy.types, self.data_path)

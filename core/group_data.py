@@ -1,6 +1,9 @@
-﻿import bpy, json
-from typing import Dict, Self
+﻿import json
 from itertools import chain
+from typing import Dict, Self
+
+import bpy
+
 from .reporting_mixin import ReportingMixin
 from .. import consts
 
@@ -60,11 +63,11 @@ class GroupData(ReportingMixin):
                    for props in group.values())
 
     def update_property_name(
-        self,
-        *,
-        data_object: bpy.types.Object,
-        prop_name: str,
-        new_name: str
+            self,
+            *,
+            data_object: bpy.types.Object,
+            prop_name: str,
+            new_name: str
     ) -> None:
         """
         Updates name of the property.
@@ -100,11 +103,11 @@ class GroupData(ReportingMixin):
         self._update_cache(self, data_object)
 
     def update_property_group(
-        self,
-        *,
-        data_object: bpy.types.Object,
-        prop_name: str,
-        new_group: str
+            self,
+            *,
+            data_object: bpy.types.Object,
+            prop_name: str,
+            new_group: str
     ) -> None:
         """
         Updates the group the property belongs to.
@@ -134,7 +137,7 @@ class GroupData(ReportingMixin):
             # Property goes into grouped category
             found = False
             for group_name, props in chain.from_iterable(
-                group.items() for group in self.grouped):
+                    group.items() for group in self.grouped):
                 if group_name == new_group:
                     props.append(prop_name)
                     found = True
@@ -154,8 +157,6 @@ class GroupData(ReportingMixin):
             new_type: str
     ) -> None:
         """Updates the type of the property."""
-
-
 
     def verify(self, data_object: bpy.types.Object) -> None:
         """
@@ -197,7 +198,7 @@ class GroupData(ReportingMixin):
 
     def get_group_name(self, prop_name: str) -> str:
         for group_name, props in chain.from_iterable(
-            group.items() for group in self.grouped):
+                group.items() for group in self.grouped):
             if prop_name in props:
                 return group_name
 
@@ -222,8 +223,8 @@ class GroupData(ReportingMixin):
             # Object is cached, get the data
             cached_data = cls._cache[object_pointer]
             new_data = GroupData(
-                grouped = cached_data.get("grouped", []),
-                ungrouped = cached_data.get("ungrouped", [])
+                grouped=cached_data.get("grouped", []),
+                ungrouped=cached_data.get("ungrouped", [])
             )
         else:
             new_data = GroupData()
@@ -264,8 +265,8 @@ class GroupData(ReportingMixin):
                                        consts.misc.DEFAULT_GROUP_DATA)
             group_data = json.loads(data_str)
             new_data = GroupData(
-                grouped = group_data.get("grouped", []),
-                ungrouped = group_data.get("ungrouped", []))
+                grouped=group_data.get("grouped", []),
+                ungrouped=group_data.get("ungrouped", []))
             new_data.verify(data_object)
 
     @classmethod

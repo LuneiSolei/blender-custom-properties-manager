@@ -3,12 +3,9 @@ import bpy
 
 # CPM imports
 from .edit_property_menu_mixin import EditPropertyMenuOperatorMixin
-from ..ui.inputs.field_factory import FieldFactory
+from ..core import GroupData, utils
 from ..ui.inputs.field import Field
-from ..core import GroupData
-from ..core import utils
-from .. import config
-
+from ..ui.inputs.field_factory import FieldFactory
 
 class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin):
 
@@ -73,13 +70,13 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
 
         # Determine which inputs need to be populated and drawn
         string_field = FieldFactory().create_field(
-            field_type = 'STRING',
-            name = "name",
-            label = "Property Name",
-            draw_on = "ALL",
-            attr_prefix = None,
-            ui_data_attr = None,
-            attr_name = "name"
+            field_type='STRING',
+            name="name",
+            label="Property Name",
+            draw_on="ALL",
+            attr_prefix=None,
+            ui_data_attr=None,
+            attr_name="name"
         )
 
         self._processed_fields = []
@@ -163,16 +160,16 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
 
     def _draw_aligned_prop(self, field: Field) -> bpy.types.UILayout:
         row = self.layout.row()
-        split = row.split(factor = 0.5)
+        split = row.split(factor=0.5)
 
         # Create left column
         left_col = split.column()
         left_col.alignment = 'RIGHT'
-        left_col.label(text = field.label)
+        left_col.label(text=field.label)
 
         # Create right column
         right_col = split.column()
-        right_col.prop(data = self, property = field.attr_name, text = "")
+        right_col.prop(data=self, property=field.attr_name, text="")
 
         return row
 
@@ -212,9 +209,9 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
         group_data = GroupData.get_data(self._data_object)
         group_data.set_operator(self)
         group_data.update_property_name(
-            data_object = self._data_object,
-            prop_name = old_name,
-            new_name = new_name)
+            data_object=self._data_object,
+            prop_name=old_name,
+            new_name=new_name)
 
         # Update the property in the data object itself
         self._data_object[new_name] = self._data_object[old_name]
@@ -232,9 +229,9 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
         group_data = GroupData.get_data(self._data_object)
         group_data.set_operator(self)
         group_data.update_property_group(
-            data_object = self._data_object,
-            prop_name = self.name,
-            new_group = new_group)
+            data_object=self._data_object,
+            prop_name=self.name,
+            new_group=new_group)
 
     def _apply_type(self):
         # Make sure the property type has changed
@@ -246,23 +243,23 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
         # Update the property in the data object
         if self.type == 'FLOAT':
             return bpy.props.FloatProperty(
-                name = self.name,
-                description = self.description,
-                translation_context = "",
-                min = self.min,
-                max = self.max,
-                soft_min = self.soft_min,
-                soft_max = self.soft_max,
-                step = self.step,
-                precision = self.precision,
-                options = self.options,
-                override = self.override,
-                tags = self.tags,
-                subtype = self.subtype,
-                unit = self.unit,
-                update = self.update,
-                get = self.get,
-                set = self.set
+                name=self.name,
+                description=self.description,
+                translation_context="",
+                min=self.min,
+                max=self.max,
+                soft_min=self.soft_min,
+                soft_max=self.soft_max,
+                step=self.step,
+                precision=self.precision,
+                options=self.options,
+                override=self.override,
+                tags=self.tags,
+                subtype=self.subtype,
+                unit=self.unit,
+                update=self.update,
+                get=self.get,
+                set=self.set
             )
 
     def _apply_value(self):

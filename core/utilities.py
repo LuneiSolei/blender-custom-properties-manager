@@ -1,7 +1,6 @@
-﻿import bpy
-from typing import Union, Any
-from .. import config
+﻿from typing import Any, Union
 
+import bpy
 
 def resolve_data_object(context, data_path: str) -> Union[bpy.types.Object, None]:
     """

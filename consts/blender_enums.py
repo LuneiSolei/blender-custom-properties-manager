@@ -8,7 +8,7 @@ CUSTOM_PROPERTY_TYPE_ITEMS = (
     ('STRING', "String", "A string value"),
     ('DATA_BLOCK', "Data-Block", "A data-block value"),
     ('PYTHON', "Python", "Edit a Python value directly, for unsupported property types"),
-) # https://projects.blender.org/blender/blender/src/branch/main/scripts/startup/bl_operators/wm.py#L138
+)  # https://projects.blender.org/blender/blender/src/branch/main/scripts/startup/bl_operators/wm.py#L138
 
 PROPERTY_SUBTYPE_ITEMS = (
     ('NONE', "Plain Data", "Data values without special behavior"),
@@ -20,18 +20,18 @@ PROPERTY_SUBTYPE_ITEMS = (
     ('DISTANCE', "Distance", "A distance between two points"),
     ('POWER', "Power", ""),
     ('TEMPERATURE', "Temperature", "")
-) #https://projects.blender.org/blender/blender/src/branch/main/scripts/startup/bl_operators/wm.py#L1397
+)  # https://projects.blender.org/blender/blender/src/branch/main/scripts/startup/bl_operators/wm.py#L1397
 
 PROPERTY_SUBTYPE_VECTOR_ITEMS = (
     ('NONE', "Plain Data", "Data values without special behavior"),
-    ('COLOR', "Linear Color",  "Color in the linear space"),
-    ('COLOR_GAMMA', "Gamma-Corrected Color",  "Color in the gamma corrected space"),
-    ('TRANSLATION', "Translation",  ""),
-    ('DIRECTION', "Direction",  ""),
-    ('VELOCITY', "Velocity",  ""),
-    ('ACCELERATION', "Acceleration",  ""),
-    ('EULER', "Euler Angles",  "Euler rotation angles in radians"),
-    ('QUATERNION', "Quaternion Rotation",  "Quaternion rotation (affects NLA blending)"),
-    ('AXISANGLE', "Axis-Angle",  "Angle and axis to rotate around"),
-    ('XYZ', "XYZ",  "")
-) # https://projects.blender.org/blender/blender/src/branch/main/scripts/startup/bl_operators/wm.py#L1409
+    ('COLOR', "Linear Color", "Color in the linear space"),
+    ('COLOR_GAMMA', "Gamma-Corrected Color", "Color in the gamma corrected space"),
+    ('TRANSLATION', "Translation", ""),
+    ('DIRECTION', "Direction", ""),
+    ('VELOCITY', "Velocity", ""),
+    ('ACCELERATION', "Acceleration", ""),
+    ('EULER', "Euler Angles", "Euler rotation angles in radians"),
+    ('QUATERNION', "Quaternion Rotation", "Quaternion rotation (affects NLA blending)"),
+    ('AXISANGLE', "Axis-Angle", "Angle and axis to rotate around"),
+    ('XYZ', "XYZ", "")
+)  # https://projects.blender.org/blender/blender/src/branch/main/scripts/startup/bl_operators/wm.py#L1409

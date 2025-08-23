@@ -1,10 +1,11 @@
-﻿import bpy
-from itertools import chain
+﻿from itertools import chain
+
+import bpy
+
+from .. import consts
+from ..core import utilities as utils
 from ..core.group_data import GroupData
 from ..core.state import cpm_state
-from ..core import utilities as utils
-from .. import consts
-from .. import config
 
 def draw_panels(self, context, data_path):
     """
@@ -20,7 +21,7 @@ def draw_panels(self, context, data_path):
     # Get the data object dynamically
     data_object = utils.resolve_data_object(context, data_path)
     if not data_object:
-        layout.label(text = f"No {data_path} available")
+        layout.label(text=f"No {data_path} available")
         return
 
     # Check if there are any properties to draw
@@ -36,7 +37,7 @@ def draw_panels(self, context, data_path):
 
     # Draw properties based on associated group
     for group_name, props in chain.from_iterable(
-        group.items() for group in group_data.grouped):
+            group.items() for group in group_data.grouped):
         _draw_property_group(
             layout,
             data_object,
@@ -51,21 +52,21 @@ def draw_panels(self, context, data_path):
             data_object,
             data_path,
             prop_name,
-            group_name = "")
+            group_name="")
 
 def _draw_add_buttons(layout, data_path):
     # Draw the original "New" button
     new_prop_op = layout.operator(
         consts.ops.WM_PROPERTIES_ADD,
-        text = "New",
-        icon = consts.icons.ADD)
+        text="New",
+        icon=consts.icons.ADD)
     new_prop_op.data_path = data_path
 
     # Draw the "New Group" button
     new_prop_group_op = layout.operator(
         consts.ops.CPM_ADD_PROPERTY_GROUP,
-        text ="New Group",
-        icon = consts.icons.ADD)
+        text="New Group",
+        icon=consts.icons.ADD)
     new_prop_group_op.data_path = data_path
 
 def _draw_property_row(layout, data_object, data_path, prop_name, group_name):
@@ -75,15 +76,15 @@ def _draw_property_row(layout, data_object, data_path, prop_name, group_name):
     # If the property's value is a list, draw a label manually. Otherwise,
     # Blender misbehaves and just shows the item count.
     if type(data_object[prop_name]) == list:
-        row.label(text = prop_name)
-    row.prop(data_object, f'["{prop_name}"]', text = prop_name)
+        row.label(text=prop_name)
+    row.prop(data_object, f'["{prop_name}"]', text=prop_name)
 
     # Draw the "edit property" button
     edit_op = row.operator(
         consts.ops.CPM_EDIT_PROPERTY,
-        text = "",
-        icon = consts.icons.PREFERENCES_ICON,
-        emboss = False)
+        text="",
+        icon=consts.icons.PREFERENCES_ICON,
+        emboss=False)
     edit_op.name = prop_name
     edit_op.data_path = data_path
     edit_op.group = group_name
@@ -92,9 +93,9 @@ def _draw_property_row(layout, data_object, data_path, prop_name, group_name):
     # Draw the "remove property" button
     remove_op = row.operator(
         consts.ops.WM_PROPERTIES_REMOVE,
-        text = "",
-        icon = consts.icons.X,
-        emboss = False
+        text="",
+        icon=consts.icons.X,
+        emboss=False
     )
     remove_op.property_name = prop_name
     remove_op.data_path = data_path
@@ -104,7 +105,7 @@ def _draw_property_group(
         data_object: bpy.types.Object,
         data_path: str,
         group_name: str,
-        props: list ):
+        props: list):
     """
     Draws a sub panel for a group of properties.
     Args:
@@ -123,10 +124,10 @@ def _draw_property_group(
 
     toggle_op = header.operator(
         consts.ops.CPM_EXPAND_TOGGLE,
-        text = group_name,
-        icon = consts.icons.DOWNARROW_HLT if is_expanded
-               else consts.icons.RIGHTARROW,
-        emboss = False)
+        text=group_name,
+        icon=consts.icons.DOWNARROW_HLT if is_expanded
+        else consts.icons.RIGHTARROW,
+        emboss=False)
     toggle_op.expand_key = expand_key
     toggle_op.current_state = is_expanded
 

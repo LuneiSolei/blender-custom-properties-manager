@@ -17,9 +17,18 @@ fieldConfigs = [
         field_type = 'STRING',
         name = "name",
         label = "Property Name",
-        draw_on = "ALL",
+        draw_on = 'ALL',
         attr_prefix = None,
         ui_data_attr = None,
         attr_name = "name"
+    ),
+    FieldConfig(
+        field_type = 'STRING',
+        name = "group",
+        label = "Group Name",
+        attr_prefix = None,
+        ui_data_attr = None,
+        attr_name = "group",
+        draw_on = 'ALL'
     )
 ]

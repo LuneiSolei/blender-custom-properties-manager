@@ -22,7 +22,7 @@ class FieldFactory:
     }
 
     @staticmethod
-    def create_field(field_type: str, **kwargs) -> Optional[Field]:
+    def create(field_type: str, **kwargs) -> Optional[Field]:
         if field_type not in FieldFactory._field_types:
             raise NotImplementedError(f"Field type {field_type} is not currently supported")
 

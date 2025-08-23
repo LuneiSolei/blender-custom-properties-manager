@@ -3,6 +3,7 @@ from itertools import chain
 from ..core.group_data import GroupData
 from ..core.state import cpm_state
 from ..core import utilities as utils
+from .. import consts
 from .. import config
 
 def draw_panels(self, context, data_path):
@@ -23,7 +24,7 @@ def draw_panels(self, context, data_path):
         return
 
     # Check if there are any properties to draw
-    if not hasattr(data_object, config.ATTR_KEYS) or not len(data_object.keys()) > 0:
+    if not hasattr(data_object, consts.misc.KEYS_ATTR) or not len(data_object.keys()) > 0:
         return
 
     # Draw add buttons
@@ -55,16 +56,16 @@ def draw_panels(self, context, data_path):
 def _draw_add_buttons(layout, data_path):
     # Draw the original "New" button
     new_prop_op = layout.operator(
-        config.WM_PROPERTIES_ADD,
+        consts.ops.WM_PROPERTIES_ADD,
         text = "New",
-        icon = config.ADD_ICON)
+        icon = consts.icons.ADD)
     new_prop_op.data_path = data_path
 
     # Draw the "New Group" button
     new_prop_group_op = layout.operator(
-        config.CPM_ADD_NEW_PROPERTY_GROUP_OP,
+        consts.ops.CPM_ADD_PROPERTY_GROUP,
         text ="New Group",
-        icon = config.ADD_ICON)
+        icon = consts.icons.ADD)
     new_prop_group_op.data_path = data_path
 
 def _draw_property_row(layout, data_object, data_path, prop_name, group_name):
@@ -79,9 +80,9 @@ def _draw_property_row(layout, data_object, data_path, prop_name, group_name):
 
     # Draw the "edit property" button
     edit_op = row.operator(
-        config.CPM_EDIT_PROPERTY_OP,
+        consts.ops.CPM_EDIT_PROPERTY,
         text = "",
-        icon = config.PREFERENCES_ICON,
+        icon = consts.icons.PREFERENCES_ICON,
         emboss = False)
     edit_op.name = prop_name
     edit_op.data_path = data_path
@@ -90,9 +91,9 @@ def _draw_property_row(layout, data_object, data_path, prop_name, group_name):
 
     # Draw the "remove property" button
     remove_op = row.operator(
-        config.WM_PROPERTIES_REMOVE,
+        consts.ops.WM_PROPERTIES_REMOVE,
         text = "",
-        icon = config.X_ICON,
+        icon = consts.icons.X,
         emboss = False
     )
     remove_op.property_name = prop_name
@@ -121,10 +122,10 @@ def _draw_property_group(
     is_expanded = cpm_state.expand_states.get(expand_key, True)
 
     toggle_op = header.operator(
-        config.CPM_EXPAND_TOGGLE_OP,
+        consts.ops.CPM_EXPAND_TOGGLE,
         text = group_name,
-        icon = config.DOWNARROW_HLT_ICON if is_expanded
-               else config.RIGHTARROW_ICON,
+        icon = consts.icons.DOWNARROW_HLT if is_expanded
+               else consts.icons.RIGHTARROW,
         emboss = False)
     toggle_op.expand_key = expand_key
     toggle_op.current_state = is_expanded

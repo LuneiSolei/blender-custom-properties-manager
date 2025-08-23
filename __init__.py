@@ -1,7 +1,7 @@
 ﻿import bpy
 from bpy.app.handlers import persistent
 from . import ops
-from . import config
+from . import consts
 from .core import GroupData
 from .core import cpm_state
 from .ui import draw_panels
@@ -44,7 +44,7 @@ def register():
         bpy.utils.register_class(cls)
 
     # Create custom draw functions
-    for item in config.panels:
+    for item in consts.blender_panels.panels:
         if hasattr(bpy.types, item.name):
             panel_class = getattr(bpy.types, item.name)
             cpm_state.original_draws[item.name] = panel_class.draw

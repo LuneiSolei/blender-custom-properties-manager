@@ -1,10 +1,11 @@
 import bpy
+from .. import consts
 from .. import config
 
 #noinspection PyTypeHints
 class AddNewPropertyGroupOperator(bpy.types.Operator):
     bl_label = "New Group"
-    bl_idname = config.CPM_ADD_NEW_PROPERTY_GROUP_OP
+    bl_idname = consts.ops.CPM_ADD_PROPERTY_GROUP
     bl_description = "Add a new custom property group"
     bl_options = {'REGISTER', 'UNDO'}
 

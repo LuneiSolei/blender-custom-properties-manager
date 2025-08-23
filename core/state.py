@@ -2,7 +2,7 @@
 
 class CPMState:
     def __init__(self):
-        self.debug = config.DEBUG
+        self.debug = config.debug
         self.expand_states = {}
         self.original_draws = {}
 

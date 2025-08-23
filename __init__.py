@@ -16,7 +16,7 @@ bl_info = {
 }
 
 _classes = {
-    ops.AddNewPropertyGroupOperator,
+    ops.AddPropertyGroupOperator,
     ops.EditPropertyMenuOperator,
     ops.ExpandToggleOperator
 }

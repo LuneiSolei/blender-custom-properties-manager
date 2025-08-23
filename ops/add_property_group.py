@@ -3,7 +3,7 @@ import bpy
 from .. import consts
 
 # noinspection PyTypeHints
-class AddNewPropertyGroupOperator(bpy.types.Operator):
+class AddPropertyGroupOperator(bpy.types.Operator):
     bl_label = "New Group"
     bl_idname = consts.ops.CPM_ADD_PROPERTY_GROUP
     bl_description = "Add a new custom property group"

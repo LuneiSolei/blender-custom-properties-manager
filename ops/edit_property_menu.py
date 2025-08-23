@@ -6,6 +6,7 @@ from .edit_property_menu_mixin import EditPropertyMenuOperatorMixin
 from ..core import GroupData, utils
 from ..ui.fields.field import Field
 from ..ui.fields.field_factory import FieldFactory
+from .. import consts
 
 class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin):
 
@@ -67,22 +68,20 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
 
     def _setup_fields(self):
         """Setup field values from existing property data"""
-
-        # Determine which fields need to be populated and drawn
-        string_field = FieldFactory().create_field(
-            field_type='STRING',
-            name="name",
-            label="Property Name",
-            draw_on="ALL",
-            attr_prefix=None,
-            ui_data_attr=None,
-            attr_name="name"
-        )
-
         self._processed_fields = []
         deferred_fields = []
 
-        self._processed_fields.append(string_field)
+        for field in consts.fields.fieldConfigs:
+            new_field = FieldFactory().create(
+                field_type = field.field_type,
+                name = field.name,
+                label = field.label,
+                draw_on = field.draw_on,
+                attr_prefix = field.attr_prefix,
+                ui_data_attr = field.ui_data_attr,
+                attr_name = field.attr_name,
+            )
+            self._processed_fields.append(new_field)
 
         # fields = Field.create_fields()
         # self._processed_fields = []

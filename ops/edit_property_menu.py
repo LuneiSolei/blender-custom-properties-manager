@@ -44,12 +44,14 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
         self._data_object = utils.resolve_data_object(bpy.context, self.data_path)
         if not self._data_object:
             self.report({'ERROR'}, "Data object '{}' not found".format(self.data_path))
+
             return False
 
         self.data_object_name = self._data_object.name
 
         if self.name not in self._data_object:
             self.report({'ERROR'}, "Property '{}' not found".format(self.name))
+
             return False
 
         return True
@@ -68,20 +70,22 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
 
     def _setup_fields(self):
         """Setup field values from existing property data"""
-        self._processed_fields = []
-        deferred_fields = []
 
-        for field in consts.fields.fieldConfigs:
-            new_field = FieldFactory().create(
-                field_type = field.field_type,
-                name = field.name,
-                label = field.label,
-                draw_on = field.draw_on,
-                attr_prefix = field.attr_prefix,
-                ui_data_attr = field.ui_data_attr,
-                attr_name = field.attr_name,
-            )
-            self._processed_fields.append(new_field)
+        self._processed_fields["name"] = self._setup_name()
+
+        # Create fields pre-defined in /consts/fields.py
+        # for field in consts.fields.fieldConfigs:
+        #     new_field = FieldFactory().create(
+        #         field_type = field.field_type,
+        #         name = field.name,
+        #         label = field.label,
+        #         draw_on = field.draw_on,
+        #         attr_prefix = field.attr_prefix,
+        #         ui_data_attr = field.ui_data_attr,
+        #         attr_name = field.attr_name,
+        #     )
+        #     processed_field = self._process_field(new_field)
+        #     self._processed_fields.append(processed_field)
 
         # fields = Field.create_fields()
         # self._processed_fields = []
@@ -100,54 +104,71 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
         #     self.use_soft_limits = self._is_use_soft_limits()
         #     self._processed_fields.append(field)
 
-    def _process_field(self, field: Field) -> Field:
-        """Process individual field and set its value"""
+    # def _process_field(self, field: Field) -> Field:
+    #     """Process individual field and set its value"""
+    #
+    #     match field.name:
+    #         case "name":
+    #             self._current["name"] = self.name
+    #         case "description":
+    #             self._current["description"] = self.description
+    #         case "group":
+    #             self._current["group"] = self.group_name
+    #     # attr_name = field.attr_name
+    #     # match field.id:
+    #     #     case "name":
+    #     #         self._current["name"] = self.name
+    #     #     case "description":
+    #     #         self._current["description"] = self.description
+    #     #     case "group":
+    #     #         self._current["group"] = self.group_name
+    #     #     case "type":
+    #     #         value = self._data_object[self.name]
+    #     #         self._current["type"] = self.type
+    #     #
+    #     # return
+    #
+    #     # if field.id == "type":
+    #     #     value = self._data_object[self.name]
+    #     #     self.type = utils.get_property_type_from_value(value)
+    #     # elif field.id == "overridable_library":
+    #     #     override_str = f'["{self.name}"]'
+    #     #     self.is_overridable_library = (
+    #     #         self._data_object.is_property_overridable_library(override_str))
+    #     # elif field.id == "description":
+    #     #     value = self._ui_data.get(field.ui_data_attr, "")
+    #     #     setattr(self, attr_name, value)
+    #     # elif field.id == "value":
+    #     #     attr_name = f"{field.attr_prefix}{self.type.lower()}"
+    #     #     value = self._data_object[self.name]
+    #     #     setattr(self, attr_name, value)
+    #     #     self._current["value"] = value
+    #     # elif field.attr_prefix:
+    #     #     attr_name = f"{field.attr_prefix}{self.type.lower()}"
+    #     #     value = self._ui_data.get(field.ui_data_attr)
+    #     #     if value is not None:
+    #     #         setattr(self, attr_name, value)
+    #     #
+    #     # return Field(
+    #     #     id = field.id,
+    #     #     label = field.label,
+    #     #     attr_prefix = field.attr_prefix,
+    #     #     ui_data_attr = field.ui_data_attr,
+    #     #     attr_name = attr_name,
+    #     #     draw_on = field.draw_on)
 
-        # attr_name = field.attr_name
-        # match field.id:
-        #     case "name":
-        #         self._current["name"] = self.name
-        #     case "description":
-        #         self._current["description"] = self.description
-        #     case "group":
-        #         self._current["group"] = self.group_name
-        #     case "type":
-        #         value = self._data_object[self.name]
-        #         self._current["type"] = self.type
-        #
-        # return
+    def _setup_name(self) -> Field:
+        field_config = consts.fields.fieldConfigs["name"]
+        new_field = FieldFactory().create(
+            **vars(field_config),
+            cached_value = self.name,
+            value = self.name
+        )
 
-        # if field.id == "type":
-        #     value = self._data_object[self.name]
-        #     self.type = utils.get_property_type_from_value(value)
-        # elif field.id == "overridable_library":
-        #     override_str = f'["{self.name}"]'
-        #     self.is_overridable_library = (
-        #         self._data_object.is_property_overridable_library(override_str))
-        # elif field.id == "description":
-        #     value = self._ui_data.get(field.ui_data_attr, "")
-        #     setattr(self, attr_name, value)
-        # elif field.id == "value":
-        #     attr_name = f"{field.attr_prefix}{self.type.lower()}"
-        #     value = self._data_object[self.name]
-        #     setattr(self, attr_name, value)
-        #     self._current["value"] = value
-        # elif field.attr_prefix:
-        #     attr_name = f"{field.attr_prefix}{self.type.lower()}"
-        #     value = self._ui_data.get(field.ui_data_attr)
-        #     if value is not None:
-        #         setattr(self, attr_name, value)
-        #
-        # return Field(
-        #     id = field.id,
-        #     label = field.label,
-        #     attr_prefix = field.attr_prefix,
-        #     ui_data_attr = field.ui_data_attr,
-        #     attr_name = attr_name,
-        #     draw_on = field.draw_on)
+        return new_field
 
     def draw(self, context):
-        for field in self._processed_fields:
+        for name, field in self._processed_fields.items():
             if not self._should_draw_field(field):
                 continue
 
@@ -183,7 +204,7 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
 
     def _should_draw_field(self, field: Field) -> bool:
         """Determine if the field should be drawn based on property type"""
-        return self.type in field.draw_on or field.draw_on == "ALL"
+        return self.type in field.draw_on or field.draw_on == 'ALL'
 
     def _apply_name(self):
         # Make sure the property name has changed

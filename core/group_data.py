@@ -11,7 +11,7 @@ class GroupData(ReportingMixin):
     _cache = {}
 
     def __init__(self, grouped: list[Dict[str, list[str]]] = None,
-                 ungrouped: list[str] = None, *args, **kwargs) -> None:
+                 ungrouped: list[str] = None, *args, **kwargs):
         """
         Initialize PropertyGroupData.
 
@@ -29,7 +29,7 @@ class GroupData(ReportingMixin):
         if consts.misc.CPM_SERIALIZED_GROUP_DATA in self:
             del self[consts.misc.CPM_SERIALIZED_GROUP_DATA]
 
-    def __delitem__(self, prop_name) -> None:
+    def __delitem__(self, prop_name):
         """
         Removes the specified property from the group dataset.
 
@@ -68,7 +68,7 @@ class GroupData(ReportingMixin):
             data_object: bpy.types.Object,
             prop_name: str,
             new_name: str
-    ) -> None:
+    ):
         """
         Updates name of the property.
 
@@ -108,7 +108,7 @@ class GroupData(ReportingMixin):
             data_object: bpy.types.Object,
             prop_name: str,
             new_group: str
-    ) -> None:
+    ):
         """
         Updates the group the property belongs to.
 
@@ -155,10 +155,10 @@ class GroupData(ReportingMixin):
             data_object: bpy.types.Object,
             prop_name: str,
             new_type: str
-    ) -> None:
+    ):
         """Updates the type of the property."""
 
-    def verify(self, data_object: bpy.types.Object) -> None:
+    def verify(self, data_object: bpy.types.Object):
         """
         Verifies the group data of the provided blender object. During this
         process, the cache is automatically updated.
@@ -234,7 +234,7 @@ class GroupData(ReportingMixin):
         return new_data
 
     @classmethod
-    def serialize(cls) -> None:
+    def serialize(cls):
         """
         Serializes grouping data for all Blender objects. The data is
         transformed into a dictionary and then serialized as a string
@@ -252,7 +252,7 @@ class GroupData(ReportingMixin):
             data_object[consts.misc.CPM_SERIALIZED_GROUP_DATA] = json.dumps(data_dict)
 
     @classmethod
-    def deserialize(cls) -> None:
+    def deserialize(cls):
         """
         Deserializes grouping data for a specified object's custom properties
         using the designated private property that's already stored on the
@@ -271,7 +271,7 @@ class GroupData(ReportingMixin):
 
     @classmethod
     def _update_cache(cls, group_data: Self, data_object:
-    bpy.types.Object) -> None:
+    bpy.types.Object):
         """
         Updates the cached group data.
 

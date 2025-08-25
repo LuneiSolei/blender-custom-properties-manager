@@ -77,5 +77,6 @@ class EditPropertyMenuOperatorMixin:
     value_python: StringProperty()
 
     # Misc.
+    _group_data = {}
     _current = {}
-    _processed_fields = {}
+    _fields = {}

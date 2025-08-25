@@ -20,6 +20,7 @@ def resolve_data_object(context, data_path: str) -> Union[bpy.types.Object, None
 def get_property_type_from_value(value: Any) -> str:
     """
     Gets the type of the property that the value represents.
+    :rtype: str
     :param value: The value to get the type from.
     :return: The property's type as determined by Blender.
     """

@@ -19,18 +19,20 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
             return {'CANCELLED'}
 
         self._get_property_data()
+        self._set_current_data()
         self._setup_fields()
 
         # Show the menu as a popup
         return context.window_manager.invoke_props_dialog(self)
 
     def execute(self, context):
+        self._group_data = GroupData.get_data(self._data_object)
+        self._group_data.set_operator(self)
+
         # NOTE: self.property_overridable_library_set('["prop"]',
         #  True/False) is how you change the "is_overridable_library" attribute
         # Apply modified properties
         self._apply_name()
-        self._apply_group()
-        self._apply_type()
 
         # Redraw Custom Properties panel
         for area in context.screen.areas:
@@ -66,109 +68,31 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
 
     def _get_property_data(self):
         self.value = self._data_object[self.name]
+        # noinspection PyTypeChecker
         self.type = utils.get_property_type_from_value(self.value)
 
+    def _set_current_data(self):
+        """Store current values for fields during apply"""
+        field_names = consts.fields.FieldNames
+
+        self._current[field_names.NAME.value] = self.name
+        self._current[field_names.GROUP.value] = self.group
+        self._current[field_names.TYPE.value] = self.type
+
     def _setup_fields(self):
-        """Setup field values from existing property data"""
+        """Helper method to set up data for fields"""
 
-        self._processed_fields["name"] = self._setup_name()
+        field_names = consts.fields.FieldNames
 
-        # Create fields pre-defined in /consts/fields.py
-        # for field in consts.fields.fieldConfigs:
-        #     new_field = FieldFactory().create(
-        #         field_type = field.field_type,
-        #         name = field.name,
-        #         label = field.label,
-        #         draw_on = field.draw_on,
-        #         attr_prefix = field.attr_prefix,
-        #         ui_data_attr = field.ui_data_attr,
-        #         attr_name = field.attr_name,
-        #     )
-        #     processed_field = self._process_field(new_field)
-        #     self._processed_fields.append(processed_field)
+        self._create_field(field_names.NAME.value)
 
-        # fields = Field.create_fields()
-        # self._processed_fields = []
-        # deferred_fields = []
-        #
-        # for field in fields:
-        #     # Create a copy of the field to avoid modifying the original
-        #     processed_field = self._process_field(field)
-        #     if field.attr_name == "use_soft_limits":
-        #         deferred_fields.append(processed_field)
-        #     else:
-        #         self._processed_fields.append(processed_field)
-        #
-        # # Process deferred fields
-        # for field in deferred_fields:
-        #     self.use_soft_limits = self._is_use_soft_limits()
-        #     self._processed_fields.append(field)
-
-    # def _process_field(self, field: Field) -> Field:
-    #     """Process individual field and set its value"""
-    #
-    #     match field.name:
-    #         case "name":
-    #             self._current["name"] = self.name
-    #         case "description":
-    #             self._current["description"] = self.description
-    #         case "group":
-    #             self._current["group"] = self.group_name
-    #     # attr_name = field.attr_name
-    #     # match field.id:
-    #     #     case "name":
-    #     #         self._current["name"] = self.name
-    #     #     case "description":
-    #     #         self._current["description"] = self.description
-    #     #     case "group":
-    #     #         self._current["group"] = self.group_name
-    #     #     case "type":
-    #     #         value = self._data_object[self.name]
-    #     #         self._current["type"] = self.type
-    #     #
-    #     # return
-    #
-    #     # if field.id == "type":
-    #     #     value = self._data_object[self.name]
-    #     #     self.type = utils.get_property_type_from_value(value)
-    #     # elif field.id == "overridable_library":
-    #     #     override_str = f'["{self.name}"]'
-    #     #     self.is_overridable_library = (
-    #     #         self._data_object.is_property_overridable_library(override_str))
-    #     # elif field.id == "description":
-    #     #     value = self._ui_data.get(field.ui_data_attr, "")
-    #     #     setattr(self, attr_name, value)
-    #     # elif field.id == "value":
-    #     #     attr_name = f"{field.attr_prefix}{self.type.lower()}"
-    #     #     value = self._data_object[self.name]
-    #     #     setattr(self, attr_name, value)
-    #     #     self._current["value"] = value
-    #     # elif field.attr_prefix:
-    #     #     attr_name = f"{field.attr_prefix}{self.type.lower()}"
-    #     #     value = self._ui_data.get(field.ui_data_attr)
-    #     #     if value is not None:
-    #     #         setattr(self, attr_name, value)
-    #     #
-    #     # return Field(
-    #     #     id = field.id,
-    #     #     label = field.label,
-    #     #     attr_prefix = field.attr_prefix,
-    #     #     ui_data_attr = field.ui_data_attr,
-    #     #     attr_name = attr_name,
-    #     #     draw_on = field.draw_on)
-
-    def _setup_name(self) -> Field:
-        field_config = consts.fields.fieldConfigs["name"]
-        new_field = FieldFactory().create(
-            **vars(field_config),
-            cached_value = self.name,
-            value = self.name
-        )
-
-        return new_field
+    def _create_field(self, field_name):
+        """Helper method to create a new field"""
+        field_config = consts.fields.fieldConfigs[field_name]
+        self._fields[field_name] = FieldFactory().create(**vars(field_config))
 
     def draw(self, context):
-        for name, field in self._processed_fields.items():
+        for name, field in self._fields.items():
             if not self._should_draw_field(field):
                 continue
 
@@ -208,35 +132,35 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
 
     def _apply_name(self):
         # Make sure the property name has changed
-        old_name = self._current["name"]
+        current_name = self._current["name"]
         new_name = self.name
-        if old_name == new_name:
+        if current_name == new_name:
             return
 
-        # Does the new name already exist?
+        # Validation
         if new_name in self._data_object:
             self.report({'ERROR'}, f"Property '{new_name}' already exists")
             return
 
         # Ensure we're not trying to rename an IDPropertyGroup
-        if type(self._data_object[old_name]).__name__ == "IDPropertyGroup":
-            self.report({'ERROR'}, f"Cannot rename '{old_name}' to '"
+        if isinstance(self._data_object[current_name], bpy.types.bpy_struct):
+            self.report({'ERROR'}, f"Cannot rename '{current_name}' to '"
                                    f"{new_name}'. Renaming IDPropertyGroup "
                                    f"types is currently not supported.")
+
             return
 
         # Update the property in CPM's dataset
-        group_data = GroupData.get_data(self._data_object)
-        group_data.set_operator(self)
-        group_data.update_property_name(
-            data_object=self._data_object,
-            prop_name=old_name,
-            new_name=new_name)
+        self._group_data.update_property_name(
+            data_object = self._data_object,
+            prop_name = current_name,
+            new_name = new_name
+        )
 
         # Update the property in the data object itself
-        self._data_object[new_name] = self._data_object[old_name]
+        self._data_object[new_name] = self._data_object[current_name]
         self._data_object.id_properties_ui(new_name).update(**self._ui_data)
-        del self._data_object[old_name]
+        del self._data_object[current_name]
 
     def _apply_group(self):
         # Make sure the group name has changed

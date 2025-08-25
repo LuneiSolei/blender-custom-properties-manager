@@ -1,4 +1,10 @@
 from dataclasses import dataclass
+from enum import Enum
+
+class FieldNames(Enum):
+    NAME = "name"
+    GROUP = "group"
+    TYPE = "type"
 
 @dataclass
 class FieldConfig:
@@ -11,25 +17,25 @@ class FieldConfig:
     ui_data_attr: str = ""
 
 fieldConfigs = {
-    "name": FieldConfig(
+    FieldNames.NAME.value : FieldConfig(
         attr_name = "name",
         draw_on = 'ALL',
         field_type = 'TEXT',
         label = "Property Name",
-        name = "name"
+        name = FieldNames.NAME.value,
     ),
-    "group": FieldConfig(
+    FieldNames.GROUP.value: FieldConfig(
         attr_name = "group",
         draw_on = 'ALL',
         field_type = 'TEXT',
         label = "Group Name",
-        name = "group"
+        name = FieldNames.GROUP.value
     ),
-    "type": FieldConfig(
+    FieldNames.TYPE.value: FieldConfig(
         attr_name = "type",
         draw_on = 'ALL',
         field_type = 'DROPDOWN',
         label = "Type",
-        name = "type"
+        name = FieldNames.TYPE.value
     )
 }

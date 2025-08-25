@@ -28,4 +28,5 @@ class FieldFactory:
             raise NotImplementedError(f"Field type {field_type} is not currently supported")
 
         field_class = FieldFactory._field_types[field_type](**kwargs)
+        
         return field_class

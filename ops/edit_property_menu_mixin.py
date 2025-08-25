@@ -78,3 +78,4 @@ class EditPropertyMenuOperatorMixin:
 
     # Misc.
     _current = {}
+    _processed_fields = {}

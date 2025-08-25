@@ -1,34 +1,35 @@
-from collections import namedtuple
+from dataclasses import dataclass
 
-FieldConfig = namedtuple(
-    typename = "FieldConfig",
-    field_names = [
-        "field_type",
-        "name",
-        "label",
-        "draw_on",
-        "attr_prefix",
-        "ui_data_attr",
-        "attr_name"
-    ]
-)
-fieldConfigs = [
-    FieldConfig(
-        field_type = 'STRING',
-        name = "name",
-        label = "Property Name",
+@dataclass
+class FieldConfig:
+    attr_name: str = ""
+    attr_prefix: str = ""
+    draw_on: str = ""
+    field_type: str = ""
+    label: str = ""
+    name: str = ""
+    ui_data_attr: str = ""
+
+fieldConfigs = {
+    "name": FieldConfig(
+        attr_name = "name",
         draw_on = 'ALL',
-        attr_prefix = None,
-        ui_data_attr = None,
-        attr_name = "name"
+        field_type = 'TEXT',
+        label = "Property Name",
+        name = "name"
     ),
-    FieldConfig(
-        field_type = 'STRING',
-        name = "group",
-        label = "Group Name",
-        attr_prefix = None,
-        ui_data_attr = None,
+    "group": FieldConfig(
         attr_name = "group",
-        draw_on = 'ALL'
+        draw_on = 'ALL',
+        field_type = 'TEXT',
+        label = "Group Name",
+        name = "group"
+    ),
+    "type": FieldConfig(
+        attr_name = "type",
+        draw_on = 'ALL',
+        field_type = 'DROPDOWN',
+        label = "Type",
+        name = "type"
     )
-]
+}

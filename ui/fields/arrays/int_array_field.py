@@ -1,5 +1,5 @@
 from .array_field import ArrayField
 
 class IntArrayField(ArrayField):
-    def create_array_field(self, **kwargs):
-        pass
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)

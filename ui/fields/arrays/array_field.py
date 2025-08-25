@@ -1,11 +1,10 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 
 from ..field import Field
 
 class ArrayField(Field, ABC):
-    def create(self, **kwargs):
-        pass
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
-    @abstractmethod
-    def create_array_field(self, **kwargs):
-        pass
+    def set_value(self, value):
+        self.value = value

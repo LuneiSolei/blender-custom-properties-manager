@@ -1,5 +1,8 @@
 from .field import Field
 
 class IntField(Field):
-    def create(self, **kwargs):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def set_value(self, value):
         pass

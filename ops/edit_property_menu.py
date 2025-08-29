@@ -1,4 +1,6 @@
 ﻿# Blender imports
+from typing import Union
+
 import bpy
 
 # CPM imports
@@ -19,7 +21,6 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
             return {'CANCELLED'}
 
         self._get_property_data()
-        self._set_current_data()
         self._setup_fields()
 
         # Show the menu as a popup
@@ -40,6 +41,18 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
                 area.tag_redraw()
 
         return {'FINISHED'}
+
+    def draw(self, context):
+        for name, field in self._fields.items():
+            if not field.should_draw(self.type):
+                continue
+
+            field_row = field.draw(self)
+
+            # Enable/Disable the soft min/max fields
+            if (field.ui_data_attr == "soft_max" or
+                    field.ui_data_attr == "soft_min"):
+                field_row.enabled = self.use_soft_limits
 
     def _validate(self) -> bool:
         """Validate input data and prepare object references"""
@@ -68,54 +81,22 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
 
     def _get_property_data(self):
         self.value = self._data_object[self.name]
+
         # noinspection PyTypeChecker
         self.type = utils.get_property_type_from_value(self.value)
-
-    def _set_current_data(self):
-        """Store current values for fields during apply"""
-        field_names = consts.fields.FieldNames
-
-        self._current[field_names.NAME.value] = self.name
-        self._current[field_names.GROUP.value] = self.group
-        self._current[field_names.TYPE.value] = self.type
 
     def _setup_fields(self):
         """Helper method to set up data for fields"""
 
-        field_names = consts.fields.FieldNames
-
-        self._create_field(field_names.NAME.value)
-
-    def _create_field(self, field_name):
-        """Helper method to create a new field"""
-        field_config = consts.fields.fieldConfigs[field_name]
-        self._fields[field_name] = FieldFactory().create(**vars(field_config))
-
-    def draw(self, context):
-        for name, field in self._fields.items():
-            if not self._should_draw_field(field):
-                continue
-
-            # Enable/Disable the soft min/max fields
-            prop_row = self._draw_aligned_prop(field)
-            if (field.ui_data_attr == "soft_max" or
-                    field.ui_data_attr == "soft_min"):
-                prop_row.enabled = self.use_soft_limits
-
-    def _draw_aligned_prop(self, field: Field) -> bpy.types.UILayout:
-        row = self.layout.row()
-        split = row.split(factor=0.5)
-
-        # Create left column
-        left_col = split.column()
-        left_col.alignment = 'RIGHT'
-        left_col.label(text=field.label)
-
-        # Create right column
-        right_col = split.column()
-        right_col.prop(data=self, property=field.attr_name, text="")
-
-        return row
+        # Populate self._fields with pre-defined configs
+        for field_name in consts.fields.fieldConfigs:
+            field_config = consts.fields.fieldConfigs[field_name]
+            new_field = FieldFactory().create(
+                **vars(field_config),
+                current_value = self._data_object[self.name],
+                property_type = self.type
+            )
+            self._fields[field_name] = new_field
 
     def _is_use_soft_limits(self) -> bool:
         limit_attrs = {}
@@ -126,10 +107,7 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
         return (limit_attrs.get("min") != limit_attrs.get("soft_min") or
                 limit_attrs.get("max") != limit_attrs.get("soft_max"))
 
-    def _should_draw_field(self, field: Field) -> bool:
-        """Determine if the field should be drawn based on property type"""
-        return self.type in field.draw_on or field.draw_on == 'ALL'
-
+    # TODO: Move to field products
     def _apply_name(self):
         # Make sure the property name has changed
         current_name = self._current["name"]

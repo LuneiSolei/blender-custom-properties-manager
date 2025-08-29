@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Union
 
 from bpy.props import (BoolProperty, BoolVectorProperty, EnumProperty, FloatProperty, FloatVectorProperty, IntProperty,
                        IntVectorProperty, StringProperty)
@@ -19,6 +19,22 @@ class EditPropertyMenuOperatorMixin:
     type: EnumProperty(items=consts.blender_enums.CUSTOM_PROPERTY_TYPE_ITEMS)
     group: StringProperty()
     value: Any
+
+    min: Union[FloatProperty(), FloatVectorProperty(), IntProperty(), IntVectorProperty()]
+    max: Union[FloatProperty(), FloatVectorProperty(), IntProperty(), IntVectorProperty()]
+    soft_min: Union[FloatProperty(), FloatVectorProperty(), IntProperty(), IntVectorProperty()]
+    soft_max: Union[FloatProperty(), FloatVectorProperty(), IntProperty(), IntVectorProperty()]
+
+    step: Union[FloatProperty(), FloatVectorProperty(), IntProperty(), IntVectorProperty()]
+    default: Union[
+        FloatProperty(),
+        FloatVectorProperty(),
+        IntProperty(),
+        IntVectorProperty(),
+        BoolProperty(),
+        BoolVectorProperty(),
+        StringProperty()
+    ]
     use_soft_limits: BoolProperty()
     array_length: IntProperty()
     precision_float: IntProperty()
@@ -27,54 +43,6 @@ class EditPropertyMenuOperatorMixin:
     subtype_float_array: EnumProperty(items=consts.blender_enums.PROPERTY_SUBTYPE_VECTOR_ITEMS)
     description: StringProperty()
     is_overridable_library: BoolProperty()
-
-    # Min values
-    min_float: FloatProperty()
-    min_float_array: FloatProperty()
-    min_int: IntProperty()
-    min_int_array: IntProperty()
-    soft_min_float: FloatProperty()
-    soft_min_float_array: FloatProperty()
-    soft_min_int: IntProperty()
-    soft_min_int_array: IntProperty()
-
-    # Max values
-    max_float: FloatProperty()
-    max_float_array: FloatProperty()
-    max_int: IntProperty()
-    max_int_array: IntProperty()
-    soft_max_float: FloatProperty()
-    soft_max_float_array: FloatProperty()
-    soft_max_int: IntProperty()
-    soft_max_int_array: IntProperty()
-
-    # Step values
-    step_float: FloatProperty()
-    step_float_array: FloatProperty()
-    step_int: IntProperty()
-    step_int_array: IntProperty()
-
-    # Default values
-    default_float: FloatProperty()
-    default_float_array: FloatVectorProperty()
-    default_int: IntProperty()
-    default_int_array: IntVectorProperty()
-    default_bool: BoolProperty()
-    default_bool_array: BoolVectorProperty()
-    default_string: StringProperty()
-    default_data_block: StringProperty()
-    default_python: StringProperty()
-
-    # True values
-    value_float: FloatProperty()
-    value_float_array: FloatVectorProperty()
-    value_int: IntProperty()
-    value_int_array: IntVectorProperty()
-    value_bool: BoolProperty()
-    value_bool_array: BoolVectorProperty()
-    value_string: StringProperty()
-    value_data_block: StringProperty()
-    value_python: StringProperty()
 
     # Misc.
     _group_data = {}

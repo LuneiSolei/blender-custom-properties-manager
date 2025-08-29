@@ -1,20 +1,23 @@
 from dataclasses import dataclass
 from enum import Enum
 
+ALL = 'ALL'
+
 class FieldNames(Enum):
     NAME = "name"
     GROUP = "group"
     TYPE = "type"
+    MIN = "min"
 
 @dataclass
 class FieldConfig:
-    attr_name: str = ""
-    attr_prefix: str = ""
-    draw_on: str = ""
-    field_type: str = ""
-    label: str = ""
-    name: str = ""
-    ui_data_attr: str = ""
+    attr_name: str = None
+    attr_prefix: str = None
+    draw_on: str = None
+    field_type: str = None
+    label: str = None
+    name: str = None
+    ui_data_attr: str = None
 
 fieldConfigs = {
     FieldNames.NAME.value : FieldConfig(
@@ -37,5 +40,12 @@ fieldConfigs = {
         field_type = 'DROPDOWN',
         label = "Type",
         name = FieldNames.TYPE.value
+    ),
+    FieldNames.MIN.value: FieldConfig(
+        attr_prefix = "min_",
+        draw_on = 'ALL',
+        field_type = 'INT',
+        label = "Min Value",
+        name = FieldNames.MIN.value
     )
 }

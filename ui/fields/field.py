@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, List, Optional, Union
 
-from ...consts import fields, ops
+from ...consts import fields
 
 import bpy
 
@@ -69,5 +69,5 @@ class Field(ABC):
             self.attr_name = attr_name
 
     @abstractmethod
-    def apply(self, data_object: bpy.types.Object, new_value: Any):
+    def apply(self, operator):
         pass

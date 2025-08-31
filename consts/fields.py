@@ -11,7 +11,7 @@ class FieldNames(Enum):
 
 @dataclass
 class FieldConfig:
-    attr_name: str = None
+    attr_name: str = ""
     attr_prefix: str = None
     draw_on: str = None
     field_type: str = None

@@ -20,10 +20,17 @@ class EditPropertyMenuOperatorMixin:
     group: StringProperty()
     value: Any
 
-    min: Union[FloatProperty(), FloatVectorProperty(), IntProperty(), IntVectorProperty()]
-    max: Union[FloatProperty(), FloatVectorProperty(), IntProperty(), IntVectorProperty()]
-    soft_min: Union[FloatProperty(), FloatVectorProperty(), IntProperty(), IntVectorProperty()]
-    soft_max: Union[FloatProperty(), FloatVectorProperty(), IntProperty(), IntVectorProperty()]
+    # FLOAT
+    min_float: FloatProperty()
+    max_float: FloatProperty()
+    soft_min_float: FloatProperty()
+    soft_max_float: FloatProperty()
+
+    # INT
+    min_int: IntProperty()
+    max_int: IntProperty()
+    soft_min_int: IntProperty()
+    soft_max_int: IntProperty()
 
     step: Union[FloatProperty(), FloatVectorProperty(), IntProperty(), IntVectorProperty()]
     default: Union[

@@ -1,6 +1,7 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import Any, List, Optional, Union
-from ...consts import fields
+
+from ...consts import fields, ops
 
 import bpy
 
@@ -11,8 +12,7 @@ class Field(ABC):
     attr_prefix: Optional[str] = None
     ui_data_attr: Optional[str] = None
     attr_name: Optional[str] = None
-
-    _current_value: Any
+    _current_value: Any = None
 
     def __init__(
             self, *,
@@ -22,7 +22,6 @@ class Field(ABC):
             attr_prefix: Optional[str] = None,
             ui_data_attr: Optional[str] = None,
             attr_name: Optional[str] = None,
-            current_value: Any,
             property_type: str
     ):
         self.label = label
@@ -30,18 +29,17 @@ class Field(ABC):
         self.draw_on = draw_on
         self.attr_prefix = attr_prefix
         self.ui_data_attr = ui_data_attr
-        self._current_value = current_value
 
+        # UI data in Blender utilizes specific names for properties such as min_float, soft_max_int, etc. So, we need
+        # to generate this name based off of our property's type
         self._generate_attr_name(attr_name, property_type)
 
     @property
     def current_value(self):
-        """Returns the currently stored value of the field"""
         return self._current_value
 
     @current_value.setter
     def current_value(self, value):
-        """Sets the value of the field to be stored"""
         self._current_value = value
 
     def draw(self, operator: bpy.types.Operator) -> bpy.types.UILayout:
@@ -70,5 +68,6 @@ class Field(ABC):
         else:
             self.attr_name = attr_name
 
-    def apply_value(self):
+    @abstractmethod
+    def apply(self, data_object: bpy.types.Object, new_value: Any):
         pass

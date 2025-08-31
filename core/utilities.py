@@ -59,3 +59,21 @@ def get_property_type_from_value(value: Any) -> str:
     else:
         # Property type could not be determined. Theoretically, this should never happen
         return types["float"]
+
+def get_dynamic_blender_property(attr_type: str):
+    types = {
+        'FLOAT': bpy.props.FloatProperty,
+        'FLOAT_ARRAY': bpy.props.FloatVectorProperty,
+        'INT': bpy.props.IntProperty,
+        'INT_ARRAY': bpy.props.IntVectorProperty,
+        'BOOL': bpy.props.BoolProperty,
+        'BOOL_ARRAY': bpy.props.BoolVectorProperty,
+        'STRING': bpy.props.StringProperty,
+        'PYTHON': bpy.props.StringProperty,
+        'DATA_BLOCK': bpy.props.StringProperty
+    }
+
+    if attr_type in types:
+        return types[attr_type]
+    else:
+        raise ValueError(f"{attr_type} is not a valid attribute type")

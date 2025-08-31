@@ -5,3 +5,6 @@ class BoolField(Field):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+    def apply(self, new_value):
+        pass

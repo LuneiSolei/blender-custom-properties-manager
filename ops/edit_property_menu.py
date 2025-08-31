@@ -1,23 +1,17 @@
-﻿# Blender imports
-from typing import Union
+﻿import bpy
 
-import bpy
-
-# CPM imports
 from .edit_property_menu_mixin import EditPropertyMenuOperatorMixin
-from ..core import GroupData, utils
-from ..ui.fields.field import Field
-from ..ui.fields.field_factory import FieldFactory
 from .. import consts
+from ..core import GroupData, utils
+from ..ui.fields.field_factory import FieldFactory
 
 class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin):
 
     def invoke(self, context, event):
-        # Initialize the edit property menu
         if not self._validate():
             return {'CANCELLED'}
 
-        if not self._load_prop_ui_data():
+        if not self._load_ui_data():
             return {'CANCELLED'}
 
         self._get_property_data()
@@ -33,7 +27,8 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
         # NOTE: self.property_overridable_library_set('["prop"]',
         #  True/False) is how you change the "is_overridable_library" attribute
         # Apply modified properties
-        self._apply_name()
+        for name, field in self._fields.items():
+            field.apply(self._data_object, self.name)
 
         # Redraw Custom Properties panel
         for area in context.screen.areas:
@@ -44,6 +39,7 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
 
     def draw(self, context):
         for name, field in self._fields.items():
+            # Determine if the field should be drawn
             if not field.should_draw(self.type):
                 continue
 
@@ -71,7 +67,7 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
 
         return True
 
-    def _load_prop_ui_data(self):
+    def _load_ui_data(self):
         """Load existing property UI data"""
         self._ui_data = (self._data_object
                          .id_properties_ui(self.name)
@@ -93,10 +89,16 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
             field_config = consts.fields.fieldConfigs[field_name]
             new_field = FieldFactory().create(
                 **vars(field_config),
-                current_value = self._data_object[self.name],
                 property_type = self.type
             )
+            new_field.current_value = self._find_value(new_field.attr_name)
             self._fields[field_name] = new_field
+
+    def _find_value(self, attr_name: str):
+        if attr_name in self._ui_data:
+            return self._ui_data[attr_name]
+
+        return getattr(self, attr_name)
 
     def _is_use_soft_limits(self) -> bool:
         limit_attrs = {}
@@ -130,9 +132,9 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
 
         # Update the property in CPM's dataset
         self._group_data.update_property_name(
-            data_object = self._data_object,
-            prop_name = current_name,
-            new_name = new_name
+            data_object=self._data_object,
+            prop_name=current_name,
+            new_name=new_name
         )
 
         # Update the property in the data object itself

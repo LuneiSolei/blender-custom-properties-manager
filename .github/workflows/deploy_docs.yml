@@ -25,7 +25,7 @@ jobs:
           path: artifacts
 
       - name: Unzip artifact
-        run: unzip -O UTF-8 -qq "artifacts/${{ fields.artifact_name }}" -d dir
+        run: unzip -O UTF-8 -qq "artifacts/${{ inputs.artifact_name }}" -d dir
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

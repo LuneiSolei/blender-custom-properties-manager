@@ -1,9 +1,11 @@
 ﻿import bpy
 from bpy.app.handlers import persistent
 
-from . import consts, ops
-from .core import GroupData, cpm_state
-from .ui import draw_panels
+from .application import AddPropertyGroupOperator, EditPropertyMenuOperator, ExpandToggleOperator
+from .application import draw_panels
+from .shared import blender_panels
+from .composition.di_container import DIContainer
+from .core import GroupData, expand_states, original_draws
 
 bl_info = {
     "name": "Custom Properties Manager",
@@ -16,9 +18,9 @@ bl_info = {
 }
 
 _classes = {
-    ops.AddPropertyGroupOperator,
-    ops.EditPropertyMenuOperator,
-    ops.ExpandToggleOperator
+    AddPropertyGroupOperator,
+    EditPropertyMenuOperator,
+    ExpandToggleOperator
 }
 
 @persistent
@@ -38,6 +40,8 @@ def _create_flexible_draw_function(data_path):
     return draw_function
 
 def register():
+    container = DIContainer()
+
     # Register classes
     for cls in _classes:
         if hasattr(bpy.types, cls.__name__):
@@ -45,10 +49,10 @@ def register():
         bpy.utils.register_class(cls)
 
     # Create custom draw functions
-    for item in consts.blender_panels.panels:
+    for item in blender_panels.panels:
         if hasattr(bpy.types, item.name):
             panel_class = getattr(bpy.types, item.name)
-            cpm_state.original_draws[item.name] = panel_class.draw
+            original_draws[item.name] = panel_class.draw
             panel_class.draw = _create_flexible_draw_function(item.data_path)
 
     # Register handlers
@@ -62,13 +66,13 @@ def register():
 
 def unregister():
     # Restore all original draw functions
-    for panel_name, original_draw in cpm_state.original_draws.items():
+    for panel_name, original_draw in original_draws.items():
         if hasattr(bpy.types, panel_name):
             getattr(bpy.types, panel_name).draw_panels = original_draw
 
     # Clear state storage
-    cpm_state.original_draws.clear()
-    cpm_state.expand_states.clear()
+    original_draws.clear()
+    expand_states.clear()
 
     # Unregister classes
     for cls in _classes:

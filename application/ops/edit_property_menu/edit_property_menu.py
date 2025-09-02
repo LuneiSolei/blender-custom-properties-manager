@@ -1,9 +1,7 @@
 ﻿import bpy
 
 from .edit_property_menu_mixin import EditPropertyMenuOperatorMixin
-from .. import consts
-from ..core import GroupData, utils
-from ..ui.fields.field_factory import FieldFactory
+from ....core import Field, GroupData, utils, field_configs, FieldNames
 
 class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin):
 
@@ -85,9 +83,9 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
         """Helper method to set up data for fields"""
 
         # Populate self._fields with pre-defined configs
-        for field_name in consts.fields.fieldConfigs:
-            field_config = consts.fields.fieldConfigs[field_name]
-            new_field = FieldFactory().create(
+        for field_name in field_configs:
+            field_config = field_configs[field_name]
+            new_field = Field(
                 **vars(field_config),
                 property_type = self.type
             )
@@ -97,7 +95,7 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
     def _find_value(self, attr_name: str):
         if attr_name in self.ui_data:
             return self.ui_data[attr_name]
-        elif attr_name == consts.fields.FieldNames.GROUP:
+        elif attr_name == FieldNames.GROUP:
             # noinspection PyTypeChecker
             self.group = GroupData.get_data(self.data_object).get_group_name(self.name)
             return self.group

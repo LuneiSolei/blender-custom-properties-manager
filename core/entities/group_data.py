@@ -1,11 +1,9 @@
-﻿import json
+﻿import bpy
+import json
 from itertools import chain
 from typing import Dict, Self
-
-import bpy
-
-from .reporting_mixin import ReportingMixin
-from .. import consts
+from core.entities.reporting_mixin import ReportingMixin
+from ...shared import misc
 
 class GroupData(ReportingMixin):
     _cache = {}
@@ -26,8 +24,8 @@ class GroupData(ReportingMixin):
         self.ungrouped = ungrouped if ungrouped is not None else []
 
         # Check if config.CPM_GROUP_DATA
-        if consts.misc.CPM_SERIALIZED_GROUP_DATA in self:
-            del self[consts.misc.CPM_SERIALIZED_GROUP_DATA]
+        if misc.CPM_SERIALIZED_GROUP_DATA in self:
+            del self[misc.CPM_SERIALIZED_GROUP_DATA]
 
     def __delitem__(self, prop_name):
         """
@@ -249,7 +247,7 @@ class GroupData(ReportingMixin):
                 "grouped": group_data.grouped,
                 "ungrouped": group_data.ungrouped
             }
-            data_object[consts.misc.CPM_SERIALIZED_GROUP_DATA] = json.dumps(data_dict)
+            data_object[misc.CPM_SERIALIZED_GROUP_DATA] = json.dumps(data_dict)
 
     @classmethod
     def deserialize(cls):
@@ -261,8 +259,8 @@ class GroupData(ReportingMixin):
 
         all_objects = list(bpy.data.scenes) + list(bpy.data.objects)
         for data_object in all_objects:
-            data_str = data_object.get(consts.misc.CPM_SERIALIZED_GROUP_DATA,
-                                       consts.misc.DEFAULT_GROUP_DATA)
+            data_str = data_object.get(misc.CPM_SERIALIZED_GROUP_DATA,
+                                       misc.DEFAULT_GROUP_DATA)
             group_data = json.loads(data_str)
             new_data = GroupData(
                 grouped=group_data.get("grouped", []),

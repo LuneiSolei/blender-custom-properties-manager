@@ -1,11 +1,10 @@
-﻿from itertools import chain
+﻿import bpy
 
-import bpy
-
-from .. import consts
-from ..core import utilities as utils
-from ..core.group_data import GroupData
-from ..core.state import cpm_state
+from itertools import chain
+from core.entities import utilities as utils
+from core.entities.group_data import GroupData
+from ...shared import misc, ops, icons
+from ...core import expand_states
 
 def draw_panels(self, context, data_path):
     """
@@ -25,7 +24,7 @@ def draw_panels(self, context, data_path):
         return
 
     # Check if there are any properties to draw
-    if not hasattr(data_object, consts.misc.KEYS_ATTR) or not len(data_object.keys()) > 0:
+    if not hasattr(data_object, misc.KEYS_ATTR) or not len(data_object.keys()) > 0:
         return
 
     # Draw add buttons
@@ -57,16 +56,16 @@ def draw_panels(self, context, data_path):
 def _draw_add_buttons(layout, data_path):
     # Draw the original "New" button
     new_prop_op = layout.operator(
-        consts.ops.WM_PROPERTIES_ADD,
-        text="New",
-        icon=consts.icons.ADD)
+        ops.WM_PROPERTIES_ADD,
+        text = "New",
+        icon=  icons.ADD)
     new_prop_op.data_path = data_path
 
     # Draw the "New Group" button
     new_prop_group_op = layout.operator(
-        consts.ops.CPM_ADD_PROPERTY_GROUP,
-        text="New Group",
-        icon=consts.icons.ADD)
+        ops.CPM_ADD_PROPERTY_GROUP,
+        text = "New Group",
+        icon = icons.ADD)
     new_prop_group_op.data_path = data_path
 
 def _draw_property_row(layout, data_object, data_path, prop_name, group_name):
@@ -81,9 +80,9 @@ def _draw_property_row(layout, data_object, data_path, prop_name, group_name):
 
     # Draw the "edit property" button
     edit_op = row.operator(
-        consts.ops.CPM_EDIT_PROPERTY,
-        text="",
-        icon=consts.icons.PREFERENCES,
+        ops.CPM_EDIT_PROPERTY,
+        text = "",
+        icon = icons.PREFERENCES,
         emboss=False)
     edit_op.name = prop_name
     edit_op.data_path = data_path
@@ -92,9 +91,9 @@ def _draw_property_row(layout, data_object, data_path, prop_name, group_name):
 
     # Draw the "remove property" button
     remove_op = row.operator(
-        consts.ops.WM_PROPERTIES_REMOVE,
-        text="",
-        icon=consts.icons.X,
+        ops.WM_PROPERTIES_REMOVE,
+        text = "",
+        icon = icons.X,
         emboss=False
     )
     remove_op.property_name = prop_name
@@ -120,13 +119,13 @@ def _draw_property_group(
 
     # Create a unique key for this group to store the expand state
     expand_key = f"_cpm_{data_object.name}_{data_path}_{group_name}"
-    is_expanded = cpm_state.expand_states.get(expand_key, True)
+    is_expanded = expand_states.get(expand_key, True)
 
     toggle_op = header.operator(
-        consts.ops.CPM_EXPAND_TOGGLE,
+        ops.CPM_EXPAND_TOGGLE,
         text=group_name,
-        icon=consts.icons.DOWNARROW_HLT if is_expanded
-        else consts.icons.RIGHTARROW,
+        icon = icons.DOWNARROW_HLT if is_expanded
+        else icons.RIGHTARROW,
         emboss=False)
     toggle_op.expand_key = expand_key
     toggle_op.current_state = is_expanded

@@ -1,12 +1,12 @@
 import bpy
 
-from .. import consts
-from ..core import cpm_state
+from ...core import expand_states
+from ...shared import ops
 
 # noinspection PyTypeHints
 class ExpandToggleOperator(bpy.types.Operator):
     """Toggle expand/collapse state for property groups"""
-    bl_idname = consts.ops.CPM_EXPAND_TOGGLE
+    bl_idname = ops.CPM_EXPAND_TOGGLE
     bl_label = "Toggle Expand"
     bl_description = "Toggle the expand/collapse state of a property group"
     expand_key: bpy.props.StringProperty(
@@ -17,6 +17,6 @@ class ExpandToggleOperator(bpy.types.Operator):
         description="Current expand/collapse state")
 
     def execute(self, context):
-        cpm_state.expand_states[self.expand_key] = not self.current_state
+        expand_states[self.expand_key] = not self.current_state
 
         return {'FINISHED'}

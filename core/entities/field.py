@@ -1,11 +1,10 @@
-from abc import ABC, abstractmethod
 from typing import Any, List, Optional, Union
-
-from ...consts import fields
+from core import ReportingMixin
+from ...shared import ALL
 
 import bpy
 
-class Field(ABC):
+class Field(ReportingMixin):
     name: str
     label: str
     draw_on: Union[str, List[str]]
@@ -24,6 +23,7 @@ class Field(ABC):
             attr_name: Optional[str] = None,
             property_type: str
     ):
+        super().__init__()
         self.label = label
         self.name = name
         self.draw_on = draw_on
@@ -60,7 +60,7 @@ class Field(ABC):
 
     def should_draw(self, property_type: str) -> bool:
         """Determine if the field should be drawn"""
-        return property_type in self.draw_on or self.draw_on == fields.ALL
+        return property_type in self.draw_on or self.draw_on == ALL
 
     def _generate_attr_name(self, attr_name: str, property_type: str):
         if self.attr_prefix:
@@ -68,6 +68,10 @@ class Field(ABC):
         else:
             self.attr_name = attr_name
 
-    @abstractmethod
     def apply(self, operator):
-        pass
+        # Format method name with "apply_" prefix
+        method_name = f"apply_{self.attr_name}"
+
+        # Call the method by name using the method's object
+        method = getattr(self, method_name)
+        method(operator)

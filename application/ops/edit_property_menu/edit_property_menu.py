@@ -7,7 +7,8 @@ from ....infrastructure import di_container
 class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin):
 
     def invoke(self, context, _):
-        self.data_object = di_container.get("validate_property_service").validate(
+        property_data_service = di_container.get("property_data_service")
+        self.data_object = property_data_service.validate(
             data_path = self.data_path,
             property_name = self.name,
             operator = self
@@ -15,7 +16,6 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
         if not self.data_object:
             return {'CANCELLED'}
 
-        property_data_service = di_container.get("property_data_service")
         self.ui_data = property_data_service.get_ui_data(
             data_object = self.data_object,
             property_name = self.name

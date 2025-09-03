@@ -7,14 +7,16 @@ from ....infrastructure import di_container
 class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin):
 
     def invoke(self, context, event):
-        if not di_container.get("validate_property_service").validate(
+        self.data_object = di_container.get("validate_property_service").validate(
             data_path = self.data_path,
             property_name = self.name,
             operator = self
-        ):
+        )
+        if not self.data_object:
             return {'CANCELLED'}
 
-        if not self._load_ui_data():
+        self.ui_data = di_container.get("ui_data_service").load(self.data_object, self.name)
+        if not self.ui_data:
             return {'CANCELLED'}
 
         self._get_property_data()
@@ -52,14 +54,6 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
             if (field.ui_data_attr == "soft_max" or
                     field.ui_data_attr == "soft_min"):
                 field_row.enabled = self.use_soft_limits
-
-    def _load_ui_data(self):
-        """Load existing property UI data"""
-        self.ui_data = (self.data_object
-                        .id_properties_ui(self.name)
-                        .as_dict())
-
-        return True
 
     def _get_property_data(self):
         self.value = self.data_object[self.name]

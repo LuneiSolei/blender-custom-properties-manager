@@ -6,7 +6,6 @@ class DIContainer:
     def __init__(self):
         self._singleton_factories = {}
         self._singleton_instances = {}
-        set_up_container(self)
 
     def register_singleton(self, name: str, factory: Callable):
         """
@@ -35,10 +34,3 @@ class DIContainer:
         # Service does not exist
         else:
             raise ValueError(f"Service '{name}' not registered")
-
-def set_up_container(container: DIContainer):
-    """
-    Setup container factories and instances.
-    :param container: DIContainer in which to set up factories.
-    """
-

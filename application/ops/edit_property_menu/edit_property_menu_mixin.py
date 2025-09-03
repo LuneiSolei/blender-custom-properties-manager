@@ -1,5 +1,6 @@
-from typing import Any, Union
+import bpy
 
+from typing import Any, Union
 from bpy.props import (BoolProperty, BoolVectorProperty, EnumProperty, FloatProperty, FloatVectorProperty, IntProperty,
                        IntVectorProperty, StringProperty)
 from ....shared import ops, blender_enums
@@ -14,6 +15,8 @@ class EditPropertyMenuOperatorMixin:
     # If removed, PyCharm will complain about the PyTypes.
     # Property attributes
     data_path: StringProperty()
+    data_object: bpy.types.Object
+    ui_data: dict
     name: StringProperty()
     type: EnumProperty(items = blender_enums.CUSTOM_PROPERTY_TYPE_ITEMS)
     group: StringProperty()

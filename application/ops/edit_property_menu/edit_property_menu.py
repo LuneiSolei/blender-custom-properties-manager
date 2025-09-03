@@ -1,12 +1,12 @@
 ﻿import bpy
 
 from .edit_property_menu_mixin import EditPropertyMenuOperatorMixin
-from ....core import Field, GroupData, utils, field_configs, FieldNames
+from ....core import GroupData
 from ....infrastructure import di_container
 
 class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin):
 
-    def invoke(self, context, event):
+    def invoke(self, context, _):
         self.data_object = di_container.get("validate_property_service").validate(
             data_path = self.data_path,
             property_name = self.name,
@@ -28,7 +28,8 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
             data_object = self.data_object,
             property_name = self.name
         )
-        self._setup_fields()
+
+        self._fields = di_container.get("field_service").setup_fields(self)
 
         # Show the menu as a popup
         return context.window_manager.invoke_props_dialog(self)
@@ -50,7 +51,7 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
 
         return {'FINISHED'}
 
-    def draw(self, context):
+    def draw(self, _):
         for name, field in self._fields.items():
             # Determine if the field should be drawn
             if not field.should_draw(self.type):
@@ -62,29 +63,6 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
             if (field.ui_data_attr == "soft_max" or
                     field.ui_data_attr == "soft_min"):
                 field_row.enabled = self.use_soft_limits
-
-    def _setup_fields(self):
-        """Helper method to set up data for fields"""
-
-        # Populate self._fields with pre-defined configs
-        for field_name in field_configs:
-            field_config = field_configs[field_name]
-            new_field = Field(
-                **vars(field_config),
-                property_type = self.type
-            )
-            new_field.current_value = self._find_value(new_field.attr_name)
-            self._fields[field_name] = new_field
-
-    def _find_value(self, attr_name: str):
-        if attr_name in self.ui_data:
-            return self.ui_data[attr_name]
-        elif attr_name == FieldNames.GROUP:
-            # noinspection PyTypeChecker
-            self.group = GroupData.get_data(self.data_object).get_group_name(self.name)
-            return self.group
-
-        return getattr(self, attr_name)
 
     def _is_use_soft_limits(self) -> bool:
         limit_attrs = {}

@@ -1,7 +1,5 @@
 from typing import Callable
 
-from ..application.services import EditPropertyService, EditPropertyNameService, ValidatePropertyService
-
 class DIContainer:
     def __init__(self):
         self._singleton_factories = {}

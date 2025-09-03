@@ -1,6 +1,7 @@
 import bpy
 from .apply_handler import ApplyHandler
-from ...core import Field, GroupData
+from ..entities.field import Field
+from ..entities.group_data import GroupData
 
 class ApplyNameHandler(ApplyHandler):
     def handle(self, field: Field, operator):

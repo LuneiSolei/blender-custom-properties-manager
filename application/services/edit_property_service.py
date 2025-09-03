@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
 from ...core import Field
-from ...application.services import ValidatePropertyService
+from .validate_property_service import ValidatePropertyService
 
 @dataclass
 class EditPropertyRequest:

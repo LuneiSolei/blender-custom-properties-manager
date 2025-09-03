@@ -2,9 +2,9 @@
 from bpy.app.handlers import persistent
 
 from .application import AddPropertyGroupOperator, EditPropertyMenuOperator, ExpandToggleOperator
-from .application import draw_panels
+from .infrastructure.ui import draw_panels
 from .shared import blender_panels
-from .composition.di_container import DIContainer
+from .infrastructure.di_container import DIContainer
 from .core import GroupData, expand_states, original_draws
 
 bl_info = {

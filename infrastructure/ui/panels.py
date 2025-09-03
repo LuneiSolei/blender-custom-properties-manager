@@ -1,8 +1,8 @@
 ﻿import bpy
 
 from itertools import chain
-from core.entities import utilities as utils
-from core.entities.group_data import GroupData
+from ...core import utils
+from ...core import GroupData
 from ...shared import misc, ops, icons
 from ...core import expand_states
 

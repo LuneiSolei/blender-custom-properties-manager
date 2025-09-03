@@ -1,5 +1,5 @@
-from typing import Any, List, Optional, Union
-from core import ReportingMixin
+from typing import Any, Callable, List, Optional, Union
+from .reporting_mixin import ReportingMixin
 from ...shared import ALL
 
 import bpy
@@ -8,6 +8,7 @@ class Field(ReportingMixin):
     name: str
     label: str
     draw_on: Union[str, List[str]]
+    handler: Callable
     attr_prefix: Optional[str] = None
     ui_data_attr: Optional[str] = None
     attr_name: Optional[str] = None
@@ -18,6 +19,7 @@ class Field(ReportingMixin):
             label: str,
             name: str,
             draw_on: Union[str, List[str]],
+            handler: Callable,
             attr_prefix: Optional[str] = None,
             ui_data_attr: Optional[str] = None,
             attr_name: Optional[str] = None,
@@ -27,6 +29,7 @@ class Field(ReportingMixin):
         self.label = label
         self.name = name
         self.draw_on = draw_on
+        self.handler = handler
         self.attr_prefix = attr_prefix
         self.ui_data_attr = ui_data_attr
 

@@ -51,7 +51,7 @@ class DIContainer:
         else:
             raise ValueError(f"Service '{name}' not registered")
 
-def setup_container(container: DIContainer):
+def set_up_container(container: DIContainer):
     """
     Setup container factories and instances.
     :param container: DIContainer in which to set up factories.

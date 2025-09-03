@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from ...core import Field
+from ..entities.field import Field
 
 class ApplyHandler(ABC):
     @abstractmethod

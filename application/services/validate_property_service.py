@@ -1,5 +1,5 @@
 import bpy
-from core import utils
+from ...core import utils
 
 class ValidatePropertyService:
     """Service for validating property data"""

@@ -2,7 +2,7 @@
 import json
 from itertools import chain
 from typing import Dict, Self
-from core.entities.reporting_mixin import ReportingMixin
+from .reporting_mixin import ReportingMixin
 from ...shared import misc
 
 class GroupData(ReportingMixin):

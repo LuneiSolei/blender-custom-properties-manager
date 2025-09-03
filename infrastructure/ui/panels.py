@@ -87,7 +87,6 @@ def _draw_property_row(layout, data_object, data_path, prop_name, group_name):
     edit_op.name = prop_name
     edit_op.data_path = data_path
     edit_op.group = group_name
-    edit_op.type = utils.get_property_type_from_value(data_object[prop_name])
 
     # Draw the "remove property" button
     remove_op = row.operator(

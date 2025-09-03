@@ -15,11 +15,19 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
         if not self.data_object:
             return {'CANCELLED'}
 
-        self.ui_data = di_container.get("ui_data_service").load(self.data_object, self.name)
+        property_data_service = di_container.get("property_data_service")
+        self.ui_data = property_data_service.get_ui_data(
+            data_object = self.data_object,
+            property_name = self.name
+        )
         if not self.ui_data:
             return {'CANCELLED'}
 
-        self._get_property_data()
+        self.value = self.data_object[self.name]
+        self.type = property_data_service.get_type(
+            data_object = self.data_object,
+            property_name = self.name
+        )
         self._setup_fields()
 
         # Show the menu as a popup
@@ -54,12 +62,6 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
             if (field.ui_data_attr == "soft_max" or
                     field.ui_data_attr == "soft_min"):
                 field_row.enabled = self.use_soft_limits
-
-    def _get_property_data(self):
-        self.value = self.data_object[self.name]
-
-        # noinspection PyTypeChecker
-        self.type = utils.get_property_type_from_value(self.value)
 
     def _setup_fields(self):
         """Helper method to set up data for fields"""

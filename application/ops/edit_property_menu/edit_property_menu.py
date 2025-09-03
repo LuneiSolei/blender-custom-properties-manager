@@ -2,11 +2,16 @@
 
 from .edit_property_menu_mixin import EditPropertyMenuOperatorMixin
 from ....core import Field, GroupData, utils, field_configs, FieldNames
+from ....infrastructure import di_container
 
 class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin):
 
     def invoke(self, context, event):
-        if not self._validate():
+        if not di_container.get("validate_property_service").validate(
+            data_path = self.data_path,
+            property_name = self.name,
+            operator = self
+        ):
             return {'CANCELLED'}
 
         if not self._load_ui_data():
@@ -47,23 +52,6 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
             if (field.ui_data_attr == "soft_max" or
                     field.ui_data_attr == "soft_min"):
                 field_row.enabled = self.use_soft_limits
-
-    def _validate(self) -> bool:
-        """Validate input data and prepare object references"""
-        self.data_object = utils.resolve_data_object(bpy.context, self.data_path)
-        if not self.data_object:
-            self.report({'ERROR'}, "Data object '{}' not found".format(self.data_path))
-
-            return False
-
-        self.data_object_name = self.data_object.name
-
-        if self.name not in self.data_object:
-            self.report({'ERROR'}, "Property '{}' not found".format(self.name))
-
-            return False
-
-        return True
 
     def _load_ui_data(self):
         """Load existing property UI data"""

@@ -40,8 +40,7 @@ def _create_flexible_draw_function(data_path):
     return draw_function
 
 def register():
-    container = DIContainer()
-
+    DIContainer()
     # Register classes
     for cls in _classes:
         if hasattr(bpy.types, cls.__name__):

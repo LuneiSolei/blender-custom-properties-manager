@@ -56,4 +56,4 @@ class EditPropertyMenuOperatorMixin:
     # Misc.
     _group_data = {}
     _current = {}
-    _fields = {}
+    fields = {}

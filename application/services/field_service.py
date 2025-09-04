@@ -1,5 +1,4 @@
 from typing import Any
-
 from ...core import Field, field_configs, FieldNames, GroupData
 
 class FieldService:

@@ -9,4 +9,4 @@ from ..application.services import (
 di_container = DIContainer()
 di_container.register_singleton("property_data_service", PropertyDataService)
 di_container.register_singleton("field_service", FieldService)
-di_container.register_singleton("edit_property_name_service", EditPropertyService)
+di_container.register_singleton("edit_property_service", EditPropertyService)

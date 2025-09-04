@@ -29,7 +29,7 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
             property_name = self.name
         )
 
-        self._fields = di_container.get("field_service").setup_fields(self)
+        self.fields = di_container.get("field_service").setup_fields(self)
 
         # Show the menu as a popup
         return context.window_manager.invoke_props_dialog(self)
@@ -39,10 +39,10 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
         self._group_data.set_operator(self)
 
         # NOTE: self.property_overridable_library_set('["prop"]',
-        #  True/False) is how you change the "is_overridable_library" attribute
+        # True/False) is how you change the "is_overridable_library" attribute
         # Apply modified properties
-        for name, field in self._fields.items():
-            field.apply(self)
+        edit_property_service = di_container.get("edit_property_service")
+        edit_property_service.update_property_data(self)
 
         # Redraw Custom Properties panel
         for area in context.screen.areas:
@@ -52,7 +52,7 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
         return {'FINISHED'}
 
     def draw(self, _):
-        for name, field in self._fields.items():
+        for name, field in self.fields.items():
             # Determine if the field should be drawn
             if not field.should_draw(self.type):
                 continue

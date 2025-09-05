@@ -21,11 +21,11 @@ class DIContainer:
         """
         # Check for singleton service
         if name in self._singleton_factories:
-            # Return cached instance if it exists
+            # Return a cached instance if it exists
             if name in self._singleton_instances:
                 return self._singleton_instances[name]
 
-            # Create, cache, and return new singleton instance
+            # Create, cache, and return a new singleton instance
             instance = self._singleton_factories[name]()
             self._singleton_instances[name] = instance
             return instance

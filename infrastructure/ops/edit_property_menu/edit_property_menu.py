@@ -2,13 +2,15 @@
 
 from .edit_property_menu_mixin import EditPropertyMenuOperatorMixin
 from ....core import GroupData
-from ....infrastructure import di_container
+from ... import di_container
 
 class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin):
+    property_data_service = di_container.get("property_data_service")
+    edit_property_service = di_container.get("edit_property_service")
+    field_service = di_container.get("field_service")
 
     def invoke(self, context, _):
-        property_data_service = di_container.get("property_data_service")
-        self.data_object = property_data_service.validate(
+        self.data_object = self.property_data_service.validate(
             data_path = self.data_path,
             property_name = self.name,
             operator = self
@@ -16,20 +18,20 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
         if not self.data_object:
             return {'CANCELLED'}
 
-        self.ui_data = property_data_service.get_ui_data(
+        self.ui_data = self.property_data_service.get_ui_data(
             data_object = self.data_object,
             property_name = self.name
-        )
+        ).as_dict()
         if not self.ui_data:
             return {'CANCELLED'}
 
         self.value = self.data_object[self.name]
-        self.type = property_data_service.get_type(
+        self.type = self.property_data_service.get_type(
             data_object = self.data_object,
             property_name = self.name
         )
 
-        self.fields = di_container.get("field_service").setup_fields(self)
+        self.fields = self.field_service.setup_fields(self)
 
         # Show the menu as a popup
         return context.window_manager.invoke_props_dialog(self)
@@ -41,10 +43,9 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
         # NOTE: self.property_overridable_library_set('["prop"]',
         # True/False) is how you change the "is_overridable_library" attribute
         # Apply modified properties
-        edit_property_service = di_container.get("edit_property_service")
-        edit_property_service.update_property_data(self)
+        self.edit_property_service.update_property_data(self)
 
-        # Redraw Custom Properties panel
+        # Redraw the Custom Properties panel
         for area in context.screen.areas:
             if area.type == 'PROPERTIES':
                 area.tag_redraw()

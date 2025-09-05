@@ -1,0 +1,2 @@
+class GroupDataService:
+    pass

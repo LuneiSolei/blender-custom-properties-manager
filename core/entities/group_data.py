@@ -19,6 +19,7 @@ class GroupData(ReportingMixin):
 
         :return: None
         """
+
         super().__init__(*args, **kwargs)
         self.grouped = grouped if grouped is not None else []
         self.ungrouped = ungrouped if ungrouped is not None else []
@@ -77,7 +78,7 @@ class GroupData(ReportingMixin):
         # Ensure property exists in group data
         if not prop_name in self:
             self.report({'ERROR'}, f"Property '{prop_name}' not found in "
-                                   f"object '{self._operator.data_object_name}'")
+                                   f"object '{self._operator.data_object.name}'")
             return
 
         # Determine if property is in grouped or ungrouped category

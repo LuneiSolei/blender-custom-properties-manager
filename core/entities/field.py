@@ -30,7 +30,7 @@ class Field(ReportingMixin):
         self.attr_prefix = attr_prefix
         self.ui_data_attr = ui_data_attr
 
-        # UI data in Blender utilizes specific names for properties such as min_float, soft_max_int, etc. So, we need
+        # UI data in Blender uses specific names for properties such as min_float, soft_max_int, etc. So, we need
         # to generate this name based off of our property's type
         self._generate_attr_name(attr_name, property_type)
 
@@ -47,12 +47,12 @@ class Field(ReportingMixin):
         row = layout.row()
         split = row.split(factor=0.5)
 
-        # Create left column
+        # Create the left column
         left_col = split.column()
         left_col.alignment = 'RIGHT'
         left_col.label(text = self.label)
 
-        # Create right column
+        # Create the right column
         right_col = split.column()
         right_col.prop(data = operator, property = self.attr_name, text="")
 
@@ -65,6 +65,7 @@ class Field(ReportingMixin):
     def _generate_attr_name(self, attr_name: str, property_type: str):
         if self.attr_prefix:
             self.attr_name = f"{self.attr_prefix}{property_type.lower()}"
+            self.attr_name = self.attr_name.removesuffix("_array")
         else:
             self.attr_name = attr_name
 

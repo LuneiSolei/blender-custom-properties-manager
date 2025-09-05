@@ -1,6 +1,7 @@
 import bpy
 from ...core import utils
 
+# noinspection PyMethodMayBeStatic
 class PropertyDataService:
     def get_type(self, data_object: bpy.types.Object, property_name: str) -> str:
         """
@@ -53,15 +54,39 @@ class PropertyDataService:
             # Property type could not be determined. Theoretically, this should never happen
             return types["float"]
 
-    def get_ui_data(self, data_object: bpy.types.Object, property_name: str) -> dict:
+    def get_ui_data(self, data_object: bpy.types.Object, property_name: str):
         """
         Loads the UI data for the provided Blender data object.
+
+        Example UI data for various types
+            FLOAT: {
+                'subtype': 'NONE',
+                'min': 0.0,
+                'max': 1.0,
+                'soft_min': 0.0,
+                'soft_max': 1.0,
+                'step': 0.10000000149011612,
+                'precision': 3,
+                'default': 1.0
+            }
+
+            FLOAT_ARRAY: {
+                'subtype': 'NONE',
+                'description': '',
+                'min': 0.0,
+                'max': 1.0,
+                'soft_min': 0.29999998211860657,
+                'soft_max': 1.0,
+                'step': 0.10000000149011612,
+                'precision': 3,
+                'default': [0.3700000047683716, 0.3700000047683716, 0.3700000047683716]
+            }
         :param data_object: Blender data object.
         :param property_name: Name of the property.
-        :return: A dictionary representing the UI data.
+        :return: An object used to manage the UI data.
         """
 
-        return data_object.id_properties_ui(property_name).as_dict()
+        return data_object.id_properties_ui(property_name)
 
     def validate(self, data_path: str, property_name: str, operator) -> bpy.types.Object:
         """

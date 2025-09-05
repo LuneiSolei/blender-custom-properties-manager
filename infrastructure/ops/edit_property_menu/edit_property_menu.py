@@ -1,15 +1,16 @@
-﻿import bpy
+﻿from typing import Any
+
+import bpy
 
 from .edit_property_menu_mixin import EditPropertyMenuOperatorMixin
 from ....core import GroupData
 from ... import di_container
 
 class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin):
-    property_data_service = di_container.get("property_data_service")
-    edit_property_service = di_container.get("edit_property_service")
-    field_service = di_container.get("field_service")
-
     def invoke(self, context, _):
+        self.property_data_service = di_container.get("property_data_service")
+        self.edit_property_service = di_container.get("edit_property_service")
+        self.field_service = di_container.get("field_service")
         self.data_object = self.property_data_service.validate(
             data_path = self.data_path,
             property_name = self.name,

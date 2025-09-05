@@ -1,10 +1,4 @@
-﻿import bpy
-from bpy.app.handlers import persistent
-
-from .infrastructure import AddPropertyGroupOperator, EditPropertyMenuOperator, ExpandToggleOperator, bootstrap
-from .infrastructure.ui import draw_panels
-from .shared import blender_panels
-from .core import GroupData, expand_states, original_draws
+﻿from .infrastructure import AddPropertyGroupOperator, EditPropertyMenuOperator, ExpandToggleOperator, bootstrap
 
 bl_info = {
     "name": "Custom Properties Manager",

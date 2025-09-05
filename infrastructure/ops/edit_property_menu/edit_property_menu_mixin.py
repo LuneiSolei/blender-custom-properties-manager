@@ -1,6 +1,6 @@
 import bpy
 
-from typing import Union
+from typing import Any, Union
 from bpy.props import (BoolProperty, BoolVectorProperty, EnumProperty, FloatProperty, FloatVectorProperty, IntProperty,
                        IntVectorProperty, StringProperty)
 from ....shared import ops, blender_enums
@@ -10,6 +10,11 @@ class EditPropertyMenuOperatorMixin:
     bl_label = "Edit Property"
     bl_idname = ops.CPM_EDIT_PROPERTY
     bl_description = "Edit custom property menu"
+
+    # Services Cache
+    property_data_service: Any
+    edit_property_service: Any
+    field_service: Any
 
     # Needed for PyCharm to properly type check against Blender's EnumProperty.
     # If removed, PyCharm will complain about the PyTypes.

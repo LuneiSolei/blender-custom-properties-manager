@@ -1,9 +1,10 @@
 import bpy
-from ...core import utils
+from ...core import utils, Field
+from .group_data_manager import GroupDataManager
 
-# noinspection PyMethodMayBeStatic
-class PropertyDataService:
-    def get_type(self, data_object: bpy.types.Object, property_name: str) -> str:
+class PropertyDataManager:
+    @staticmethod
+    def get_type(data_object: bpy.types.Object, property_name: str) -> str:
         """
         Get property type from data object.
         :param data_object: Blender data object
@@ -19,6 +20,7 @@ class PropertyDataService:
             'PYTHON',
             'DATA_BLOCK'
         """
+
         types = {
             "float": 'FLOAT',
             "float_array": 'FLOAT_ARRAY',
@@ -54,7 +56,8 @@ class PropertyDataService:
             # Property type could not be determined. Theoretically, this should never happen
             return types["float"]
 
-    def get_ui_data(self, data_object: bpy.types.Object, property_name: str):
+    @staticmethod
+    def get_ui_data(data_object: bpy.types.Object, property_name: str):
         """
         Loads the UI data for the provided Blender data object.
 
@@ -88,7 +91,8 @@ class PropertyDataService:
 
         return data_object.id_properties_ui(property_name)
 
-    def validate(self, data_path: str, property_name: str, operator) -> bpy.types.Object:
+    @staticmethod
+    def validate(data_path: str, property_name: str, operator) -> bpy.types.Object:
         """
         Validate a property's existence from a data path.
         :param data_path: Path to the Blender object.
@@ -109,3 +113,70 @@ class PropertyDataService:
             return None
 
         return data_object
+
+    @classmethod
+    def update_property_data(cls, operator):
+        for field in operator.fields.values():
+            cls.update_name(operator, field)
+            cls.update_group(operator, field)
+
+    @classmethod
+    def update_name(cls, operator, field: Field):
+        """
+        Updates the property name.
+        :param operator: The EditPropertyMenuOperator instance.
+        :param field: The field with the data used to update the property.
+        """
+
+        # Ensure the property name has changed
+        if field.current_value == operator.name:
+            return
+
+        # Validation
+        if operator.name in operator.data_object:
+            operator.report({'ERROR'}, f"Property '{operator.name}' already exists")
+
+            # Reset property name
+            operator.name = field.current_value
+
+            return
+
+        # Ensure we're not trying to rename an IDPropertyGroup
+        if isinstance(operator.data_object[field.current_value], bpy.types.bpy_struct):
+            operator.report({'ERROR'}, f"Cannot rename '{field.current_value}' to '"
+                                       f"{operator.name}'. Renaming IDPropertyGroup "
+                                       f"types is currently not supported.")
+
+            return
+
+        # Update property name in CPM's dataset
+        group_data = GroupDataManager.get_data(operator.data_object)
+        group_data.update_property_name(
+            data_object = operator.data_object,
+            prop_name = operator.name,
+            new_name = operator.name
+        )
+
+        # Update the property in the data object itself
+        operator.data_object[operator.name] = operator.data_object[field.current_value]
+        operator.data_object.id_properties_ui(operator.name).update(**operator.ui_data)
+        del operator.data_object[field.current_value]
+
+    @classmethod
+    def update_group(cls, operator, field: Field):
+        """
+        Updates the property group.
+        :param operator: The EditPropertyMenuOperator instance.
+        :param field: The field with the data used to update the property.
+        """
+        # Ensure the group name has changed
+        if field.current_value == operator.group:
+            return
+
+        # Update property in CPM's dataset
+        group_data = GroupDataManager.get_data(operator.data_object)
+        group_data.set_operator(operator)
+        group_data.update_property_group(
+            prop_name = operator.name,
+            new_group = operator.group
+        )

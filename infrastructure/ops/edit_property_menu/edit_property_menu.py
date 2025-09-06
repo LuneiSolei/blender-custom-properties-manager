@@ -1,16 +1,19 @@
-﻿from typing import Any
-
-import bpy
+﻿import bpy
 
 from .edit_property_menu_mixin import EditPropertyMenuOperatorMixin
-from ....core import GroupData
-from ... import di_container
+from ....application.managers import GroupDataManager, PropertyDataManager
 
 class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin):
+    _group_data_manager: type[GroupDataManager]
+    _property_data_manager: type[PropertyDataManager]
+
+    @classmethod
+    def initialize(cls, group_data_manager: type[GroupDataManager], property_data_manager: type[PropertyDataManager]):
+        """Initialize the operator with its dependencies."""
+        cls._group_data_manager = group_data_manager
+        cls._property_data_manager = property_data_manager
+
     def invoke(self, context, _):
-        self.property_data_service = di_container.get("property_data_service")
-        self.edit_property_service = di_container.get("edit_property_service")
-        self.field_service = di_container.get("field_service")
         self.data_object = self.property_data_service.validate(
             data_path = self.data_path,
             property_name = self.name,
@@ -38,7 +41,7 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
         return context.window_manager.invoke_props_dialog(self)
 
     def execute(self, context):
-        self._group_data = GroupData.get_data(self.data_object)
+        self._group_data = self._group_data_manager.get_data(self.data_object)
         self._group_data.set_operator(self)
 
         # NOTE: self.property_overridable_library_set('["prop"]',
@@ -75,83 +78,82 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
         return (limit_attrs.get("min") != limit_attrs.get("soft_min") or
                 limit_attrs.get("max") != limit_attrs.get("soft_max"))
 
-    # TODO: Move to field products
-    def _apply_name(self):
-        # Make sure the property name has changed
-        current_name = self._current["name"]
-        new_name = self.name
-        if current_name == new_name:
-            return
-
-        # Validation
-        if new_name in self.data_object:
-            self.report({'ERROR'}, f"Property '{new_name}' already exists")
-            return
-
-        # Ensure we're not trying to rename an IDPropertyGroup
-        if isinstance(self.data_object[current_name], bpy.types.bpy_struct):
-            self.report({'ERROR'}, f"Cannot rename '{current_name}' to '"
-                                   f"{new_name}'. Renaming IDPropertyGroup "
-                                   f"types is currently not supported.")
-
-            return
-
-        # Update the property in CPM's dataset
-        self._group_data.update_property_name(
-            data_object=self.data_object,
-            prop_name=current_name,
-            new_name=new_name
-        )
-
-        # Update the property in the data object itself
-        self.data_object[new_name] = self.data_object[current_name]
-        self.data_object.id_properties_ui(new_name).update(**self.ui_data)
-        del self.data_object[current_name]
-
-    def _apply_group(self):
-        # Make sure the group name has changed
-        old_group = self._current["group"]
-        new_group = self.group
-        if old_group == new_group:
-            return
-
-        # Update property in CPM's dataset
-        group_data = GroupData.get_data(self.data_object)
-        group_data.set_operator(self)
-        group_data.update_property_group(
-            data_object=self.data_object,
-            prop_name=self.name,
-            new_group=new_group)
-
-    def _apply_type(self):
-        # Make sure the property type has changed
-        old_type = self._current["type"]
-        new_type = self.type
-        if old_type == new_type:
-            return
-
-        # Update the property in the data object
-        if self.type == 'FLOAT':
-            return bpy.props.FloatProperty(
-                name=self.name,
-                description=self.description,
-                translation_context="",
-                min=self.min,
-                max=self.max,
-                soft_min=self.soft_min,
-                soft_max=self.soft_max,
-                step=self.step,
-                precision=self.precision,
-                options=self.options,
-                override=self.override,
-                tags=self.tags,
-                subtype=self.subtype,
-                unit=self.unit,
-                update=self.update,
-                get=self.get,
-                set=self.set
-            )
-
-    def _apply_value(self):
-        # Make sure the property value has changed
-        old_value = self._current["value"]
+    # def _apply_name(self):
+    #     # Make sure the property name has changed
+    #     current_name = self._current["name"]
+    #     new_name = self.name
+    #     if current_name == new_name:
+    #         return
+    #
+    #     # Validation
+    #     if new_name in self.data_object:
+    #         self.report({'ERROR'}, f"Property '{new_name}' already exists")
+    #         return
+    #
+    #     # Ensure we're not trying to rename an IDPropertyGroup
+    #     if isinstance(self.data_object[current_name], bpy.types.bpy_struct):
+    #         self.report({'ERROR'}, f"Cannot rename '{current_name}' to '"
+    #                                f"{new_name}'. Renaming IDPropertyGroup "
+    #                                f"types is currently not supported.")
+    #
+    #         return
+    #
+    #     # Update the property in CPM's dataset
+    #     self._group_data.update_property_name(
+    #         data_object=self.data_object,
+    #         key=current_name,
+    #         new_name=new_name
+    #     )
+    #
+    #     # Update the property in the data object itself
+    #     self.data_object[new_name] = self.data_object[current_name]
+    #     self.data_object.id_properties_ui(new_name).update(**self.ui_data)
+    #     del self.data_object[current_name]
+    #
+    # def _apply_group(self):
+    #     # Make sure the group name has changed
+    #     old_group = self._current["group"]
+    #     new_group = self.group
+    #     if old_group == new_group:
+    #         return
+    #
+    #     # Update property in CPM's dataset
+    #     group_data = GroupData.get_data(self.data_object)
+    #     group_data.set_operator(self)
+    #     group_data.update_property_group(
+    #         data_object=self.data_object,
+    #         key=self.name,
+    #         new_group=new_group)
+    #
+    # def _apply_type(self):
+    #     # Make sure the property type has changed
+    #     old_type = self._current["type"]
+    #     new_type = self.type
+    #     if old_type == new_type:
+    #         return
+    #
+    #     # Update the property in the data object
+    #     if self.type == 'FLOAT':
+    #         return bpy.props.FloatProperty(
+    #             name=self.name,
+    #             description=self.description,
+    #             translation_context="",
+    #             min=self.min,
+    #             max=self.max,
+    #             soft_min=self.soft_min,
+    #             soft_max=self.soft_max,
+    #             step=self.step,
+    #             precision=self.precision,
+    #             options=self.options,
+    #             override=self.override,
+    #             tags=self.tags,
+    #             subtype=self.subtype,
+    #             unit=self.unit,
+    #             update=self.update,
+    #             get=self.get,
+    #             set=self.set
+    #         )
+    #
+    # def _apply_value(self):
+    #     # Make sure the property value has changed
+    #     old_value = self._current["value"]

@@ -1,73 +1,120 @@
-﻿import bpy
-import json
-from itertools import chain
-from typing import Dict, Self
+﻿from typing import ItemsView, Iterator, KeysView, List, Tuple, ValuesView
+
+import bpy
+from ...shared import consts
 from .reporting_mixin import ReportingMixin
-from ...shared import misc
 
 class GroupData(ReportingMixin):
-    _cache = {}
+    _cached_data: dict[str, list[str]]
+    _group_data_name: str
 
-    def __init__(self, grouped: list[Dict[str, list[str]]] = None,
-                 ungrouped: list[str] = None, *args, **kwargs):
+    def __init__(self, group_data: dict[str, list[str]] = None):
         """
-        Initialize PropertyGroupData.
-
-        :param grouped: A list of dictionaries describing groups with
-        properties.
-        :param ungrouped: A list of properties without groups.
-
-        :return: None
+        Initialize GroupData.
+        :param group_data: A string representing the serialized group data.
         """
 
-        super().__init__(*args, **kwargs)
-        self.grouped = grouped if grouped is not None else []
-        self.ungrouped = ungrouped if ungrouped is not None else []
+        # Remove ourselves from the property list to avoid recursion
+        super().__init__()
+        self._cached_data = group_data
+        self._group_data_name = consts.CPM_SERIALIZED_GROUP_DATA
+        if self._group_data_name in self:
+            del self[self._group_data_name]
 
-        # Check if config.CPM_GROUP_DATA
-        if misc.CPM_SERIALIZED_GROUP_DATA in self:
-            del self[misc.CPM_SERIALIZED_GROUP_DATA]
+        if group_data is None:
+            raise ValueError("Argument `group_data` cannot be empty.")
 
-    def __delitem__(self, prop_name):
+    def __delitem__(self, key) -> bool:
         """
         Removes the specified property from the group dataset.
-
-        :param prop_name: The name of the property to remove.
-
-        :return: None
+        :param key: The name of the property to remove.
+        :return: True if the property was removed, False otherwise.
         """
-        if prop_name in self.ungrouped:
-            self.ungrouped.remove(prop_name)
+        for group, props in self._cached_data.items():
+            if key in props:
+                props.remove(key)
+                return True
 
-        for group in self.grouped:
-            for group_name, props in group.items():
-                if prop_name in props:
-                    props.remove(prop_name)
-                    break
+        return False
 
-    def __contains__(self, prop_name: str) -> bool:
+    def __getitem__(self, key: str) -> List[str]:
         """
-        Checks if the property exists anywhere in the grouping dataset.
-
-        :param prop_name: Name of the property to check.
-
-        :return: True if the property exists, False otherwise.
+        Get properties from the provided group.
+        :param key: The name of the group.
+        :return: List of properties in the group.
         """
-        # Check ungrouped data first
-        if prop_name in self.ungrouped:
-            return True
 
-        return any(prop_name in props
-                   for group in self.grouped
-                   for props in group.values())
+        return self._cached_data.get(key, [])
 
-    def update_property_name(
-            self,
-            *,
-            data_object: bpy.types.Object,
-            prop_name: str,
-            new_name: str
-    ):
+    def __setitem__(self, key: str, value: List[str]) -> None:
+        """
+        Set a list of properties for a specific group.
+        :param key: The group name.
+        :param value: The list of properties to set for the provided group.
+        """
+        self._cached_data[key] = value
+
+    def __iter__(self) -> Iterator[str]:
+        """
+        Iterate over group names.
+        :return: The iterator of group names.
+        """
+        return iter(self._cached_data)
+
+    def __len__(self) -> int:
+        """
+        Get the number of groups.
+        :return: The number of groups
+        """
+        return len(self._cached_data)
+    
+    def __contains__(self, item: str) -> bool:
+        """
+        Check if the group exists.
+        :param item: The group name.
+        :return: True if the group exists, False otherwise.
+        """
+        
+        return item in self._cached_data
+
+    def keys(self) -> KeysView[str]:
+        """
+        Get the iterator over group names.
+        :return: The iterator over group names.
+        """
+
+        return self._cached_data.keys()
+
+    def items(self) -> ItemsView[str, list[str]]:
+        """
+        Get the iterator over (group_name, props) pairs.
+        :return: The iterator of (group_name, props) tuples.
+        """
+
+        return self._cached_data.items()
+
+    def values(self) -> ValuesView[List[str]]:
+        """
+        Get the iterator over the list of properties in each group.
+        :return: The iterator over the lists of properties.
+        """
+
+        return self._cached_data.values()
+
+    def get(self, key: str, default = None) -> List[str]:
+        """
+        Get properties for a group with a default if the group doesn't exist.
+        :param key: The group name.
+        :param default: The default value to return if the group doesn't exist.
+        :return: A list of properties or the default.
+        """
+
+        return self._cached_data.get(key, default)
+
+    def as_dict(self) -> dict[str, list[str]]:
+        return self._cached_data.copy()
+
+    def update_property_name(self, *, data_object: bpy.types.Object, prop_name: str, new_name: str):
         """
         Updates name of the property.
 
@@ -75,87 +122,48 @@ class GroupData(ReportingMixin):
         :param prop_name: The name of the property to update.
         :param new_name: The new name of the property.
         """
-        # Ensure property exists in group data
-        if not prop_name in self:
-            self.report({'ERROR'}, f"Property '{prop_name}' not found in "
-                                   f"object '{self._operator.data_object.name}'")
-            return
 
-        # Determine if property is in grouped or ungrouped category
+        # Ensure property exists in any of the object's group data
         found = False
-        for group in self.grouped:
-            # Property is in the grouped category
-            for group_name, props in group.items():
-                if prop_name in props:
-                    index = props.index(prop_name)
-                    props[index] = new_name
-                    found = True
-                    break
-            if found:
+        for group, props in self._cached_data.items():
+            if prop_name in props:
+                index = props.index(prop_name)
+                props[index] = new_name
+                found = True
                 break
 
-        if not found and prop_name in self.ungrouped:
-            index = self.ungrouped.index(prop_name)
-            self.ungrouped[index] = new_name
-            found = True
+        if not found:
+            self.report({'ERROR'}, f"Property '{prop_name}' not found in '{data_object.name}'.")
 
-        self._update_cache(self, data_object)
-
-    def update_property_group(
-            self,
-            *,
-            data_object: bpy.types.Object,
-            prop_name: str,
-            new_group: str
-    ):
+    def update_property_group(self, *, prop_name: str, new_group: str):
         """
         Updates the group the property belongs to.
 
-        :param data_object: Blender data object the property belongs to.
         :param prop_name: The name of the property to update.
         :param new_group: The name of the group to attach the property to.
         """
-        # Remove property from old group
-        if not self.get_group_name(prop_name):
-            self.report({'INFO'}, f"Property '{prop_name}' found in ungrouped.")
-            index = self.ungrouped.index(prop_name)
-            self.ungrouped.pop(index)
-        else:
-            for group_name, props in chain.from_iterable(group.items() for group in self.grouped):
-                if prop_name in props:
-                    prop_index = props.index(prop_name)
-                    props.pop(prop_index)
-                    break
+        # Remove property from the old group
+        for group_name, props in self._cached_data.items():
+            if prop_name in props:
+                prop_index = props.index(prop_name)
+                props.pop(prop_index)
+                break
 
         # Place property into the new group
         if not new_group:
-            # Property goes into ungrouped category
-            self.ungrouped.append(prop_name)
-        else:
-            self.report({'INFO'}, f"Placed property '{prop_name}' in group '{new_group}'.")
-            # Property goes into grouped category
-            found = False
-            for group_name, props in chain.from_iterable(
-                    group.items() for group in self.grouped):
-                if group_name == new_group:
-                    props.append(prop_name)
-                    found = True
-                    break
+            return
 
-            # Group does not exist, create it
-            if not found:
-                self.grouped.append({new_group: [prop_name]})
+        for group_name, props in self._cached_data.items():
+            if group_name == new_group:
+                props.append(prop_name)
+                return
 
-        self._update_cache(self, data_object)
+        # Group does not exist, create it
+        self._cached_data[new_group] = [prop_name]
 
-    def update_property_type(
-            self,
-            *,
-            data_object: bpy.types.Object,
-            prop_name: str,
-            new_type: str
-    ):
+    def update_property_type(self, *, data_object: bpy.types.Object, prop_name: str, new_type: str):
         """Updates the type of the property."""
+        pass
 
     def verify(self, data_object: bpy.types.Object):
         """
@@ -167,126 +175,27 @@ class GroupData(ReportingMixin):
 
         :return: None
         """
-        # Cleanup any unused properties from the group data
+
+        # Clean up any unused properties from the group data
         # Retrieve properties to be removed
         data_object_keys = set(data_object.keys())
-        grouped_props_to_remove = [prop
-                                   for group in self.grouped
-                                   for _, props in group.items()
-                                   for prop in props
-                                   if prop not in data_object_keys
-                                   or prop.startswith("_")]
-        ungrouped_props_to_remove = [prop
-                                     for prop in self.ungrouped
-                                     if prop not in data_object_keys
-                                     or prop.startswith("_")]
+        keys_to_remove = []
+        for group in self._cached_data.values():
+            for prop in group:
+                if prop not in data_object_keys or prop.startswith("_"):
+                    keys_to_remove.append(prop)
 
-        # Remove properties
-        keys_to_remove = grouped_props_to_remove + ungrouped_props_to_remove
+        # Remove properties from GroupData
         for key in keys_to_remove:
             del self[key]
 
-        # Add any custom properties that are in the blender object, but not
-        # in the group data.
-        for prop in data_object.keys():
-            if prop not in self:
-                self.ungrouped.append(prop)
-
-        # Update the cache with any modified data
-        GroupData._update_cache(self, data_object)
-
     def get_group_name(self, prop_name: str) -> str:
-        for group_name, props in chain.from_iterable(
-                group.items() for group in self.grouped):
+        for group_name, props in self._cached_data.items():
             if prop_name in props:
                 return group_name
 
+        # Property wasn't found in any group
         return ""
 
-    @classmethod
-    def get_data(cls, data_object: bpy.types.Object) -> Self:
-        """
-        INTERNAL ONLY!
-
-        Gets the group data for the provided blender object. Data is automatically
-        verified and cache is updated.
-
-        :param data_object: The blender object to get the group data for.
-
-        :return: The group data for the provided blender object.
-        """
-        # Use object's memory pointer as cache key
-        object_pointer = data_object.as_pointer()
-
-        if object_pointer in cls._cache:
-            # Object is cached, get the data
-            cached_data = cls._cache[object_pointer]
-            new_data = GroupData(
-                grouped=cached_data.get("grouped", []),
-                ungrouped=cached_data.get("ungrouped", [])
-            )
-        else:
-            new_data = GroupData()
-
-        # Verify the newly formed GroupData
-        new_data.verify(data_object)
-        return new_data
-
-    @classmethod
-    def serialize(cls):
-        """
-        Serializes grouping data for all Blender objects. The data is
-        transformed into a dictionary and then serialized as a string
-        property per object.
-        """
-        all_objects = list(bpy.data.scenes) + list(bpy.data.objects)
-        for data_object in all_objects:
-            # Store each individual object's grouping data as a
-            # StringProperty on said object.
-            group_data = GroupData.get_data(data_object)
-            data_dict = {
-                "grouped": group_data.grouped,
-                "ungrouped": group_data.ungrouped
-            }
-            data_object[misc.CPM_SERIALIZED_GROUP_DATA] = json.dumps(data_dict)
-
-    @classmethod
-    def deserialize(cls):
-        """
-        Deserializes grouping data for a specified object's custom properties
-        using the designated private property that's already stored on the
-        object as the data source.
-        """
-
-        all_objects = list(bpy.data.scenes) + list(bpy.data.objects)
-        for data_object in all_objects:
-            data_str = data_object.get(misc.CPM_SERIALIZED_GROUP_DATA,
-                                       misc.DEFAULT_GROUP_DATA)
-            group_data = json.loads(data_str)
-            new_data = GroupData(
-                grouped=group_data.get("grouped", []),
-                ungrouped=group_data.get("ungrouped", []))
-            new_data.verify(data_object)
-
-    @classmethod
-    def _update_cache(cls, group_data: Self, data_object:
-    bpy.types.Object):
-        """
-        Updates the cached group data.
-
-        :param group_data: (PropertyGroupData) The data to use for updating.
-        :param data_object: (bpy.types.Object) The Blender 
-        object the data belongs to.
-        """
-        # Clean up any remaining empty groups
-        group_data.grouped = [group_dict for group_dict in group_data.grouped
-                              if any(len(props) > 0 for props in group_dict.values())]
-
-        # Store the group data under the relevant data object's cache
-        object_pointer = data_object.as_pointer()
-        current_data = {
-            "grouped": group_data.grouped,
-            "ungrouped": group_data.ungrouped
-        }
-        if object_pointer not in cls._cache or cls._cache[object_pointer] != current_data:
-            cls._cache[object_pointer] = current_data
+    def clear(self):
+        self._cached_data.clear()

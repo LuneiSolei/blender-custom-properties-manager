@@ -17,10 +17,10 @@ _classes = {
 }
 
 def register():
-    bootstrap.register_services()
     bootstrap.register_classes(_classes)
     bootstrap.register_draw_functions()
     bootstrap.register_handlers()
+    bootstrap.setup()
 
 def unregister():
     bootstrap.unregister_draw_functions()

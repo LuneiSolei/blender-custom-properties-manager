@@ -1,6 +1,6 @@
 from typing import Any, Callable, List, Optional, Union
 from .reporting_mixin import ReportingMixin
-from ...shared import ALL
+from ...shared import consts
 
 import bpy
 
@@ -60,7 +60,7 @@ class Field(ReportingMixin):
 
     def should_draw(self, property_type: str) -> bool:
         """Determine if the field should be drawn"""
-        return property_type in self.draw_on or self.draw_on == ALL
+        return property_type in self.draw_on or self.draw_on == consts.misc.ALL
 
     def _generate_attr_name(self, attr_name: str, property_type: str):
         if self.attr_prefix:

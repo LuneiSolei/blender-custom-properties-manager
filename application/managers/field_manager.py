@@ -1,7 +1,12 @@
 from typing import Any
-from ...core import Field, field_configs, FieldNames, GroupData
+from ...core import Field, field_configs, FieldNames
+from .group_data_manager import GroupDataManager
 
-class FieldService:
+class FieldManager:
+
+    def __init__(self):
+        pass
+
     def setup_fields(self, operator) -> dict:
         fields = {}
 
@@ -23,7 +28,7 @@ class FieldService:
         elif attr_name == FieldNames.GROUP:
             # noinspection PyTypeChecker
             # TODO: Use a service for GroupData
-            operator.group = GroupData.get_data(operator.data_object).get_group_name(operator.name)
+            operator.group = GroupDataManager.get_data(operator.data_object).get_group_name(operator.name)
             return operator.group
 
         return getattr(operator, attr_name)

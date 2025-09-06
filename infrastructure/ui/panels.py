@@ -1,10 +1,9 @@
-﻿import bpy
+﻿import bpy, addon_utils
 
 from itertools import chain
-from ...core import utils
-from ...core import GroupData
-from ...shared import misc, ops, icons
-from ...core import expand_states
+from ...core import utils, expand_states
+from ...shared import consts
+from ...application.managers import GroupDataManager
 
 def draw_panels(self, context, data_path):
     """
@@ -15,6 +14,7 @@ def draw_panels(self, context, data_path):
         :param context:
         :param self:
     """
+
     layout = self.layout
 
     # Get the data object dynamically
@@ -24,7 +24,7 @@ def draw_panels(self, context, data_path):
         return
 
     # Check if there are any properties to draw
-    if not hasattr(data_object, misc.KEYS_ATTR) or not len(data_object.keys()) > 0:
+    if not hasattr(data_object, consts.KEYS_ATTR) or not len(data_object.keys()) > 0:
         return
 
     # Draw add buttons
@@ -32,11 +32,10 @@ def draw_panels(self, context, data_path):
     layout.separator()
 
     # Get deserialized data (data is automatically verified)
-    group_data = GroupData.get_data(data_object)
+    group_data = GroupDataManager.get_data(data_object)
 
-    # Draw properties based on associated group
-    for group_name, props in chain.from_iterable(
-            group.items() for group in group_data.grouped):
+    # Draw properties based on the associated group
+    for group_name, props in group_data.items():
         _draw_property_group(
             layout,
             data_object,
@@ -45,7 +44,9 @@ def draw_panels(self, context, data_path):
             props)
 
     # Draw ungrouped properties
-    for prop_name in group_data.ungrouped:
+    grouped = set(chain.from_iterable(group_data.values()))
+    ungrouped = set(data_object.keys()) - grouped
+    for prop_name in ungrouped:
         _draw_property_row(
             layout,
             data_object,
@@ -56,20 +57,24 @@ def draw_panels(self, context, data_path):
 def _draw_add_buttons(layout, data_path):
     # Draw the original "New" button
     new_prop_op = layout.operator(
-        ops.WM_PROPERTIES_ADD,
+        consts.ops.WM_PROPERTIES_ADD,
         text = "New",
-        icon=  icons.ADD)
+        icon=  consts.ADD)
     new_prop_op.data_path = data_path
 
     # Draw the "New Group" button
     new_prop_group_op = layout.operator(
-        ops.CPM_ADD_PROPERTY_GROUP,
+        consts.ops.CPM_ADD_PROPERTY_GROUP,
         text = "New Group",
-        icon = icons.ADD)
+        icon = consts.icons.ADD)
     new_prop_group_op.data_path = data_path
 
 def _draw_property_row(layout, data_object, data_path, prop_name, group_name):
     """Draws a single property row."""
+    if prop_name.startswith("_"):
+        # Skip private properties
+        return
+
     row = layout.row()
 
     # If the property's value is a list, draw a label manually. Otherwise,
@@ -80,20 +85,20 @@ def _draw_property_row(layout, data_object, data_path, prop_name, group_name):
 
     # Draw the "edit property" button
     edit_op = row.operator(
-        ops.CPM_EDIT_PROPERTY,
+        consts.ops.CPM_EDIT_PROPERTY,
         text = "",
-        icon = icons.PREFERENCES,
-        emboss=False)
+        icon = consts.icons.PREFERENCES,
+        emboss = False)
     edit_op.name = prop_name
     edit_op.data_path = data_path
     edit_op.group = group_name
 
     # Draw the "remove property" button
     remove_op = row.operator(
-        ops.WM_PROPERTIES_REMOVE,
+        consts.ops.WM_PROPERTIES_REMOVE,
         text = "",
-        icon = icons.X,
-        emboss=False
+        icon = consts.icons.X,
+        emboss = False
     )
     remove_op.property_name = prop_name
     remove_op.data_path = data_path
@@ -105,7 +110,7 @@ def _draw_property_group(
         group_name: str,
         props: list):
     """
-    Draws a sub panel for a group of properties.
+    Draws a subpanel for a group of properties.
     Args:
         :param layout: Blender layout.
         :param data_object: Blender object.
@@ -121,11 +126,11 @@ def _draw_property_group(
     is_expanded = expand_states.get(expand_key, True)
 
     toggle_op = header.operator(
-        ops.CPM_EXPAND_TOGGLE,
-        text=group_name,
-        icon = icons.DOWNARROW_HLT if is_expanded
-        else icons.RIGHTARROW,
-        emboss=False)
+        consts.ops.CPM_EXPAND_TOGGLE,
+        text = group_name,
+        icon = consts.icons.DOWNARROW_HLT if is_expanded
+            else consts.icons.RIGHTARROW,
+        emboss = False)
     toggle_op.expand_key = expand_key
     toggle_op.current_state = is_expanded
 

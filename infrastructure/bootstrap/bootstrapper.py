@@ -5,7 +5,7 @@ from ..ops.edit_property_menu.edit_property_menu import EditPropertyMenuOperator
 from ...shared.consts import panels
 from ...core import original_draws, expand_states
 from ...infrastructure.ui import draw_panels
-from ...application.managers import GroupDataManager, PropertyDataManager
+from ...application.managers import GroupDataManager, PropertyDataManager, FieldManager
 
 def register_classes(classes: set):
     """
@@ -53,7 +53,11 @@ def unregister_handlers():
         bpy.app.handlers.load_post.remove(deserialize_on_post_load)
 
 def setup():
-    EditPropertyMenuOperator.initialize(group_data_manager = GroupDataManager, property_data_manager = PropertyDataManager)
+    EditPropertyMenuOperator.initialize(
+        group_data_manager = GroupDataManager,
+        property_data_manager = PropertyDataManager,
+        field_manager = FieldManager
+    )
 
 def _create_draw_function(data_path: str):
     def draw_function(self, context):

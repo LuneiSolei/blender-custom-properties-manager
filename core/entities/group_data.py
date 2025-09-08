@@ -101,7 +101,7 @@ class GroupData(ReportingMixin):
 
         return self._cached_data.values()
 
-    def get(self, key: str, default = None) -> List[str]:
+    def get_group_properties(self, key: str, default = None) -> List[str]:
         """
         Get properties for a group with a default if the group doesn't exist.
         :param key: The group name.

@@ -7,22 +7,23 @@ class FieldManager:
     def __init__(self):
         pass
 
-    def setup_fields(self, operator) -> dict:
+    @classmethod
+    def setup_fields(cls, operator) -> dict:
         fields = {}
 
         # Populate fields with pre-defined configs
-        for field_name in field_configs:
-            field_config = field_configs[field_name]
+        for name, config in field_configs.items():
             new_field = Field(
-                **vars(field_config),
+                **vars(config),
                 property_type = operator.type
             )
-            new_field.current_value = self.find_value(operator = operator, attr_name = new_field.attr_name)
-            fields[field_name] = new_field
+            new_field.current_value = cls.find_value(operator = operator, attr_name = new_field.attr_name)
+            fields[name] = new_field
 
         return fields
 
-    def find_value(self, operator, attr_name: str) -> Any:
+    @staticmethod
+    def find_value(operator, attr_name: str) -> Any:
         if attr_name in operator.ui_data:
             return operator.ui_data[attr_name]
         elif attr_name == FieldNames.GROUP:

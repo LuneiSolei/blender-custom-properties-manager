@@ -1,20 +1,26 @@
 ﻿import bpy
 
 from .edit_property_menu_mixin import EditPropertyMenuOperatorMixin
-from ....application.managers import GroupDataManager, PropertyDataManager
+from ....application.managers import GroupDataManager, PropertyDataManager, FieldManager
 
 class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin):
     _group_data_manager: type[GroupDataManager]
     _property_data_manager: type[PropertyDataManager]
+    _field_manager: type[FieldManager]
 
     @classmethod
-    def initialize(cls, group_data_manager: type[GroupDataManager], property_data_manager: type[PropertyDataManager]):
+    def initialize(cls,
+            group_data_manager: type[GroupDataManager],
+            property_data_manager: type[PropertyDataManager],
+            field_manager: type[FieldManager]):
         """Initialize the operator with its dependencies."""
+
         cls._group_data_manager = group_data_manager
         cls._property_data_manager = property_data_manager
+        cls._field_manager = field_manager
 
     def invoke(self, context, _):
-        self.data_object = self.property_data_service.validate(
+        self.data_object = self._property_data_manager.validate(
             data_path = self.data_path,
             property_name = self.name,
             operator = self
@@ -22,7 +28,7 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
         if not self.data_object:
             return {'CANCELLED'}
 
-        self.ui_data = self.property_data_service.get_ui_data(
+        self.ui_data = self._property_data_manager.get_ui_data(
             data_object = self.data_object,
             property_name = self.name
         ).as_dict()
@@ -30,12 +36,12 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
             return {'CANCELLED'}
 
         self.value = self.data_object[self.name]
-        self.type = self.property_data_service.get_type(
+        self.type = self._property_data_manager.get_type(
             data_object = self.data_object,
             property_name = self.name
         )
 
-        self.fields = self.field_service.setup_fields(self)
+        self.fields = self._field_manager.setup_fields(self)
 
         # Show the menu as a popup
         return context.window_manager.invoke_props_dialog(self)
@@ -47,7 +53,7 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
         # NOTE: self.property_overridable_library_set('["prop"]',
         # True/False) is how you change the "is_overridable_library" attribute
         # Apply modified properties
-        self.edit_property_service.update_property_data(self)
+        self._property_data_manager.update_property_data(self)
 
         # Redraw the Custom Properties panel
         for area in context.screen.areas:

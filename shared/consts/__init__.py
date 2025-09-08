@@ -23,6 +23,5 @@ __all__ = [
     'CPM_EXPAND_TOGGLE',
     'CPM_ADD_PROPERTY_GROUP',
     'CPM_EDIT_PROPERTY',
-    'DISABLE',
     'ADDON_NAME'
 ]

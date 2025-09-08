@@ -1,5 +1,5 @@
 import bpy
-from ...core import utils, Field
+from ...core import utils, Field, FieldNames
 from .group_data_manager import GroupDataManager
 
 class PropertyDataManager:
@@ -98,7 +98,7 @@ class PropertyDataManager:
         :param data_path: Path to the Blender object.
         :param property_name: Name of the property to validate.
         :param operator: Operator from which the property is evaluated.
-        :return: True if the property is valid, False otherwise.
+        :return: The data object if the property exists, None otherwise.
         """
 
         data_object = utils.resolve_data_object(bpy.context, data_path)
@@ -116,9 +116,7 @@ class PropertyDataManager:
 
     @classmethod
     def update_property_data(cls, operator):
-        for field in operator.fields.values():
-            cls.update_name(operator, field)
-            cls.update_group(operator, field)
+        cls.update_name(operator, operator.fields[FieldNames.NAME.value])
 
     @classmethod
     def update_name(cls, operator, field: Field):
@@ -153,7 +151,7 @@ class PropertyDataManager:
         group_data = GroupDataManager.get_data(operator.data_object)
         group_data.update_property_name(
             data_object = operator.data_object,
-            prop_name = operator.name,
+            prop_name = field.current_value,
             new_name = operator.name
         )
 

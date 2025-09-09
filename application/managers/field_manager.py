@@ -17,7 +17,10 @@ class FieldManager:
                 **vars(config),
                 property_type = operator.type
             )
-            new_field.current_value = cls.find_value(operator = operator, attr_name = new_field.attr_name)
+
+            if new_field.should_draw(operator.type):
+                new_field.current_value = cls.find_value(operator = operator, attr_name = new_field.attr_name)
+
             fields[name] = new_field
 
         return fields

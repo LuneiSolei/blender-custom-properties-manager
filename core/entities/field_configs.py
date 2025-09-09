@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 from enum import Enum
+from typing import Union
 
 @dataclass
 class FieldConfig:
     name: str
-    draw_on: str
+    draw_on: Union[str, list[str]]
     label: str
     attr_name: str = ""
     attr_prefix: str = None
@@ -37,7 +38,7 @@ field_configs = {
     ),
     FieldNames.MIN.value: FieldConfig(
         attr_prefix = "min_",
-        draw_on = 'ALL',
+        draw_on = ['FLOAT', 'FLOAT_ARRAY', 'INT', 'INT_ARRAY'],
         label = "Min Value",
         name = FieldNames.MIN.value
     )

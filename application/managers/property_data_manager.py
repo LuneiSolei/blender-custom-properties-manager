@@ -117,6 +117,8 @@ class PropertyDataManager:
     @classmethod
     def update_property_data(cls, operator):
         cls.update_name(operator, operator.fields[FieldNames.NAME.value])
+        cls.update_group(operator, operator.fields[FieldNames.GROUP.value])
+        cls.update_type(operator, operator.fields[FieldNames.TYPE.value])
 
     @classmethod
     def update_name(cls, operator, field: Field):
@@ -178,3 +180,54 @@ class PropertyDataManager:
             prop_name = operator.name,
             new_group = operator.group
         )
+
+    @classmethod
+    def update_type(cls, operator, field: Field):
+        if operator.type == field.current_value:
+            return
+
+        ui_source = operator.data_object.id_properties_ui(operator.name)
+        new_value = None
+        match operator.type:
+            case 'FLOAT':
+                new_value = float(field.current_value) if isinstance(field.current_value, (int, float)) else 0.0
+                ui_source.update(default = 0.0)
+            case 'INT':
+                new_value = int(field.current_value) if isinstance(field.current_value, (int, float)) else 0
+                ui_source.update(default = 0)
+            case 'BOOL':
+                new_value = bool(field.current_value)
+                ui_source.update(default = False)
+            case 'STRING':
+                new_value = str(field.current_value)
+                ui_source.update(default = "")
+            case 'FLOAT_ARRAY':
+                if isinstance(field.current_value, (list, tuple)):
+                    new_value = [float(v) if isinstance(v, (int, float)) else 0.0 for v in field.current_value]
+                else:
+                    new_value = [float(field.current_value) if isinstance(field.current_value, (int, float)) else 0.0]
+
+                ui_source.update(default = [0.0, 0.0, 0.0])
+            case 'INT_ARRAY':
+                if isinstance(field.current_value, (list, tuple)):
+                    new_value = [int(v) if isinstance(v, (int, float)) else 0 for v in field.current_value]
+                else:
+                    new_value = [int(field.current_value) if isinstance(field.current_value, (int, float)) else 0]
+
+                ui_source.update(default = [0, 0, 0])
+            case 'BOOL_ARRAY':
+                if isinstance(field.current_value, (list, tuple)):
+                    new_value = [bool(v) for v in field.current_value]
+                else:
+                    new_value = [bool(field.current_value)]
+
+                ui_source.update(default = [False, False, False])
+            case 'PYTHON':
+                new_value = {} if not isinstance(field.current_value, dict) else field.current_value
+                ui_source.update(default = {})
+
+        operator.data_object[operator.name] = new_value
+
+        # Update the UI data for the new property
+        operator.data_object.id_properties_ui(operator.name).update(**ui_source.as_dict())
+        pass

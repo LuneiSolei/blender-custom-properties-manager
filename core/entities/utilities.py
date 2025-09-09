@@ -17,49 +17,6 @@ def resolve_data_object(context, data_path: str) -> Union[bpy.types.Object, None
         obj = getattr(obj, attr)
     return obj
 
-# def get_property_type_from_value(value: Any) -> str:
-#     """
-#     Gets the type of the property that the value represents.
-#     :rtype: str
-#     :param value: The value to get the type from.
-#     :return: The property's type as determined by Blender.
-#     """
-#
-#     types = {
-#         "float": 'FLOAT',
-#         "float_array": 'FLOAT_ARRAY',
-#         "int": 'INT',
-#         "int_array": 'INT_ARRAY',
-#         "bool": 'BOOL',
-#         "bool_array": 'BOOL_ARRAY',
-#         "str": 'STRING',
-#         "IDPropertyGroup": 'PYTHON',
-#         "data_block": 'DATA_BLOCK'
-#     }
-#     prop_type = type(value).__name__
-#
-#     if prop_type in types:
-#         # Property is of a standard type
-#         return types[prop_type]
-#     elif prop_type == "IDPropertyArray":
-#         # Property is of an array type
-#         has_values = len(value) > 0
-#
-#         if has_values and isinstance(value[0], float):
-#             return types["float_array"]
-#         elif has_values and isinstance(value[0], int):
-#             return types["int_array"]
-#         elif has_values and isinstance(value[0], bool):
-#             return types["bool_array"]
-#         else:
-#             return types["float_array"]
-#     elif isinstance(value, bpy.types.ID):
-#         # Property is of a data_block type
-#         return types["data_block"]
-#     else:
-#         # Property type could not be determined. Theoretically, this should never happen
-#         return types["float"]
-
 def get_dynamic_blender_property(attr_type: str):
     types = {
         'FLOAT': bpy.props.FloatProperty,
@@ -77,3 +34,33 @@ def get_dynamic_blender_property(attr_type: str):
         return types[attr_type]
     else:
         raise ValueError(f"{attr_type} is not a valid attribute type")
+
+def on_type_change(self, context):
+    """Called when the property type changes."""
+    if not hasattr(self, "initialized") or not self.initialized:
+        # Skip during initial setup
+        return
+
+    # Re-set up the fields with the new type
+    if hasattr(self, "_field_manager"):
+        # Save current values to restore after field setup
+        current_values = {}
+        for name, field in self.fields.items():
+            current_values[name] = getattr(self, field.attr_name)
+
+        # Set up fields for the new type
+        self.fields = self._field_manager.setup_fields(self)
+
+        # Restore previous values
+        for attr_name, value in current_values.items():
+            if hasattr(self, attr_name):
+                setattr(self, attr_name, value)
+
+        # Force redraw of the dialog
+        self.refresh_ui(context)
+
+# noinspection PyMethodMayBeStatic
+def refresh_ui(self, context):
+    """Forces a redrawing of the Edit Property Menu dialog"""
+    for area in context.screen.areas:
+        area.tag_redraw()

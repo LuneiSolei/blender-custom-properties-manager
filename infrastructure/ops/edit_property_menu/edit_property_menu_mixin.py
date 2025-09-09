@@ -4,6 +4,7 @@ from typing import Any, Union
 from bpy.props import (BoolProperty, BoolVectorProperty, EnumProperty, FloatProperty, FloatVectorProperty, IntProperty,
                        IntVectorProperty, StringProperty)
 from ....shared import consts
+from ....core import utils
 
 # noinspection PyTypeHints
 class EditPropertyMenuOperatorMixin:
@@ -23,7 +24,10 @@ class EditPropertyMenuOperatorMixin:
     data_object: bpy.types.Object
     ui_data: dict
     name: StringProperty()
-    type: EnumProperty(items = consts.blender_enums.CUSTOM_PROPERTY_TYPE_ITEMS)
+    type: EnumProperty(
+        items = consts.blender_enums.CUSTOM_PROPERTY_TYPE_ITEMS,
+        update = utils.on_type_change
+    )
     group: StringProperty()
     value_float: FloatProperty()
     value_int: IntProperty()
@@ -32,6 +36,7 @@ class EditPropertyMenuOperatorMixin:
     step: IntProperty()
     precision: IntProperty()
     subtype_float: EnumProperty(items = consts.blender_enums.PROPERTY_SUBTYPE_ITEMS)
+    initialized: bool
 
     # FLOAT
     min_float: FloatProperty()

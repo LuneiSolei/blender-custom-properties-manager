@@ -57,3 +57,4 @@ LOG_LEVELS = (
     ('WARNING', "Warning", "Shows warning and error messages"),
     ('ERROR', "Error", "Shows only error messages"),
 )
+

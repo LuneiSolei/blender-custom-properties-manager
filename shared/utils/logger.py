@@ -1,14 +1,8 @@
 import bpy
 
 from .. import consts
-from enum import Enum
+from ...shared.classes import LogLevel
 
-class LogLevel(Enum):
-    NONE = 0
-    DEBUG = 1
-    INFO = 2
-    WARNING = 3
-    ERROR = 4
 
 def _get_log_level() -> LogLevel:
     """Helper to get the current log level from addon preferences."""

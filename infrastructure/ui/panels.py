@@ -1,13 +1,11 @@
-﻿import bpy
+﻿import bpy, addon_utils
+
 from itertools import chain
-from ..core.group_data import GroupData
-from ..core.state import cpm_state
-from ..core import utilities
-from .. import config
+from ...core import utils, expand_states
+from ...shared import consts
+from ...application.managers import GroupDataManager
 
-__all__ = ["draw"]
-
-def draw(self, context, data_path):
+def draw_panels(self, context, data_path):
     """
     Draws the panel associated with the provided context type.
 
@@ -16,16 +14,17 @@ def draw(self, context, data_path):
         :param context:
         :param self:
     """
+
     layout = self.layout
 
     # Get the data object dynamically
-    data_object = utilities.resolve_data_object(context, data_path)
+    data_object = utils.resolve_data_object(context, data_path)
     if not data_object:
-        layout.label(text = f"No {data_path} available")
+        layout.label(text=f"No {data_path} available")
         return
 
     # Check if there are any properties to draw
-    if not hasattr(data_object, config.ATTR_KEYS) or not len(data_object.keys()) > 0:
+    if not hasattr(data_object, consts.KEYS_ATTR) or not len(data_object.keys()) > 0:
         return
 
     # Draw add buttons
@@ -33,11 +32,10 @@ def draw(self, context, data_path):
     layout.separator()
 
     # Get deserialized data (data is automatically verified)
-    group_data = GroupData.get_data(data_object)
+    group_data = GroupDataManager.get_data(data_object)
 
-    # Draw properties based on associated group
-    for group_name, props in chain.from_iterable(
-        group.items() for group in group_data.grouped):
+    # Draw properties based on the associated group
+    for group_name, props in group_data.items():
         _draw_property_group(
             layout,
             data_object,
@@ -46,54 +44,60 @@ def draw(self, context, data_path):
             props)
 
     # Draw ungrouped properties
-    for prop_name in group_data.ungrouped:
+    grouped = set(chain.from_iterable(group_data.values()))
+    ungrouped = set(data_object.keys()) - grouped
+    for prop_name in ungrouped:
         _draw_property_row(
             layout,
             data_object,
             data_path,
             prop_name,
-            group_name = "")
+            group_name="")
 
 def _draw_add_buttons(layout, data_path):
     # Draw the original "New" button
     new_prop_op = layout.operator(
-        config.WM_PROPERTIES_ADD,
+        consts.ops.WM_PROPERTIES_ADD,
         text = "New",
-        icon = config.ADD_ICON)
+        icon=  consts.ADD)
     new_prop_op.data_path = data_path
 
     # Draw the "New Group" button
     new_prop_group_op = layout.operator(
-        config.CPM_ADD_NEW_PROPERTY_GROUP_OP,
-        text ="New Group",
-        icon = config.ADD_ICON)
+        consts.ops.CPM_ADD_PROPERTY_GROUP,
+        text = "New Group",
+        icon = consts.icons.ADD)
     new_prop_group_op.data_path = data_path
 
 def _draw_property_row(layout, data_object, data_path, prop_name, group_name):
     """Draws a single property row."""
+    if prop_name.startswith("_"):
+        # Skip private properties
+        return
+
     row = layout.row()
 
     # If the property's value is a list, draw a label manually. Otherwise,
     # Blender misbehaves and just shows the item count.
     if type(data_object[prop_name]) == list:
-        row.label(text = prop_name)
-    row.prop(data_object, f'["{prop_name}"]', text = prop_name)
+        row.label(text=prop_name)
+    row.prop(data_object, f'["{prop_name}"]', text=prop_name)
 
     # Draw the "edit property" button
     edit_op = row.operator(
-        config.CPM_EDIT_PROPERTY_OP,
+        consts.ops.CPM_EDIT_PROPERTY,
         text = "",
-        icon = config.PREFERENCES_ICON,
+        icon = consts.icons.PREFERENCES,
         emboss = False)
-    edit_op.property_name = prop_name
+    edit_op.name = prop_name
     edit_op.data_path = data_path
-    edit_op.group_name = group_name
+    edit_op.group = group_name
 
     # Draw the "remove property" button
     remove_op = row.operator(
-        config.WM_PROPERTIES_REMOVE,
+        consts.ops.WM_PROPERTIES_REMOVE,
         text = "",
-        icon = config.X_ICON,
+        icon = consts.icons.X,
         emboss = False
     )
     remove_op.property_name = prop_name
@@ -104,9 +108,9 @@ def _draw_property_group(
         data_object: bpy.types.Object,
         data_path: str,
         group_name: str,
-        props: list ):
+        props: list):
     """
-    Draws a sub panel for a group of properties.
+    Draws a subpanel for a group of properties.
     Args:
         :param layout: Blender layout.
         :param data_object: Blender object.
@@ -119,13 +123,13 @@ def _draw_property_group(
 
     # Create a unique key for this group to store the expand state
     expand_key = f"_cpm_{data_object.name}_{data_path}_{group_name}"
-    is_expanded = cpm_state.expand_states.get(expand_key, True)
+    is_expanded = expand_states.get(expand_key, True)
 
     toggle_op = header.operator(
-        config.CPM_EXPAND_TOGGLE_OP,
+        consts.ops.CPM_EXPAND_TOGGLE,
         text = group_name,
-        icon = config.DOWNARROW_HLT_ICON if is_expanded
-               else config.RIGHTARROW_ICON,
+        icon = consts.icons.DOWNARROW_HLT if is_expanded
+            else consts.icons.RIGHTARROW,
         emboss = False)
     toggle_op.expand_key = expand_key
     toggle_op.current_state = is_expanded

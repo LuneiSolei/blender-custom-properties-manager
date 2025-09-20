@@ -1,8 +1,7 @@
 ﻿class ReportingMixin:
     """Mixin to add reporting capabilities to any class."""
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self):
         self._operator = None
 
     def set_operator(self, operator):

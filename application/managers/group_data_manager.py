@@ -8,7 +8,7 @@ class GroupDataManager:
     _cache: dict[str, GroupData] = {}
 
     @classmethod
-    def get_data(cls, data_object: bpy.types.Object) -> GroupData:
+    def get_group_data(cls, data_object: bpy.types.Object) -> GroupData:
         """
         Gets the group data for the provided blender object. Data is automatically
         verified and the cache is updated.
@@ -54,7 +54,7 @@ class GroupDataManager:
         if not hasattr(cls, "_cache"):
             all_objects = list(bpy.data.scenes) + list(bpy.data.objects)
             for data_object in all_objects:
-                group_data = cls.get_data(data_object)
+                group_data = cls.get_group_data(data_object)
                 data_object[cls._group_data_name] = json.dumps(group_data.as_dict())
 
                 return

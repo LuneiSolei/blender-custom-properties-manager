@@ -5,7 +5,7 @@
         self._operator = None
 
     def set_operator(self, operator):
-        """Sets the operator for reporting."""
+        """Sets the operator_instance for reporting."""
         self._operator = operator
 
     def report(self, level, message):
@@ -13,5 +13,5 @@
         if self._operator:
             self._operator.report(level, message)
         else:
-            # No operator available, print to console instead
-            print(f"{level} CPM Report (No operator): {message}")
+            # No operator_instance available, print to console instead
+            print(f"{level} CPM Report (No operator_instance): {message}")

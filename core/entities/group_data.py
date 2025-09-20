@@ -162,7 +162,7 @@ class GroupData(ReportingMixin):
         self._cached_data[new_group] = [prop_name]
 
     def update_property_type(self, *, data_object: bpy.types.Object, prop_name: str, new_type: str):
-        """Updates the type of the property."""
+        """Updates the property_type of the property."""
         pass
 
     def verify(self, data_object: bpy.types.Object):

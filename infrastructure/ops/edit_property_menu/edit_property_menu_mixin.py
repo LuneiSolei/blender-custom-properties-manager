@@ -1,32 +1,27 @@
 import bpy
 
-from typing import Any, Union
+from typing import Union
 from bpy.props import (BoolProperty, BoolVectorProperty, EnumProperty, FloatProperty, FloatVectorProperty, IntProperty,
                        IntVectorProperty, StringProperty)
 from ....shared import consts
-from ....core import utils
+from ....application.managers import PropertyDataManager
 
 # noinspection PyTypeHints
 class EditPropertyMenuOperatorMixin:
     bl_label = "Edit Property"
-    bl_idname = consts.ops.CPM_EDIT_PROPERTY
+    bl_idname = consts.CPM_EDIT_PROPERTY
     bl_description = "Edit custom property menu"
 
-    # Services Cache
-    property_data_service: Any
-    edit_property_service: Any
-    field_service: Any
-
-    # Needed for PyCharm to properly type check against Blender's EnumProperty.
+    # Needed for PyCharm to properly property_type check against Blender's EnumProperty.
     # If removed, PyCharm will complain about the PyTypes.
     # Property attributes
     data_path: StringProperty()
-    data_object: bpy.types.Object
-    ui_data: dict
+    data_object: StringProperty()
+    ui_data: StringProperty()
     name: StringProperty()
-    type: EnumProperty(
-        items = consts.blender_enums.CUSTOM_PROPERTY_TYPE_ITEMS,
-        update = utils.on_type_change
+    property_type: EnumProperty(
+        items = consts.PROPERTY_TYPES,
+        update = PropertyDataManager.on_type_change
     )
     group: StringProperty()
     value_float: FloatProperty()
@@ -35,8 +30,8 @@ class EditPropertyMenuOperatorMixin:
     value_string: StringProperty()
     step: IntProperty()
     precision: IntProperty()
-    subtype_float: EnumProperty(items = consts.blender_enums.PROPERTY_SUBTYPE_ITEMS)
-    initialized: bool
+    subtype_float: EnumProperty(items = consts.PROPERTY_SUBTYPES)
+    initialized: BoolProperty(default = False)
 
     # FLOAT
     min_float: FloatProperty()
@@ -61,12 +56,12 @@ class EditPropertyMenuOperatorMixin:
     ]
     use_soft_limits: BoolProperty()
     array_length: IntProperty()
-    subtype_float: EnumProperty(items = consts.blender_enums.PROPERTY_SUBTYPE_ITEMS)
-    subtype_float_array: EnumProperty(items = consts.blender_enums.PROPERTY_SUBTYPE_VECTOR_ITEMS)
+    subtype_float: EnumProperty(items = consts.PROPERTY_SUBTYPES)
+    subtype_float_array: EnumProperty(items = consts.PROPERTY_SUBTYPE_VECTORS)
     description: StringProperty()
     is_overridable_library: BoolProperty()
 
     # Misc.
     _group_data = {}
     _current = {}
-    fields = {}
+    fields: StringProperty() = "{}"

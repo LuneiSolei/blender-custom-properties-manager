@@ -7,7 +7,7 @@ from ...application.managers import GroupDataManager
 
 def draw_panels(self, context, data_path):
     """
-    Draws the panel associated with the provided context type.
+    Draws the panel associated with the provided context property_type.
 
     Args:
         :param data_path: String path to the data object (e.g., "view_layer", "scene")
@@ -18,7 +18,7 @@ def draw_panels(self, context, data_path):
     layout = self.layout
 
     # Get the data object dynamically
-    data_object = utils.resolve_data_object(context, data_path)
+    data_object = utils.resolve_data_object(data_path)
     if not data_object:
         layout.label(text=f"No {data_path} available")
         return
@@ -32,7 +32,7 @@ def draw_panels(self, context, data_path):
     layout.separator()
 
     # Get deserialized data (data is automatically verified)
-    group_data = GroupDataManager.get_data(data_object)
+    group_data = GroupDataManager.get_group_data(data_object)
 
     # Draw properties based on the associated group
     for group_name, props in group_data.items():

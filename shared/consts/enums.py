@@ -1,4 +1,4 @@
-CUSTOM_PROPERTY_TYPE_ITEMS = (
+PROPERTY_TYPES = (
     ('FLOAT', "Float", "A single floating-point value"),
     ('FLOAT_ARRAY', "Float Array", "An array of floating-point values"),
     ('INT', "Integer", "A single integer"),
@@ -10,7 +10,19 @@ CUSTOM_PROPERTY_TYPE_ITEMS = (
     ('PYTHON', "Python", "Edit a Python value directly, for unsupported property types"),
 )  # https://projects.blender.org/blender/blender/src/branch/main/scripts/startup/bl_operators/wm.py#L138
 
-PROPERTY_SUBTYPE_ITEMS = (
+class PropertyTypes:
+    FLOAT = PROPERTY_TYPES[0][0]
+    FLOAT_ARRAY = PROPERTY_TYPES[1][0]
+    INT = PROPERTY_TYPES[2][0]
+    INT_ARRAY = PROPERTY_TYPES[3][0]
+    BOOL = PROPERTY_TYPES[4][0]
+    BOOL_ARRAY = PROPERTY_TYPES[5][0]
+    STRING = PROPERTY_TYPES[6][0]
+    DATA_BLOCK = PROPERTY_TYPES[7][0]
+    PYTHON = PROPERTY_TYPES[8][0]
+    ID_PROPERTY_ARRAY = "IDPropertyArray"
+
+PROPERTY_SUBTYPES = (
     ('NONE', "Plain Data", "Data values without special behavior"),
     ('PIXEL', "Pixel", "A distance on screen"),
     ('PERCENTAGE', "Percentage", "A percentage between 0 and 100"),
@@ -22,7 +34,7 @@ PROPERTY_SUBTYPE_ITEMS = (
     ('TEMPERATURE', "Temperature", "")
 )  # https://projects.blender.org/blender/blender/src/branch/main/scripts/startup/bl_operators/wm.py#L1397
 
-PROPERTY_SUBTYPE_VECTOR_ITEMS = (
+PROPERTY_SUBTYPE_VECTORS = (
     ('NONE', "Plain Data", "Data values without special behavior"),
     ('COLOR', "Linear Color", "Color in the linear space"),
     ('COLOR_GAMMA', "Gamma-Corrected Color", "Color in the gamma corrected space"),

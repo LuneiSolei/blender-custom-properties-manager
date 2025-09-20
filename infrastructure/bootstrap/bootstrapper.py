@@ -1,9 +1,8 @@
 import bpy
 from bpy.app.handlers import persistent
-
 from ..ops.edit_property_menu.edit_property_menu import EditPropertyMenuOperator
-from ...shared.consts import panels
-from ...core import original_draws, expand_states
+from ...shared import consts
+from ...core import original_draws, expand_states, utils
 from ...infrastructure.ui import draw_panels
 from ...application.managers import GroupDataManager, PropertyDataManager, FieldManager
 
@@ -26,7 +25,7 @@ def register_handlers():
     bpy.app.handlers.load_post.append(deserialize_on_post_load)
 
 def register_draw_functions():
-    for panel in panels:
+    for panel in consts.BLENDER_PANELS:
         if hasattr(bpy.types, panel.name):
             panel_class = getattr(bpy.types, panel.name)
             original_draws[panel.name] = panel_class.draw

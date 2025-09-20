@@ -1,63 +1,91 @@
-import bpy
-from ...core import utils, Field, FieldNames
+import json
+
+import bpy, pprint
+from ...core import utils, Field, FieldNames, UIData
 from .group_data_manager import GroupDataManager
+from ...shared import consts
 
 class PropertyDataManager:
-    @staticmethod
-    def get_type(data_object: bpy.types.Object, property_name: str) -> str:
-        """
-        Get property type from data object.
-        :param data_object: Blender data object
-        :param property_name: Name of the property
-        :return: One of the following:
-            'FLOAT',
-            'FLOAT_ARRAY',
-            'INT',
-            'INT_ARRAY',
-            'BOOL',
-            'BOOL_ARRAY',
-            'STRING',
-            'PYTHON',
-            'DATA_BLOCK'
-        """
+    TYPE_MAP = {
+        "float": consts.PropertyTypes.FLOAT,
+        "float_array": consts.PropertyTypes.FLOAT_ARRAY,
+        "int": consts.PropertyTypes.INT,
+        "int_array": consts.PropertyTypes.INT_ARRAY,
+        "bool": consts.PropertyTypes.BOOL,
+        "bool_array": consts.PropertyTypes.BOOL_ARRAY,
+        "string": consts.PropertyTypes.STRING,
+        "IDPropertyGroup": consts.PropertyTypes.PYTHON,
+        "data_block": consts.PropertyTypes.DATA_BLOCK
+    }
 
-        types = {
-            "float": 'FLOAT',
-            "float_array": 'FLOAT_ARRAY',
-            "int": 'INT',
-            "int_array": 'INT_ARRAY',
-            "bool": 'BOOL',
-            "bool_array": 'BOOL_ARRAY',
-            "string": 'STRING',
-            "IDPropertyGroup": 'PYTHON',
-            "data_block": 'DATA_BLOCK'
-        }
-        value = data_object[property_name]
+    TYPE_CONVERTERS = {
+        consts.PropertyTypes.FLOAT: lambda val: float(val) if isinstance(val, (int, float)) else 0.0,
+        consts.PropertyTypes.INT: lambda val: int(val) if isinstance(val, (int, float)) else 0,
+        consts.PropertyTypes.BOOL: lambda val: bool(val),
+        consts.PropertyTypes.STRING: lambda val: str(val),
+        consts.PropertyTypes.FLOAT_ARRAY: lambda val: ([float(v) if isinstance(v, (int, float)) else 0.0
+                                                        for v in val] if isinstance(val, list)
+                                                        else [float(val) if isinstance(val, (int, float)) else 0.0]),
+        consts.PropertyTypes.INT_ARRAY: lambda val: ([int(v) if isinstance(v, (int, float)) else 0
+                                                            for v in val] if isinstance(val, list)
+                                                           else [int(val) if isinstance(val, (int, float)) else 0]),
+        consts.PropertyTypes.BOOL_ARRAY: lambda val: ([bool(v) for v in val] if isinstance(val, list)
+                                                            else [bool(val)]),
+        consts.PropertyTypes.PYTHON: lambda val: val if isinstance(val, dict) else {},
+        consts.PropertyTypes.DATA_BLOCK: lambda val: val if isinstance(val, bpy.types.ID) else None,
+    }
+
+    @staticmethod
+    def get_type(operator_instance) -> str:
+        """
+        Get the property's type from the operator_instance instance.
+
+        :param operator_instance: The EditPropertyMenuOperator instance.
+
+        :return: One of the PropertyTypes enum values
+        """
+        data_object = utils.resolve_data_object(operator_instance.data_path)
+        prop_name = operator_instance.name
+        value = data_object[prop_name]
         prop_type = type(value).__name__
-        if prop_type in types:
-            # Property is of a standard type
-            return types[prop_type]
-        elif prop_type == "IDPropertyArray":
-            # Property is of an array type
-            has_values = len(value) > 0
 
-            if has_values and isinstance(value[0], float):
-                return types["float_array"]
-            elif has_values and isinstance(value[0], int):
-                return types["int_array"]
-            elif has_values and isinstance(value[0], bool):
-                return types["bool_array"]
-            else:
-                return types["float_array"]
-        elif isinstance(value, bpy.types.ID):
-            # Property is of a data_block type
-            return types["data_block"]
-        else:
-            # Property type could not be determined. Theoretically, this should never happen
-            return types["float"]
+        # Check if it's a standard property_type
+        if prop_type in PropertyDataManager.TYPE_MAP:
+            return PropertyDataManager.TYPE_MAP[prop_type]
+
+        # Check if it's an array property_type
+        if prop_type == consts.PropertyTypes.ID_PROPERTY_ARRAY:
+            return PropertyDataManager._determine_array_type(value)
+
+        # Check if it's a data block property_type
+        if isinstance(value, bpy.types.ID):
+            return consts.PropertyTypes.DATA_BLOCK
+
+        # Default fallback
+        return consts.PropertyTypes.FLOAT
 
     @staticmethod
-    def get_ui_data(data_object: bpy.types.Object, property_name: str):
+    def _determine_array_type(value: list) -> consts.PropertyTypes:
+        """
+        Helper to determine the array property_type.
+        :param value: The value of the array.
+        :return: One of the PropertyTypes enum values.
+        """
+        if not value:
+            return consts.PropertyTypes.FLOAT_ARRAY
+
+        match value[0]:
+            case float():
+                return consts.PropertyTypes.FLOAT_ARRAY
+            case int():
+                return consts.PropertyTypes.INT_ARRAY
+            case bool():
+                return consts.PropertyTypes.BOOL_ARRAY
+            case _:
+                return consts.PropertyTypes.FLOAT_ARRAY
+
+    @staticmethod
+    def load_ui_data(operator_instance) -> UIData:
         """
         Loads the UI data for the provided Blender data object.
 
@@ -84,150 +112,255 @@ class PropertyDataManager:
                 'precision': 3,
                 'default': [0.3700000047683716, 0.3700000047683716, 0.3700000047683716]
             }
-        :param data_object: Blender data object.
-        :param property_name: Name of the property.
+
+        :param operator_instance: The operator_instance instance. Used to determine the UI data.
+
         :return: An object used to manage the UI data.
         """
+        data_object = utils.resolve_data_object(operator_instance.data_path)
+        ui_data = data_object.id_properties_ui(operator_instance.name)
 
-        return data_object.id_properties_ui(property_name)
+        return UIData(**ui_data.as_dict())
 
     @staticmethod
-    def validate(data_path: str, property_name: str, operator) -> bpy.types.Object:
+    def stringify_ui_data(ui_data: UIData) -> str:
+        return json.dumps(ui_data)
+
+    @staticmethod
+    def validate(data_path: str, property_name: str, operator) -> bool:
         """
         Validate a property's existence from a data path.
+
         :param data_path: Path to the Blender object.
         :param property_name: Name of the property to validate.
         :param operator: Operator from which the property is evaluated.
+
         :return: The data object if the property exists, None otherwise.
         """
-
-        data_object = utils.resolve_data_object(bpy.context, data_path)
+        data_object = utils.resolve_data_object(data_path)
         if not data_object:
             operator.report({'ERROR'}, f"Data object for '{data_path}' not found")
 
-            return None
+            return False
 
         if property_name not in data_object:
             operator.report({'ERROR'}, f"Property '{property_name}' not found in {data_object.name}")
 
-            return None
+            return False
 
-        return data_object
+        return True
 
     @classmethod
     def update_property_data(cls, operator):
-        cls.update_name(operator, operator.fields[FieldNames.NAME.value])
-        cls.update_group(operator, operator.fields[FieldNames.GROUP.value])
-        cls.update_type(operator, operator.fields[FieldNames.TYPE.value])
+        fields = operator.field_manager.load_fields(operator.fields)
+        cls._update_name(operator, fields[FieldNames.NAME.value])
+        cls._update_group(operator, fields[FieldNames.GROUP.value])
+        cls._update_type(operator, fields[FieldNames.TYPE.value])
+        cls._update_ui_data(operator, fields)
 
-    @classmethod
-    def update_name(cls, operator, field: Field):
+    @staticmethod
+    def _update_name(operator_instance, field: Field):
         """
-        Updates the property name.
-        :param operator: The EditPropertyMenuOperator instance.
+        Helper to update the property's name.
+        :param operator_instance: The EditPropertyMenuOperator instance.
         :param field: The field with the data used to update the property.
         """
 
         # Ensure the property name has changed
-        if field.current_value == operator.name:
+        if field.current_value == operator_instance.name:
             return
 
         # Validation
-        if operator.name in operator.data_object:
-            operator.report({'ERROR'}, f"Property '{operator.name}' already exists")
+        data_object = utils.resolve_data_object(operator_instance.data_path)
+        if operator_instance.name in data_object:
+            operator_instance.report({'ERROR'}, f"Property '{operator_instance.name}' already exists")
 
             # Reset property name
-            operator.name = field.current_value
+            operator_instance.name = field.current_value
 
             return
 
         # Ensure we're not trying to rename an IDPropertyGroup
-        if isinstance(operator.data_object[field.current_value], bpy.types.bpy_struct):
-            operator.report({'ERROR'}, f"Cannot rename '{field.current_value}' to '"
-                                       f"{operator.name}'. Renaming IDPropertyGroup "
+        data_object = utils.resolve_data_object(operator_instance.data_path)
+        if isinstance(data_object[field.current_value], bpy.types.bpy_struct):
+            operator_instance.report({'ERROR'}, f"Cannot rename '{field.current_value}' to '"
+                                       f"{operator_instance.name}'. Renaming IDPropertyGroup "
                                        f"types is currently not supported.")
 
             return
 
         # Update property name in CPM's dataset
-        group_data = GroupDataManager.get_data(operator.data_object)
+        group_data = GroupDataManager.get_group_data(data_object)
         group_data.update_property_name(
-            data_object = operator.data_object,
+            data_object = data_object,
             prop_name = field.current_value,
-            new_name = operator.name
+            new_name = operator_instance.name
         )
 
         # Update the property in the data object itself
-        operator.data_object[operator.name] = operator.data_object[field.current_value]
-        operator.data_object.id_properties_ui(operator.name).update(**operator.ui_data)
-        del operator.data_object[field.current_value]
+        data_object[operator_instance.name] = data_object[field.current_value]
+        data_object.id_properties_ui(operator_instance.name).update(**operator_instance.ui_data)
+        del data_object[field.current_value]
 
-    @classmethod
-    def update_group(cls, operator, field: Field):
+    @staticmethod
+    def _update_group(operator_instance, field: Field):
         """
-        Updates the property group.
-        :param operator: The EditPropertyMenuOperator instance.
+        Helper to update the property's group.
+        :param operator_instance: The EditPropertyMenuOperator instance.
         :param field: The field with the data used to update the property.
         """
+
         # Ensure the group name has changed
-        if field.current_value == operator.group:
+        if field.current_value == operator_instance.group:
             return
 
         # Update property in CPM's dataset
-        group_data = GroupDataManager.get_data(operator.data_object)
-        group_data.set_operator(operator)
+        data_object = utils.resolve_data_object(operator_instance.data_path)
+        group_data = GroupDataManager.get_group_data(data_object)
+        group_data.set_operator(operator_instance)
         group_data.update_property_group(
-            prop_name = operator.name,
-            new_group = operator.group
+            prop_name = operator_instance.name,
+            new_group = operator_instance.group
         )
 
-    @classmethod
-    def update_type(cls, operator, field: Field):
-        if operator.type == field.current_value:
+    @staticmethod
+    def _update_type(operator_instance, field: Field):
+        """
+        Helper to update the property's property_type.
+        :param operator_instance: The EditMenuPropertyOperator instance.
+        :param field: The field with the data used to update the property.
+        """
+
+        if operator_instance.property_type == field.current_value:
             return
 
-        ui_source = operator.data_object.id_properties_ui(operator.name)
         new_value = None
-        match operator.type:
-            case 'FLOAT':
+        match operator_instance.property_type:
+            case consts.PropertyTypes.FLOAT:
                 new_value = float(field.current_value) if isinstance(field.current_value, (int, float)) else 0.0
-                ui_source.update(default = 0.0)
-            case 'INT':
+            case consts.PropertyTypes.INT:
                 new_value = int(field.current_value) if isinstance(field.current_value, (int, float)) else 0
-                ui_source.update(default = 0)
-            case 'BOOL':
+            case consts.PropertyTypes.BOOL:
                 new_value = bool(field.current_value)
-                ui_source.update(default = False)
-            case 'STRING':
+            case consts.PropertyTypes.STRING:
                 new_value = str(field.current_value)
-                ui_source.update(default = "")
-            case 'FLOAT_ARRAY':
-                if isinstance(field.current_value, (list, tuple)):
+            case consts.PropertyTypes.FLOAT_ARRAY:
+                if isinstance(field.current_value, list):
                     new_value = [float(v) if isinstance(v, (int, float)) else 0.0 for v in field.current_value]
                 else:
                     new_value = [float(field.current_value) if isinstance(field.current_value, (int, float)) else 0.0]
-
-                ui_source.update(default = [0.0, 0.0, 0.0])
-            case 'INT_ARRAY':
-                if isinstance(field.current_value, (list, tuple)):
+            case consts.PropertyTypes.INT_ARRAY:
+                if isinstance(field.current_value, list):
                     new_value = [int(v) if isinstance(v, (int, float)) else 0 for v in field.current_value]
                 else:
                     new_value = [int(field.current_value) if isinstance(field.current_value, (int, float)) else 0]
-
-                ui_source.update(default = [0, 0, 0])
-            case 'BOOL_ARRAY':
-                if isinstance(field.current_value, (list, tuple)):
+            case consts.PropertyTypes.BOOL_ARRAY:
+                if isinstance(field.current_value, list):
                     new_value = [bool(v) for v in field.current_value]
                 else:
                     new_value = [bool(field.current_value)]
-
-                ui_source.update(default = [False, False, False])
-            case 'PYTHON':
+            case consts.PropertyTypes.PYTHON:
                 new_value = {} if not isinstance(field.current_value, dict) else field.current_value
-                ui_source.update(default = {})
 
-        operator.data_object[operator.name] = new_value
+        # Update the property with the new value as the new property_type
+        data_object = utils.resolve_data_object(operator_instance.data_path)
+        data_object[operator_instance.name] = new_value
 
-        # Update the UI data for the new property
-        operator.data_object.id_properties_ui(operator.name).update(**ui_source.as_dict())
-        pass
+
+    # BUG: I believe the property_type checker is somehow losing the property_type hint information from the constants that are used
+    #  as a default value in `getattr()`. This results in a warning. Currently, the solution is to disable the
+    #  PyTypeChecker.
+    # noinspection PyTypeChecker
+    @classmethod
+    def _update_ui_data(cls, operator_instance, fields: dict[str, Field]):
+        """
+        Helper to update the property's UI data.
+
+        :param operator_instance: The EditMenuPropertyOperator instance.
+        """
+        new_ui_data: UIData
+        match operator_instance.property_type:
+            case consts.PropertyTypes.FLOAT:
+                new_ui_data = {
+                    "subtype": consts.DEFAULT_SUBTYPE,
+                    "description": consts.DEFAULT_DESCRIPTION,
+                    "min": getattr(operator_instance, fields[FieldNames.MIN.value].attr_name, consts.DEFAULT_MIN_FLOAT),
+                    "max": getattr(operator_instance, fields[FieldNames.MAX.value].attr_name, consts.DEFAULT_MAX_FLOAT),
+                    "soft_min": getattr(operator_instance, fields[FieldNames.SOFT_MIN.value].attr_name, consts.DEFAULT_SOFT_MIN_FLOAT),
+                    "soft_max": getattr(operator_instance, fields[FieldNames.SOFT_MAX.value].attr_name, consts.DEFAULT_SOFT_MAX_FLOAT),
+                    "step": getattr(operator_instance, "step", consts.DEFAULT_STEP_FLOAT),
+                    "precision": getattr(operator_instance, "precision", consts.DEFAULT_PRECISION_FLOAT),
+                    # "default": "",
+                    # "id_type": None,
+                    # "items": None
+                }
+            case consts.PropertyTypes.FLOAT_ARRAY:
+                new_ui_data = {
+                    "subtype": consts.DEFAULT_SUBTYPE,
+                    "description": consts.DEFAULT_DESCRIPTION,
+                    "min": int(getattr(operator_instance, fields[FieldNames.MIN.value].attr_name, consts.DEFAULT_MIN_FLOAT_ARRAY)),
+                    "max": getattr(operator_instance, fields[FieldNames.MAX.value].attr_name, consts.DEFAULT_MAX_FLOAT_ARRAY),
+                    "soft_min": getattr(operator_instance, fields[FieldNames.SOFT_MIN.value].attr_name, consts.DEFAULT_SOFT_MIN_FLOAT_ARRAY),
+                    "soft_max": getattr(operator_instance, fields[FieldNames.SOFT_MAX.value].attr_name, consts.DEFAULT_SOFT_MAX_FLOAT_ARRAY),
+                    "step": getattr(operator_instance, "step", consts.DEFAULT_STEP_FLOAT_ARRAY),
+                    "precision": getattr(operator_instance, "precision", consts.DEFAULT_PRECISION_FLOAT_ARRAY),
+                    "default": getattr(operator_instance, "default", consts.DEFAULT_VALUE_FLOAT_ARRAY)
+                }
+            case consts.PropertyTypes.INT:
+                new_ui_data = cls._construct_ui_data_int(operator_instance, fields)
+            case consts.PropertyTypes.INT_ARRAY:
+                new_ui_data = {
+                    "subtype": consts.DEFAULT_SUBTYPE,
+                    "description": consts.DEFAULT_DESCRIPTION,
+                    "min": getattr(operator_instance, fields[FieldNames.MIN.value].attr_name, consts.DEFAULT_MIN_INT_ARRAY),
+                    "max": getattr(operator_instance, fields[FieldNames.MAX.value].attr_name, consts.DEFAULT_MAX_INT_ARRAY),
+                    "soft_min": getattr(operator_instance, fields[FieldNames.SOFT_MIN.value].attr_name, consts.DEFAULT_SOFT_MIN_INT_ARRAY),
+                    "soft_max": getattr(operator_instance, fields[FieldNames.SOFT_MAX.value].attr_name, consts.DEFAULT_SOFT_MAX_INT_ARRAY),
+                    "step": getattr(operator_instance, "step", consts.DEFAULT_STEP_INT_ARRAY),
+                    "default": getattr(operator_instance, "default", consts.DEFAULT_VALUE_INT_ARRAY)
+                }
+            case consts.PropertyTypes.BOOL:
+                new_ui_data = {
+                    "subtype": consts.DEFAULT_SUBTYPE,
+                    "description": consts.DEFAULT_DESCRIPTION
+                }
+            case consts.PropertyTypes.BOOL_ARRAY:
+                new_ui_data = {
+                    "subtype": consts.DEFAULT_SUBTYPE,
+                    "description": consts.DEFAULT_DESCRIPTION,
+                    "default": consts.DEFAULT_VALUE_BOOL_ARRAY
+                }
+            case consts.PropertyTypes.STRING:
+                new_ui_data = {
+
+                }
+
+        data_object = utils.resolve_data_object(operator_instance.data_path)
+        data_object.id_properties_ui(operator_instance.name).update(**new_ui_data)
+
+    @staticmethod
+    def _construct_ui_data_int(operator, fields: dict[str, Field]):
+        return {
+            "subtype": consts.DEFAULT_SUBTYPE,
+            "description": consts.DEFAULT_DESCRIPTION,
+            "min": int(getattr(operator, fields[FieldNames.MIN.value].attr_name, consts.DEFAULT_MIN_INT)),
+            "max": int(getattr(operator, fields[FieldNames.MAX.value].attr_name, consts.DEFAULT_MAX_INT)),
+            "soft_min": int(getattr(operator, fields[FieldNames.SOFT_MIN.value].attr_name, consts.DEFAULT_SOFT_MIN_INT)),
+            "soft_max": int(getattr(operator, fields[FieldNames.SOFT_MAX.value].attr_name, consts.DEFAULT_SOFT_MAX_INT)),
+            "step": int(getattr(operator, "step", consts.DEFAULT_STEP_INT))
+        }
+
+    @staticmethod
+    def on_type_change(operator_instance, context):
+        """
+        Called when the property property_type changes.
+        :param operator_instance: The EditPropertyMenuOperator instance.
+        :param context: The Blender context.
+        """
+
+        # Prevent infinite recursion
+        if not getattr(operator_instance, "initialized", False):
+            return
+
+        operator_type = utils.get_blender_operator_type(consts.CPM_EDIT_PROPERTY)
+        operator_instance.fields = operator_type.field_manager.setup_fields(operator_instance, operator_type)

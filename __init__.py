@@ -22,7 +22,6 @@ def register():
     bootstrap.register_draw_functions()
     bootstrap.register_handlers()
 
-
 def unregister():
     bootstrap.unregister_draw_functions()
     bootstrap.clear_state()

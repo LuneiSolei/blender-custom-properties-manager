@@ -14,8 +14,14 @@ class FieldConfig:
 class FieldNames(Enum):
     NAME = "name"
     GROUP = "group"
-    TYPE = "type"
+    TYPE = "property_type"
     MIN = "min"
+    MAX = "max"
+    SOFT_MIN = "soft_min"
+    SOFT_MAX = "soft_max"
+    STEP = "step"
+    PRECISION = "precision"
+    DEFAULT = "default"
 
 field_configs = {
     FieldNames.NAME.value : FieldConfig(
@@ -31,7 +37,7 @@ field_configs = {
         name = FieldNames.GROUP.value
     ),
     FieldNames.TYPE.value: FieldConfig(
-        attr_name = "type",
+        attr_name = "property_type",
         draw_on = 'ALL',
         label = "Type",
         name = FieldNames.TYPE.value
@@ -41,5 +47,23 @@ field_configs = {
         draw_on = ['FLOAT', 'FLOAT_ARRAY', 'INT', 'INT_ARRAY'],
         label = "Min Value",
         name = FieldNames.MIN.value
+    ),
+    FieldNames.MAX.value: FieldConfig(
+        attr_prefix = "max_",
+        draw_on = ['FLOAT', 'FLOAT_ARRAY', 'INT', 'INT_ARRAY'],
+        label = "Max Value",
+        name = FieldNames.MAX.value
+    ),
+    FieldNames.SOFT_MIN.value: FieldConfig(
+        attr_prefix = "soft_min_",
+        draw_on = ['FLOAT', 'FLOAT_ARRAY', 'INT', 'INT_ARRAY'],
+        label = "Soft Min Value",
+        name = FieldNames.SOFT_MIN.value
+    ),
+    FieldNames.SOFT_MAX.value: FieldConfig(
+        attr_prefix = "soft_max_",
+        draw_on = ['FLOAT', 'FLOAT_ARRAY', 'INT', 'INT_ARRAY'],
+        label = "Soft Max Value",
+        name = FieldNames.SOFT_MAX.value
     )
 }

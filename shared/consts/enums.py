@@ -51,10 +51,10 @@ PROPERTY_SUBTYPE_VECTORS = (
 )  # https://projects.blender.org/blender/blender/src/branch/main/scripts/startup/bl_operators/wm.py#L1409
 
 LOG_LEVELS = (
-    ('NONE', "None", "Shows no messages"),
-    ('DEBUG', "Debug", "Shows debug, info, warning, and error messages"),
-    ('INFO', "Info", "Shows info, warning, and error messages"),
-    ('WARNING', "Warning", "Shows warning and error messages"),
-    ('ERROR', "Error", "Shows only error messages"),
+    ('0', "None", "Shows no messages"),
+    ('1', "Debug", "Shows debug, info, warning, and error messages"),
+    ('2', "Info", "Shows info, warning, and error messages"),
+    ('3', "Warning", "Shows warning and error messages"),
+    ('4', "Error", "Shows only error messages"),
 )
 

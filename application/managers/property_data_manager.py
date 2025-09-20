@@ -4,6 +4,7 @@ import bpy
 from ...core import Field, FieldNames, UIData
 from .group_data_manager import GroupDataManager
 from ...shared import consts, utils
+from ...shared.classes import LogLevel
 
 class PropertyDataManager:
     TYPE_MAP = {
@@ -166,6 +167,8 @@ class PropertyDataManager:
         :param field: The field with the data used to update the property.
         """
 
+        utils.log(f"Updating name: {operator_instance.name} -> {field.current_value}", LogLevel.DEBUG)
+
         # Ensure the property name has changed
         if field.current_value == operator_instance.name:
             return
@@ -201,6 +204,8 @@ class PropertyDataManager:
         data_object[operator_instance.name] = data_object[field.current_value]
         data_object.id_properties_ui(operator_instance.name).update(**operator_instance.ui_data)
         del data_object[field.current_value]
+
+        utils.log(f"Property name updated successfully!", LogLevel.DEBUG)
 
     @staticmethod
     def _update_group(operator_instance, field: Field):

@@ -1,18 +1,21 @@
 import bpy
 from bpy.app.handlers import persistent
-from ..ops.edit_property_menu.edit_property_menu import EditPropertyMenuOperator
+from .. import EditPropertyMenuOperator, AddPropertyGroupOperator, ExpandToggleOperator
 from ...shared import consts
 from ...core import original_draws, expand_states, utils
 from ...infrastructure.ui import draw_panels
 from ...application.managers import GroupDataManager, PropertyDataManager, FieldManager
 
-def register_classes(classes: set):
-    """
-    Register classes for Blender.
-    :param classes: Set of classes to be registered.
-    """
+_classes = {
+    AddPropertyGroupOperator,
+    EditPropertyMenuOperator,
+    ExpandToggleOperator
+}
 
-    for cls in classes:
+def register_classes():
+    """Register classes for Blender."""
+
+    for cls in _classes:
         # Ensure there are no duplicates
         if hasattr(bpy.types, cls.__name__):
             bpy.utils.unregister_class(cls)
@@ -40,8 +43,8 @@ def clear_state():
     original_draws.clear()
     expand_states.clear()
 
-def unregister_classes(classes: set):
-    for cls in classes:
+def unregister_classes():
+    for cls in _classes:
         bpy.utils.unregister_class(cls)
 
 def unregister_handlers():

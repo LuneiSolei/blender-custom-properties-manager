@@ -2,8 +2,7 @@
 from typing import Any
 from .edit_property_menu_mixin import EditPropertyMenuOperatorMixin
 from ....application.managers import GroupDataManager, PropertyDataManager, FieldManager
-from ....shared import consts
-from ....core import utils
+from ....shared import consts, utils
 
 class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin):
     @classmethod

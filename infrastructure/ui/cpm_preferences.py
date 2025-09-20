@@ -3,16 +3,16 @@ import bpy
 from ...shared import consts
 
 class CPMPreferences(bpy.types.AddonPreferences):
-    bl_idname = consts.ADDON_NAME
+    bl_idname = consts.MODULE_NAME
 
     # noinspection PyTypeHints
-    show_debug_info: bpy.props.BoolProperty(
-        name="Show Debug Info",
-        description="Show debug information in the UI",
-        default=False
+    log_level: bpy.props.EnumProperty(
+        items=consts.LOG_LEVELS,
+        name = "Log Level",
+        description = "Level of debug information to display",
+        default = consts.LOG_LEVELS[0][0]
     )
 
     def draw(self, context):
         layout = self.layout
-        layout.label(text = "Show Debug Info")
-        layout.prop(self, "show_debug_info")
+        layout.prop(self, "log_level")

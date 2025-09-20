@@ -1,9 +1,9 @@
 import json
 
-import bpy, pprint
-from ...core import utils, Field, FieldNames, UIData
+import bpy
+from ...core import Field, FieldNames, UIData
 from .group_data_manager import GroupDataManager
-from ...shared import consts
+from ...shared import consts, utils
 
 class PropertyDataManager:
     TYPE_MAP = {

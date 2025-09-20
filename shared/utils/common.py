@@ -1,5 +1,5 @@
 ﻿from typing import Union
-from ...shared import consts
+from shared import consts
 
 import bpy
 

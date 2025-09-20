@@ -1,3 +1,5 @@
+from enum import EnumType
+
 PROPERTY_TYPES = (
     ('FLOAT', "Float", "A single floating-point value"),
     ('FLOAT_ARRAY', "Float Array", "An array of floating-point values"),
@@ -47,3 +49,11 @@ PROPERTY_SUBTYPE_VECTORS = (
     ('AXISANGLE', "Axis-Angle", "Angle and axis to rotate around"),
     ('XYZ', "XYZ", "")
 )  # https://projects.blender.org/blender/blender/src/branch/main/scripts/startup/bl_operators/wm.py#L1409
+
+LOG_LEVELS = (
+    ('NONE', "None", "Shows no messages"),
+    ('DEBUG', "Debug", "Shows debug, info, warning, and error messages"),
+    ('INFO', "Info", "Shows info, warning, and error messages"),
+    ('WARNING', "Warning", "Shows warning and error messages"),
+    ('ERROR', "Error", "Shows only error messages"),
+)

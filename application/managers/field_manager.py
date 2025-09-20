@@ -1,7 +1,7 @@
 import json
 from typing import Any
-from ...core import Field, field_configs, FieldNames, utils
-from .group_data_manager import GroupDataManager
+from ...core import Field, field_configs, FieldNames
+from ...shared import utils
 
 class FieldManager:
     def __init__(self):

@@ -1,8 +1,8 @@
-﻿import bpy, addon_utils
+﻿import bpy
 
 from itertools import chain
-from ...core import utils, expand_states
-from ...shared import consts
+from ...core import expand_states
+from ...shared import consts, utils
 from ...application.managers import GroupDataManager
 
 def draw_panels(self, context, data_path):

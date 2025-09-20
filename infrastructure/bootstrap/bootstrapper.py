@@ -2,14 +2,15 @@ import bpy
 from bpy.app.handlers import persistent
 from .. import EditPropertyMenuOperator, AddPropertyGroupOperator, ExpandToggleOperator
 from ...shared import consts
-from ...core import original_draws, expand_states, utils
-from ...infrastructure.ui import draw_panels
+from ...core import original_draws, expand_states
+from ..ui import draw_panels, CPMPreferences
 from ...application.managers import GroupDataManager, PropertyDataManager, FieldManager
 
 _classes = {
     AddPropertyGroupOperator,
     EditPropertyMenuOperator,
-    ExpandToggleOperator
+    ExpandToggleOperator,
+    CPMPreferences
 }
 
 def register_classes():

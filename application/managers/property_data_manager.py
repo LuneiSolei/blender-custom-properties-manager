@@ -148,16 +148,32 @@ class PropertyDataManager:
 
         :return: The data object if the property exists, None otherwise.
         """
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Validating property '{property_name}' from data path '{data_path}'..."
+        )
+
         data_object = utils.resolve_data_object(data_path)
         if not data_object:
-            operator.report({'ERROR'}, f"Data object for '{data_path}' not found")
+            utils.log(
+                level = LogLevel.ERROR,
+                message = f"Could not find data object from data path '{data_path}'."
+            )
 
             return False
 
         if property_name not in data_object:
-            operator.report({'ERROR'}, f"Property '{property_name}' not found in {data_object.name}")
+            utils.log(
+                level = LogLevel.ERROR,
+                message = f"Property '{property_name}' not found in data object '{data_object.name}'."
+            )
 
             return False
+
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Property '{property_name}' validated!"
+        )
 
         return True
 

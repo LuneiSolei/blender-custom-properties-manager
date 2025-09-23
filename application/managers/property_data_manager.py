@@ -353,7 +353,7 @@ class PropertyDataManager:
         if not all(name_change_validity.values()):
             utils.log(
                 level = LogLevel.INFO,
-                message = f"Property rename not needed."
+                message = f"Property rename not needed. Cancelling..."
             )
             return
 

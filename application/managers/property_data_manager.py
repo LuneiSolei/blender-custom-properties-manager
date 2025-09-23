@@ -113,8 +113,18 @@ class PropertyDataManager:
 
         :return: An object used to manage the UI data.
         """
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Loading UI data for '{operator_instance.name}' from '{operator_instance.data_path}...'"
+        )
+
         data_object = utils.resolve_data_object(operator_instance.data_path)
         ui_data = data_object.id_properties_ui(operator_instance.name)
+
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"UI data loaded successfully!"
+        )
 
         return UIData(**ui_data.as_dict())
 

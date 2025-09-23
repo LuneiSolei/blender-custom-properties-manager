@@ -180,11 +180,21 @@ class PropertyDataManager:
     @classmethod
     def update_property_data(cls, operator_instance):
         fields = operator_instance.field_manager.load_fields(operator_instance.fields)
-        
+
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Updating property data for property '{fields[FieldNames.NAME.value].current_value}'"
+        )
+
         cls._update_name(operator_instance, fields[FieldNames.NAME.value])
         cls._update_group(operator_instance, fields[FieldNames.GROUP.value])
         cls._update_type(operator_instance, fields[FieldNames.TYPE.value])
         cls._update_ui_data(operator_instance, fields)
+
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Property data for property '{fields[FieldNames.NAME.value].current_value}' updated successfully!"
+        )
 
     @staticmethod
     def _determine_array_type(value: list) -> consts.PropertyTypes:

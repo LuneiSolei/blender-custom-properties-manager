@@ -2,8 +2,6 @@
 
 from typing import Union
 from .. import consts
-from . import logger
-from ..entities import LogLevel
 
 def resolve_data_object(data_path: str) -> Union[bpy.types.Object, None]:
     """
@@ -13,20 +11,10 @@ def resolve_data_object(data_path: str) -> Union[bpy.types.Object, None]:
 
     :return: The resolved Blender object or None, if not found.
     """
-    logger.log(
-        level = LogLevel.DEBUG,
-        message = f"Resolving data path '{data_path}'...",
-    )
-
     # Handle nested paths like "active_object.data"
     obj = bpy.context
     for attr in data_path.split("."):
         obj = getattr(obj, attr)
-
-    logger.log(
-        level = LogLevel.DEBUG,
-        message = f"Data Path: {obj}"
-    )
 
     return obj
 

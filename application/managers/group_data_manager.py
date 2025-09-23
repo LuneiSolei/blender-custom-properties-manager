@@ -18,17 +18,17 @@ class GroupDataManager:
 
         :return: The group data for the provided blender object.
         """
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"Getting group data..."
-        )
-
         # Use an in-memory cache of group data keyed by data_object's unique identifier
         object_id = data_object.as_pointer()
 
         # Return cached data if it exists
         if object_id in cls._cache:
             return cls._cache[object_id]
+
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Getting group data..."
+        )
 
         # Otherwise, load from the object and cache it
         new_data = cls._load_json(data_object)
@@ -50,11 +50,6 @@ class GroupDataManager:
 
         :return: The group data for the provided Blender object.
         """
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"Decoding JSON string group data for {data_object.name}..."
-        )
-
         data_str = data_object.get(cls._group_data_name, "{}")
         try:
             group_data = json.loads(data_str)
@@ -67,11 +62,6 @@ class GroupDataManager:
 
         new_data = GroupData(group_data = group_data)
         new_data.verify(data_object)
-
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"Done decoding JSON string group data for {data_object.name}."
-        )
 
         return new_data
 

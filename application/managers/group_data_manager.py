@@ -1,7 +1,8 @@
 import bpy, json
 from json import JSONDecodeError
 from ...core import GroupData
-from ...shared import consts
+from ...shared import consts, utils
+from ...shared.entities import LogLevel
 
 class GroupDataManager:
     _group_data_name: str = consts.CPM_SERIALIZED_GROUP_DATA
@@ -67,10 +68,17 @@ class GroupDataManager:
 
     @classmethod
     def on_file_load(cls):
-        """
-        Run after the addon is enabled. Deserializes grouping data for all Blender objects.
-        """
+        """Run after the addon is enabled. Deserializes grouping data for all Blender objects."""
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Deserializing grouping data...",
+        )
 
         all_objects = list(bpy.data.scenes) + list(bpy.data.objects)
         for data_object in all_objects:
             cls._load_json(data_object)
+
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Done deserializing grouping data."
+        )

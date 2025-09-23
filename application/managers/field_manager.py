@@ -11,6 +11,19 @@ class FieldManager:
 
     @staticmethod
     def setup_fields(operator_instance, operator_type) -> str:
+        """
+        Sets up the relevant fields for an EditPropertyMenu operator instance.
+
+        :param operator_instance: The EditPropertyMenu operator instance.
+        :param operator_type: The EditPropertyMenu type.
+
+        :return: A string representing a list of fields.
+        """
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Setting up fields..."
+        )
+
         fields = {}
         property_type = operator_instance.property_type
 
@@ -29,6 +42,11 @@ class FieldManager:
                 )
 
             fields[name] = new_field
+
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Fields set up successfully!"
+        )
 
         return FieldManager.stringify_fields(fields)
 

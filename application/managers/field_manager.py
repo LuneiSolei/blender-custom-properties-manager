@@ -54,12 +54,28 @@ class FieldManager:
 
         :return: A dictionary of fields.
         """
-        field_list = json.loads(fields)
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Loading fields..."
+        )
 
-        return {
+        field_list = json.loads(fields)
+        return_value = {
             field_data["name"]: Field.from_dict(field_data)
             for field_data in field_list
         }
+
+        utils.log(
+            level = LogLevel.DEBUG,
+            message = f"Loaded Fields: {return_value}"
+        )
+
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Loaded fields successfully!"
+        )
+
+        return return_value
 
     @staticmethod
     def find_value(operator_instance, operator_type, attr_name: str) -> Any:

@@ -32,15 +32,35 @@ class GroupDataManager:
 
     @classmethod
     def _load_json(cls, data_object: bpy.types.Object) -> GroupData:
+        """
+        Loads the group data from a JSON string for the provided Blender object.
+
+        :param data_object: The Blender object to get the group data for.
+
+        :return: The group data for the provided Blender object.
+        """
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Decoding JSON string group data for {data_object.name}..."
+        )
+
         data_str = data_object.get(cls._group_data_name, "{}")
         try:
             group_data = json.loads(data_str)
         except JSONDecodeError as e:
-            print(e)
+            utils.log(
+                level = LogLevel.ERROR,
+                message = f"Error decoding JSON string group data for {data_object.name}: {e}"
+            )
             group_data = {}
 
         new_data = GroupData(group_data = group_data)
         new_data.verify(data_object)
+
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Done decoding JSON string group data for {data_object.name}."
+        )
 
         return new_data
 

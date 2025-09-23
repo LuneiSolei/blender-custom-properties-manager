@@ -10,22 +10,18 @@ bl_info = {
     "description": "Manage custom properties"
 }
 
-_classes = {
-    AddPropertyGroupOperator,
-    EditPropertyMenuOperator,
-    ExpandToggleOperator
-}
+
 
 def register():
     bootstrap.setup()
-    bootstrap.register_classes(_classes)
+    bootstrap.register_classes()
     bootstrap.register_draw_functions()
     bootstrap.register_handlers()
 
 def unregister():
     bootstrap.unregister_draw_functions()
     bootstrap.clear_state()
-    bootstrap.unregister_classes(_classes)
+    bootstrap.unregister_classes()
     bootstrap.unregister_handlers()
 
 if __name__ == "__main__":

@@ -2,8 +2,7 @@
 from typing import Any
 from .edit_property_menu_mixin import EditPropertyMenuOperatorMixin
 from ....application.managers import GroupDataManager, PropertyDataManager, FieldManager
-from ....shared import consts
-from ....core import utils
+from ....shared import consts, utils
 
 class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin):
     @classmethod
@@ -32,8 +31,8 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
             return {'CANCELLED'}
 
         # Load UI data
-        ui_data = self.property_data_manager.load_ui_data(operator_instance = self)
-        self.ui_data = self.property_data_manager.stringify_ui_data(ui_data = ui_data)
+        self._cached_ui_data = self.property_data_manager.load_ui_data(operator_instance = self)
+        self.ui_data = self.property_data_manager.stringify_ui_data(ui_data = self._cached_ui_data)
 
         if not self.ui_data:
             return {'CANCELLED'}

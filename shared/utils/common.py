@@ -1,7 +1,7 @@
-﻿from typing import Union
-from ...shared import consts
+﻿import bpy
 
-import bpy
+from typing import Union
+from .. import consts
 
 def resolve_data_object(data_path: str) -> Union[bpy.types.Object, None]:
     """
@@ -11,11 +11,11 @@ def resolve_data_object(data_path: str) -> Union[bpy.types.Object, None]:
 
     :return: The resolved Blender object or None, if not found.
     """
-
     # Handle nested paths like "active_object.data"
     obj = bpy.context
     for attr in data_path.split("."):
         obj = getattr(obj, attr)
+
     return obj
 
 def get_dynamic_blender_property(attr_type: str):

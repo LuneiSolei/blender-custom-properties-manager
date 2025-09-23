@@ -44,7 +44,10 @@ class PropertyDataManager:
 
         :return: One of the PropertyTypes enum values
         """
-        utils.log(LogLevel.INFO, "Getting property type from operator instance...")
+        utils.log(
+            level = LogLevel.INFO,
+            message = "Getting property type from operator instance..."
+        )
         data_object = utils.resolve_data_object(operator_instance.data_path)
         prop_name = operator_instance.name
         value = data_object[prop_name]
@@ -132,7 +135,7 @@ class PropertyDataManager:
     def stringify_ui_data(ui_data: UIData) -> str:
         utils.log(
             level = LogLevel.INFO,
-            message = f"UI data loaded from string"
+            message = f"UI data stringified successfully!"
         )
 
         return json.dumps(ui_data)

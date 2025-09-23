@@ -381,7 +381,7 @@ class PropertyDataManager:
         if field.current_value == operator_instance.group:
             utils.log(
                 level = LogLevel.INFO,
-                message = f"Group update not needed."
+                message = f"Group update not needed. Cancelling..."
             )
 
             return

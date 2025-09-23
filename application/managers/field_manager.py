@@ -41,7 +41,17 @@ class FieldManager:
 
         :return: A JSON string representing the fields.
         """
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Stringifying fields..."
+        )
+
         field_data = [field.to_dict() for field in fields.values()]
+
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Fields stringified successfully!"
+        )
 
         return json.dumps(field_data)
 

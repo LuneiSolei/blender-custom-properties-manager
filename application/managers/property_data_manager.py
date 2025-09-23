@@ -552,16 +552,43 @@ class PropertyDataManager:
         )
 
     @staticmethod
-    def _construct_ui_data_int(operator, fields: dict[str, Field]):
-        return {
+    def _construct_ui_data_int(operator, fields: dict[str, Field]) -> dict:
+        """
+        Helper to construct UI data for an integer property.
+
+        :param operator: The
+        :param fields:
+
+        :return:
+        """
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Constructing int UI data..."
+        )
+
+        ui_data = {
             "subtype": consts.DEFAULT_SUBTYPE,
             "description": consts.DEFAULT_DESCRIPTION,
             "min": int(getattr(operator, fields[FieldNames.MIN.value].attr_name, consts.DEFAULT_MIN_INT)),
             "max": int(getattr(operator, fields[FieldNames.MAX.value].attr_name, consts.DEFAULT_MAX_INT)),
-            "soft_min": int(getattr(operator, fields[FieldNames.SOFT_MIN.value].attr_name, consts.DEFAULT_SOFT_MIN_INT)),
-            "soft_max": int(getattr(operator, fields[FieldNames.SOFT_MAX.value].attr_name, consts.DEFAULT_SOFT_MAX_INT)),
+            "soft_min": int(
+                getattr(operator, fields[FieldNames.SOFT_MIN.value].attr_name, consts.DEFAULT_SOFT_MIN_INT)),
+            "soft_max": int(
+                getattr(operator, fields[FieldNames.SOFT_MAX.value].attr_name, consts.DEFAULT_SOFT_MAX_INT)),
             "step": int(getattr(operator, "step", consts.DEFAULT_STEP_INT))
         }
+
+        utils.log(
+            level = LogLevel.DEBUG,
+            message = f"Int UI Data: {ui_data}"
+        )
+
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"UI data constructed successfully!"
+        )
+
+        return ui_data
 
     @staticmethod
     def on_type_change(operator_instance, context):

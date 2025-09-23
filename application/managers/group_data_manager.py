@@ -13,9 +13,15 @@ class GroupDataManager:
         """
         Gets the group data for the provided blender object. Data is automatically
         verified and the cache is updated.
+
         :param data_object: The Blender object to get the group data for.
+
         :return: The group data for the provided blender object.
         """
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Getting group data..."
+        )
 
         # Use an in-memory cache of group data keyed by data_object's unique identifier
         object_id = data_object.as_pointer()
@@ -27,6 +33,11 @@ class GroupDataManager:
         # Otherwise, load from the object and cache it
         new_data = cls._load_json(data_object)
         cls._cache[object_id] = new_data
+
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Done getting group data"
+        )
 
         return new_data
 

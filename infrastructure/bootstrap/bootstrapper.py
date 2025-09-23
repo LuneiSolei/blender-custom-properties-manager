@@ -14,7 +14,7 @@ _classes = {
 }
 
 def register_classes():
-    """Register classes for Blender."""
+    """Register entities for Blender."""
 
     for cls in _classes:
         # Ensure there are no duplicates

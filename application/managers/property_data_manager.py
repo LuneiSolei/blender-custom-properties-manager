@@ -3,7 +3,7 @@ import bpy, json
 from ...core import Field, FieldNames, UIData
 from .group_data_manager import GroupDataManager
 from ...shared import consts, utils
-from ...shared.classes import LogLevel
+from ...shared.entities import LogLevel
 
 class PropertyDataManager:
     TYPE_MAP = {
@@ -163,6 +163,7 @@ class PropertyDataManager:
     def _update_name(cls, operator_instance, field: Field):
         """
         Helper to update the property's name.
+
         :param operator_instance: The EditPropertyMenuOperator instance.
         :param field: The field with the data used to update the property.
         """
@@ -183,7 +184,7 @@ class PropertyDataManager:
             if operator_instance.name in data_object:
                 utils.log(
                     message = f"Property name '{operator_instance.name}' already exists in the data object.",
-                    level = LogLevel.ERROR
+                    level = LogLevel.DEBUG
                 )
 
                 # Reset property name
@@ -193,20 +194,22 @@ class PropertyDataManager:
 
             return True
 
-        def is_id_property_group() -> bool:
+        def is_not_id_property_group() -> bool:
             """
-            Check if the property is an ID Property Group.
+            Check if the property is not an ID Property Group.
 
             :return: True if the property is an ID Property Group, False otherwise.
             """
             if isinstance(data_object[field.current_value], bpy.types.bpy_struct):
-                # TODO: Use new logger
-                operator_instance.report({'ERROR'}, f"Cannot rename '{field.current_value}' to '"
-                                                    f"{operator_instance.name}'. Renaming IDPropertyGroup "
-                                                    f"types is currently not supported.")
-                return True
+                utils.log(
+                    level = LogLevel.ERROR,
+                    message = f"Cannot rename property '{field.current_value}' to '{field.name}'. Renaming"
+                              f"IDPropertyGroup types is currently not supported."
+                )
 
-            return False
+                return False
+
+            return True
 
         def update_group_data():
             """Update the property's group data in the CPM dataset."""
@@ -219,6 +222,11 @@ class PropertyDataManager:
 
         def update_data_object_prop_name():
             """Update the property's name in the data object."""
+            utils.log(
+                level = LogLevel.DEBUG,
+                message = f"Updating property name in data object '{data_object.name}'"
+            )
+
             # Temporarily store the new name
             new_name = operator_instance.name
 
@@ -230,29 +238,62 @@ class PropertyDataManager:
             operator_instance.name = new_name
 
             # Update the UI Data for the new property
+            utils.log(
+                level = LogLevel.DEBUG,
+                message = f"Updating UI info.\n"
+                          f"UI Info: {ui_data}"
+            )
+
             data_object[operator_instance.name] = data_object[field.current_value]
             data_object.id_properties_ui(operator_instance.name).update(**ui_data)
             del data_object[field.current_value]
 
+            utils.log(
+                level = LogLevel.DEBUG,
+                message = f"Property name in data object update successful."
+            )
+
         data_object = utils.resolve_data_object(operator_instance.data_path)
 
+        name_change_validity = {
+            "has_name_changed": has_name_changed(),
+            "is_name_valid": is_name_valid(),
+            "is_not_id_property_group": is_not_id_property_group(),
+        }
+
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Renaming property '{field.current_value}...'"
+        )
+
+        utils.log(
+            level = LogLevel.DEBUG,
+            message = f"{name_change_validity}"
+        )
+
         # Ensure the name has changed, is valid, and is not an ID Property Group
-        if not has_name_changed() or not is_name_valid() or is_id_property_group():
+        if not all(name_change_validity.values()):
+            utils.log(
+                level = LogLevel.INFO,
+                message = f"Property rename not needed."
+            )
             return
 
-        utils.log(f"Updating name: {operator_instance.name} -> {field.current_value}", LogLevel.DEBUG)
         update_group_data()
         update_data_object_prop_name()
-        utils.log(f"Property name updated successfully!", LogLevel.DEBUG)
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Property name update successful!"
+        )
 
     @staticmethod
     def _update_group(operator_instance, field: Field):
         """
         Helper to update the property's group.
+
         :param operator_instance: The EditPropertyMenuOperator instance.
         :param field: The field with the data used to update the property.
         """
-
         # Ensure the group name has changed
         if field.current_value == operator_instance.group:
             return

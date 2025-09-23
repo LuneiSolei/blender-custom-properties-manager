@@ -1,7 +1,7 @@
 import json
 from typing import Any
 
-from shared.entities import LogLevel
+from ...shared.entities import LogLevel
 from ...core import Field, field_configs, FieldNames
 from ...shared import utils
 

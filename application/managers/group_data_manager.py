@@ -50,6 +50,10 @@ class GroupDataManager:
         Serializes grouping data for all Blender objects. The data is transformed into a string and stored as a custom
         property on each Blender object.
         """
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Serializing grouping data for all Blender objects..."
+        )
 
         # If a cache exists, use it to update all objects
         if not hasattr(cls, "_cache"):
@@ -65,6 +69,11 @@ class GroupDataManager:
             for data_object in list(bpy.data.scenes) + list(bpy.data.objects):
                 if data_object.as_pointer() == object_id:
                     data_object[cls._group_data_name] = json.dumps(group_data.as_dict())
+
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Done serializing grouping data for all Blender objects..."
+        )
 
     @classmethod
     def on_file_load(cls):

@@ -196,25 +196,46 @@ class PropertyDataManager:
             message = f"Property data for property '{fields[FieldNames.NAME.value].current_value}' updated successfully!"
         )
 
+    # noinspection PyUnboundLocalVariable
     @staticmethod
     def _determine_array_type(value: list) -> consts.PropertyTypes:
         """
         Helper to determine the array property_type.
+
         :param value: The value of the array.
+
         :return: One of the PropertyTypes enum values.
         """
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Determining array property type for '{value}'"
+        )
+
+        return_value: consts.PropertyTypes
         if not value:
-            return consts.PropertyTypes.FLOAT_ARRAY
+            return_value = consts.PropertyTypes.FLOAT_ARRAY
 
         match value[0]:
             case float():
-                return consts.PropertyTypes.FLOAT_ARRAY
+                return_value = consts.PropertyTypes.FLOAT_ARRAY
             case int():
-                return consts.PropertyTypes.INT_ARRAY
+                return_value = consts.PropertyTypes.INT_ARRAY
             case bool():
-                return consts.PropertyTypes.BOOL_ARRAY
+                return_value = consts.PropertyTypes.BOOL_ARRAY
             case _:
-                return consts.PropertyTypes.FLOAT_ARRAY
+                return_value = consts.PropertyTypes.FLOAT_ARRAY
+
+        utils.log(
+            level = LogLevel.DEBUG,
+            message = f"Array Property Type: {return_value}"
+        )
+
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Array property type found successfully!"
+        )
+
+        return return_value
 
     @classmethod
     def _update_name(cls, operator_instance, field: Field):

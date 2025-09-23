@@ -467,7 +467,7 @@ class PropertyDataManager:
     # BUG: I believe the property_type checker is somehow losing the property_type hint information from the constants that are used
     #  as a default value in `getattr()`. This results in a warning. Currently, the solution is to disable the
     #  PyTypeChecker.
-    # noinspection PyTypeChecker
+    # noinspection PyTypeChecker,PyUnboundLocalVariable
     @classmethod
     def _update_ui_data(cls, operator_instance, fields: dict[str, Field]):
         """
@@ -475,6 +475,12 @@ class PropertyDataManager:
 
         :param operator_instance: The EditMenuPropertyOperator instance.
         """
+
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Updating UI data for property '{operator_instance.name}'..."
+        )
+
         new_ui_data: UIData
         match operator_instance.property_type:
             case consts.PropertyTypes.FLOAT:
@@ -532,8 +538,18 @@ class PropertyDataManager:
 
                 }
 
+        utils.log(
+            level = LogLevel.DEBUG,
+            message = f"New UI Data: {new_ui_data}"
+        )
+
         data_object = utils.resolve_data_object(operator_instance.data_path)
         data_object.id_properties_ui(operator_instance.name).update(**new_ui_data)
+
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"UI data updated successfully!"
+        )
 
     @staticmethod
     def _construct_ui_data_int(operator, fields: dict[str, Field]):

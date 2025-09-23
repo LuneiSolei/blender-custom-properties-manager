@@ -1,5 +1,7 @@
 import json
 from typing import Any
+
+from shared.entities import LogLevel
 from ...core import Field, field_configs, FieldNames
 from ...shared import utils
 
@@ -70,19 +72,37 @@ class FieldManager:
 
         :return: The value of the attribute.
         """
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Finding value for '{attr_name}'..."
+        )
+
         ui_data = getattr(operator_instance, "_cached_ui_data", None)
+        found_value = None
+
         if ui_data is None:
             ui_data = operator_type.property_data_manager.load_ui_data(operator_instance)
             operator_instance._cached_ui_data = ui_data
 
+
         if attr_name in ui_data:
-            return ui_data[attr_name]
+            found_value = ui_data[attr_name]
         elif attr_name == FieldNames.GROUP:
             # noinspection PyTypeChecker
             data_object = utils.resolve_data_object(operator_instance.data_path)
             group_data = operator_type.group_data_manager.get_group_data(data_object)
             operator_instance.group = group_data.get_group_name(operator_instance.name)
 
-            return operator_instance.group
+            found_value = operator_instance.group
 
-        return getattr(operator_instance, attr_name)
+        utils.log(
+            level = LogLevel.DEBUG,
+            message = f"Found Value: {found_value}"
+        )
+
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Value found successfully!"
+        )
+
+        return getattr(operator_instance, found_value)

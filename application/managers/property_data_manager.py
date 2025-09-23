@@ -372,8 +372,18 @@ class PropertyDataManager:
         :param operator_instance: The EditPropertyMenuOperator instance.
         :param field: The field with the data used to update the property.
         """
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Updating group for property '{operator_instance.name}'..."
+        )
+
         # Ensure the group name has changed
         if field.current_value == operator_instance.group:
+            utils.log(
+                level = LogLevel.INFO,
+                message = f"Group update not needed."
+            )
+
             return
 
         # Update property in CPM's dataset
@@ -383,6 +393,11 @@ class PropertyDataManager:
         group_data.update_property_group(
             prop_name = operator_instance.name,
             new_group = operator_instance.group
+        )
+
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Group update successful!"
         )
 
     @staticmethod

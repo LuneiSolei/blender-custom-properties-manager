@@ -44,45 +44,41 @@ class PropertyDataManager:
 
         :return: One of the PropertyTypes enum values
         """
+        utils.log(LogLevel.INFO, "Getting property type from operator instance...")
         data_object = utils.resolve_data_object(operator_instance.data_path)
         prop_name = operator_instance.name
         value = data_object[prop_name]
         prop_type = type(value).__name__
+        return_value: str
 
         # Check if it's a standard property_type
         if prop_type in PropertyDataManager.TYPE_MAP:
-            return PropertyDataManager.TYPE_MAP[prop_type]
+            return_value = PropertyDataManager.TYPE_MAP[prop_type]
 
         # Check if it's an array property_type
-        if prop_type == consts.PropertyTypes.ID_PROPERTY_ARRAY:
-            return PropertyDataManager._determine_array_type(value)
+        elif prop_type == consts.PropertyTypes.ID_PROPERTY_ARRAY:
+            return_value = PropertyDataManager._determine_array_type(value)
 
         # Check if it's a data block property_type
-        if isinstance(value, bpy.types.ID):
-            return consts.PropertyTypes.DATA_BLOCK
+        elif isinstance(value, bpy.types.ID):
+            return_value = consts.PropertyTypes.DATA_BLOCK
 
         # Default fallback
-        return consts.PropertyTypes.FLOAT
+        else:
+            utils.log(
+                level = LogLevel.ERROR,
+                message = f"Could not find property type for '{prop_name}' in data object '{data_object}'. Evaluated"
+                          f"prop type is of '{prop_type}'."
+            )
 
-    @staticmethod
-    def _determine_array_type(value: list) -> consts.PropertyTypes:
-        """
-        Helper to determine the array property_type.
-        :param value: The value of the array.
-        :return: One of the PropertyTypes enum values.
-        """
-        if not value:
-            return consts.PropertyTypes.FLOAT_ARRAY
+            return consts.PropertyTypes.FLOAT
 
-        match value[0]:
-            case float():
-                return consts.PropertyTypes.FLOAT_ARRAY
-            case int():
-                return consts.PropertyTypes.INT_ARRAY
-            case bool():
-                return consts.PropertyTypes.BOOL_ARRAY
-            case _:
-                return consts.PropertyTypes.FLOAT_ARRAY
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Property type found successfully!"
+        )
+
+        return return_value
 
     @staticmethod
     def load_ui_data(operator_instance) -> UIData:
@@ -158,6 +154,26 @@ class PropertyDataManager:
         cls._update_group(operator_instance, fields[FieldNames.GROUP.value])
         cls._update_type(operator_instance, fields[FieldNames.TYPE.value])
         cls._update_ui_data(operator_instance, fields)
+
+    @staticmethod
+    def _determine_array_type(value: list) -> consts.PropertyTypes:
+        """
+        Helper to determine the array property_type.
+        :param value: The value of the array.
+        :return: One of the PropertyTypes enum values.
+        """
+        if not value:
+            return consts.PropertyTypes.FLOAT_ARRAY
+
+        match value[0]:
+            case float():
+                return consts.PropertyTypes.FLOAT_ARRAY
+            case int():
+                return consts.PropertyTypes.INT_ARRAY
+            case bool():
+                return consts.PropertyTypes.BOOL_ARRAY
+            case _:
+                return consts.PropertyTypes.FLOAT_ARRAY
 
     @classmethod
     def _update_name(cls, operator_instance, field: Field):

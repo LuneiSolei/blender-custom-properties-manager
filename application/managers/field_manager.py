@@ -121,13 +121,12 @@ class FieldManager:
             message = f"Finding value for '{attr_name}'..."
         )
 
-        ui_data = getattr(operator_instance, "_cached_ui_data", None)
+        ui_data = operator_instance.ui_data
         found_value = attr_name
 
         if ui_data is None:
             ui_data = operator_type.property_data_manager.load_ui_data(operator_instance)
-            operator_instance._cached_ui_data = ui_data
-
+            operator_instance.ui_data = ui_data
 
         if attr_name in ui_data:
             found_value = ui_data[attr_name]

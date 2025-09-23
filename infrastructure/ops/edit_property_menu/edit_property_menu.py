@@ -31,8 +31,7 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
             return {'CANCELLED'}
 
         # Load UI data
-        self._cached_ui_data = self.property_data_manager.load_ui_data(operator_instance = self)
-        self.ui_data = self.property_data_manager.stringify_ui_data(ui_data = self._cached_ui_data)
+        self.ui_data = self.property_data_manager.stringify_ui_data(ui_data = self.ui_data)
 
         if not self.ui_data:
             return {'CANCELLED'}

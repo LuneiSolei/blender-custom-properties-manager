@@ -603,5 +603,15 @@ class PropertyDataManager:
         if not getattr(operator_instance, "initialized", False):
             return
 
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Property type has changed. Resetting up fields..."
+        )
+
         operator_type = utils.get_blender_operator_type(consts.CPM_EDIT_PROPERTY)
         operator_instance.fields = operator_type.field_manager.setup_fields(operator_instance, operator_type)
+
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Fields successfully updated."
+        )

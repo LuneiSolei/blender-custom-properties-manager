@@ -130,6 +130,11 @@ class PropertyDataManager:
 
     @staticmethod
     def stringify_ui_data(ui_data: UIData) -> str:
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"UI data loaded from string"
+        )
+
         return json.dumps(ui_data)
 
     @staticmethod

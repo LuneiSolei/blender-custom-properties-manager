@@ -556,10 +556,10 @@ class PropertyDataManager:
         """
         Helper to construct UI data for an integer property.
 
-        :param operator: The
-        :param fields:
+        :param operator: The EditPropertyMenu operator instance.
+        :param fields: The fields with which to construct UI data from.
 
-        :return:
+        :return: The newly constructed UI data.
         """
         utils.log(
             level = LogLevel.INFO,
@@ -594,6 +594,7 @@ class PropertyDataManager:
     def on_type_change(operator_instance, context):
         """
         Called when the property property_type changes.
+
         :param operator_instance: The EditPropertyMenuOperator instance.
         :param context: The Blender context.
         """

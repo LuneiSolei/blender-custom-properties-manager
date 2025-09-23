@@ -404,11 +404,22 @@ class PropertyDataManager:
     def _update_type(operator_instance, field: Field):
         """
         Helper to update the property's property_type.
+
         :param operator_instance: The EditMenuPropertyOperator instance.
         :param field: The field with the data used to update the property.
         """
 
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Updating type for property '{operator_instance.name}'..."
+        )
+
         if operator_instance.property_type == field.current_value:
+            utils.log(
+                level = LogLevel.INFO,
+                message = f"Type update not needed. Cancelling..."
+            )
+
             return
 
         new_value = None
@@ -439,10 +450,19 @@ class PropertyDataManager:
             case consts.PropertyTypes.PYTHON:
                 new_value = {} if not isinstance(field.current_value, dict) else field.current_value
 
+        utils.log(
+            level = LogLevel.DEBUG,
+            message = f"New Property Type: {new_value}"
+        )
+
         # Update the property with the new value as the new property_type
         data_object = utils.resolve_data_object(operator_instance.data_path)
         data_object[operator_instance.name] = new_value
 
+        utils.log(
+            level = LogLevel.INFO,
+            message = f"Property type update successful!"
+        )
 
     # BUG: I believe the property_type checker is somehow losing the property_type hint information from the constants that are used
     #  as a default value in `getattr()`. This results in a warning. Currently, the solution is to disable the

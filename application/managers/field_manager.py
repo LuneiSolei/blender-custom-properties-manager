@@ -122,7 +122,7 @@ class FieldManager:
         )
 
         ui_data = getattr(operator_instance, "_cached_ui_data", None)
-        found_value = None
+        found_value = attr_name
 
         if ui_data is None:
             ui_data = operator_type.property_data_manager.load_ui_data(operator_instance)

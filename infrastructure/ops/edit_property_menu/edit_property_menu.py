@@ -1,4 +1,4 @@
-﻿import bpy
+import bpy
 from typing import Any
 from .edit_property_menu_mixin import EditPropertyMenuOperatorMixin
 from ....application.managers import GroupDataManager, PropertyDataManager, FieldManager

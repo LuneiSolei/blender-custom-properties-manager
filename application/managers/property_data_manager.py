@@ -3,6 +3,7 @@ import bpy, json
 from ...core import Field, FieldNames, UIData
 from .group_data_manager import GroupDataManager
 from ...shared import consts, utils
+from ...shared.utils import log_method
 from ...shared.entities import LogLevel
 
 class PropertyDataManager:
@@ -36,6 +37,7 @@ class PropertyDataManager:
     }
 
     @staticmethod
+    @log_method
     def get_type(operator_instance) -> str:
         """
         Get the property's type from the operator_instance instance.
@@ -44,10 +46,6 @@ class PropertyDataManager:
 
         :return: One of the PropertyTypes enum values
         """
-        utils.log(
-            level = LogLevel.INFO,
-            message = "Getting property type from operator instance..."
-        )
         data_object = utils.resolve_data_object(operator_instance.data_path)
         prop_name = operator_instance.name
         value = data_object[prop_name]
@@ -77,13 +75,14 @@ class PropertyDataManager:
             return consts.PropertyTypes.FLOAT
 
         utils.log(
-            level = LogLevel.INFO,
-            message = f"Property type found successfully!"
+            level = LogLevel.DEBUG,
+            message = f"Property type for '{prop_name}': {return_value}"
         )
 
         return return_value
 
     @staticmethod
+    @log_method
     def load_ui_data(operator_instance) -> UIData:
         """
         Loads the UI data for the provided Blender data object.
@@ -116,31 +115,18 @@ class PropertyDataManager:
 
         :return: An object used to manage the UI data.
         """
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"Loading UI data for '{operator_instance.name}' from '{operator_instance.data_path}...'"
-        )
-
         data_object = utils.resolve_data_object(operator_instance.data_path)
         ui_data = data_object.id_properties_ui(operator_instance.name)
-
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"UI data loaded successfully!"
-        )
 
         return UIData(**ui_data.as_dict())
 
     @staticmethod
+    @log_method
     def stringify_ui_data(ui_data: UIData) -> str:
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"UI data stringified successfully!"
-        )
-
         return json.dumps(ui_data)
 
     @staticmethod
+    @log_method
     def validate(data_path: str, property_name: str, operator) -> bool:
         """
         Validate a property's existence from a data path.
@@ -151,11 +137,6 @@ class PropertyDataManager:
 
         :return: The data object if the property exists, None otherwise.
         """
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"Validating property '{property_name}' from data path '{data_path}'..."
-        )
-
         data_object = utils.resolve_data_object(data_path)
         if not data_object:
             utils.log(
@@ -173,19 +154,15 @@ class PropertyDataManager:
 
             return False
 
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"Property '{property_name}' validated!"
-        )
-
         return True
 
     @classmethod
+    @log_method
     def update_property_data(cls, operator_instance):
         fields = operator_instance.field_manager.load_fields(operator_instance.fields)
 
         utils.log(
-            level = LogLevel.INFO,
+            level = LogLevel.DEBUG,
             message = f"Updating property data for property '{fields[FieldNames.NAME.value].current_value}'"
         )
 
@@ -195,7 +172,7 @@ class PropertyDataManager:
         cls._update_ui_data(operator_instance, fields)
 
         utils.log(
-            level = LogLevel.INFO,
+            level = LogLevel.DEBUG,
             message = f"Property data for property '{fields[FieldNames.NAME.value].current_value}' updated successfully!"
         )
 
@@ -209,11 +186,6 @@ class PropertyDataManager:
 
         :return: One of the PropertyTypes enum values.
         """
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"Determining array property type for '{value}'"
-        )
-
         return_value: consts.PropertyTypes
         if not value:
             return_value = consts.PropertyTypes.FLOAT_ARRAY
@@ -231,11 +203,6 @@ class PropertyDataManager:
         utils.log(
             level = LogLevel.DEBUG,
             message = f"Array Property Type: {return_value}"
-        )
-
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"Array property type found successfully!"
         )
 
         return return_value
@@ -343,7 +310,7 @@ class PropertyDataManager:
         }
 
         utils.log(
-            level = LogLevel.INFO,
+            level = LogLevel.DEBUG,
             message = f"Renaming property '{field.current_value}...'"
         )
 
@@ -355,7 +322,7 @@ class PropertyDataManager:
         # Ensure the name has changed, is valid, and is not an ID Property Group
         if not all(name_change_validity.values()):
             utils.log(
-                level = LogLevel.INFO,
+                level = LogLevel.DEBUG,
                 message = f"Property rename not needed. Cancelling..."
             )
             return
@@ -363,8 +330,8 @@ class PropertyDataManager:
         update_group_data()
         update_data_object_prop_name()
         utils.log(
-            level = LogLevel.INFO,
-            message = f"Property name update successful!"
+            level = LogLevel.DEBUG,
+            message = f"Property renamed from '{field.current_value}' to '{operator_instance.name}'"
         )
 
     @staticmethod
@@ -375,18 +342,8 @@ class PropertyDataManager:
         :param operator_instance: The EditPropertyMenuOperator instance.
         :param field: The field with the data used to update the property.
         """
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"Updating group for property '{operator_instance.name}'..."
-        )
-
         # Ensure the group name has changed
         if field.current_value == operator_instance.group:
-            utils.log(
-                level = LogLevel.INFO,
-                message = f"Group update not needed. Cancelling..."
-            )
-
             return
 
         # Update property in CPM's dataset
@@ -399,8 +356,8 @@ class PropertyDataManager:
         )
 
         utils.log(
-            level = LogLevel.INFO,
-            message = f"Group update successful!"
+            level = LogLevel.DEBUG,
+            message = f"Property '{operator_instance.name}' moved to group '{operator_instance.group}'"
         )
 
     @staticmethod
@@ -412,20 +369,10 @@ class PropertyDataManager:
         :param field: The field with the data used to update the property.
         """
 
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"Updating type for property '{operator_instance.name}'..."
-        )
-
         # Get the current property type from the data object to compare
         current_property_type = PropertyDataManager.get_type(operator_instance)
 
         if operator_instance.property_type == current_property_type:
-            utils.log(
-                level = LogLevel.INFO,
-                message = f"Type update not needed. Cancelling..."
-            )
-
             return
 
         new_value = None
@@ -466,8 +413,8 @@ class PropertyDataManager:
         data_object[operator_instance.name] = new_value
 
         utils.log(
-            level = LogLevel.INFO,
-            message = f"Property type update successful!"
+            level = LogLevel.DEBUG,
+            message = f"Property '{operator_instance.name}' type changed from {current_property_type} to {operator_instance.property_type}"
         )
 
     # BUG: I believe the property_type checker is somehow losing the property_type hint information from the constants that are used
@@ -481,11 +428,6 @@ class PropertyDataManager:
 
         :param operator_instance: The EditMenuPropertyOperator instance.
         """
-
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"Updating UI data for property '{operator_instance.name}'..."
-        )
 
         new_ui_data: UIData
         match operator_instance.property_type:
@@ -552,11 +494,6 @@ class PropertyDataManager:
         data_object = utils.resolve_data_object(operator_instance.data_path)
         data_object.id_properties_ui(operator_instance.name).update(**new_ui_data)
 
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"UI data updated successfully!"
-        )
-
     @staticmethod
     def _construct_ui_data_int(operator, fields: dict[str, Field]) -> dict:
         """
@@ -567,10 +504,6 @@ class PropertyDataManager:
 
         :return: The newly constructed UI data.
         """
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"Constructing int UI data..."
-        )
 
         ui_data = {
             "subtype": consts.DEFAULT_SUBTYPE,
@@ -589,10 +522,6 @@ class PropertyDataManager:
             message = f"Int UI Data: {ui_data}"
         )
 
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"UI data constructed successfully!"
-        )
 
         return ui_data
 
@@ -610,14 +539,9 @@ class PropertyDataManager:
             return
 
         utils.log(
-            level = LogLevel.INFO,
-            message = f"Property type has changed. Resetting up fields..."
+            level = LogLevel.DEBUG,
+            message = f"Property type changed to {operator_instance.property_type}, refreshing fields"
         )
 
         operator_type = utils.get_blender_operator_type(consts.CPM_EDIT_PROPERTY)
         operator_instance.fields = operator_type.field_manager.setup_fields(operator_instance, operator_type)
-
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"Fields successfully updated."
-        )

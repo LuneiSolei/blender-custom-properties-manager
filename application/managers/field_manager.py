@@ -4,12 +4,14 @@ from typing import Any
 from ...shared.entities import LogLevel
 from ...core import Field, field_configs, FieldNames
 from ...shared import utils
+from ...shared.utils import log_method
 
 class FieldManager:
     def __init__(self):
         pass
 
     @staticmethod
+    @log_method
     def setup_fields(operator_instance, operator_type) -> str:
         """
         Sets up the relevant fields for an EditPropertyMenu operator instance.
@@ -19,11 +21,6 @@ class FieldManager:
 
         :return: A string representing a list of fields.
         """
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"Setting up fields..."
-        )
-
         fields = {}
         property_type = operator_instance.property_type
 
@@ -43,14 +40,10 @@ class FieldManager:
 
             fields[name] = new_field
 
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"Fields set up successfully!"
-        )
-
         return FieldManager.stringify_fields(fields)
 
     @staticmethod
+    @log_method
     def stringify_fields(fields: dict[str, Field]) -> str:
         """
         Convert a dictionary of fields to a JSON string.
@@ -59,21 +52,12 @@ class FieldManager:
 
         :return: A JSON string representing the fields.
         """
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"Stringifying fields..."
-        )
-
         field_data = [field.to_dict() for field in fields.values()]
-
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"Fields stringified successfully!"
-        )
 
         return json.dumps(field_data)
 
     @staticmethod
+    @log_method
     def load_fields(fields: str) -> dict[str, Field]:
         """
         Load fields from a JSON string.
@@ -82,11 +66,6 @@ class FieldManager:
 
         :return: A dictionary of fields.
         """
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"Loading fields..."
-        )
-
         field_list = json.loads(fields)
         return_value = {
             field_data["name"]: Field.from_dict(field_data)
@@ -95,17 +74,13 @@ class FieldManager:
 
         utils.log(
             level = LogLevel.DEBUG,
-            message = f"Loaded Fields: {return_value}"
-        )
-
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"Loaded fields successfully!"
+            message = f"Loaded {len(return_value)} fields: {list(return_value.keys())}"
         )
 
         return return_value
 
     @staticmethod
+    @log_method
     def find_value(operator_instance, operator_type, attr_name: str) -> Any:
         """
         Find the value in the operator_instance based on the attr_name.
@@ -116,11 +91,6 @@ class FieldManager:
 
         :return: The value of the attribute.
         """
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"Finding value for '{attr_name}'..."
-        )
-
         ui_data = operator_instance.ui_data
         found_value = attr_name
 
@@ -140,12 +110,7 @@ class FieldManager:
 
         utils.log(
             level = LogLevel.DEBUG,
-            message = f"Found Value: {found_value}"
-        )
-
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"Value found successfully!"
+            message = f"Field '{attr_name}' resolved to value: {found_value}"
         )
 
         return getattr(operator_instance, found_value)

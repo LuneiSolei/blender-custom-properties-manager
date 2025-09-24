@@ -373,11 +373,6 @@ class PropertyDataManager:
         current_property_type = PropertyDataManager.get_type(operator_instance)
 
         if operator_instance.property_type == current_property_type:
-            utils.log(
-                level = LogLevel.INFO,
-                message = f"Type update not needed. Cancelling..."
-            )
-
             return
 
         new_value = None

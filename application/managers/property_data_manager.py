@@ -3,6 +3,7 @@ import bpy, json
 from ...core import Field, FieldNames, UIData
 from .group_data_manager import GroupDataManager
 from ...shared import consts, utils
+from ...shared.utils import log_method
 from ...shared.entities import LogLevel
 
 class PropertyDataManager:
@@ -36,6 +37,7 @@ class PropertyDataManager:
     }
 
     @staticmethod
+    @log_method
     def get_type(operator_instance) -> str:
         """
         Get the property's type from the operator_instance instance.
@@ -80,6 +82,7 @@ class PropertyDataManager:
         return return_value
 
     @staticmethod
+    @log_method
     def load_ui_data(operator_instance) -> UIData:
         """
         Loads the UI data for the provided Blender data object.
@@ -118,10 +121,12 @@ class PropertyDataManager:
         return UIData(**ui_data.as_dict())
 
     @staticmethod
+    @log_method
     def stringify_ui_data(ui_data: UIData) -> str:
         return json.dumps(ui_data)
 
     @staticmethod
+    @log_method
     def validate(data_path: str, property_name: str, operator) -> bool:
         """
         Validate a property's existence from a data path.
@@ -152,11 +157,12 @@ class PropertyDataManager:
         return True
 
     @classmethod
+    @log_method
     def update_property_data(cls, operator_instance):
         fields = operator_instance.field_manager.load_fields(operator_instance.fields)
 
         utils.log(
-            level = LogLevel.INFO,
+            level = LogLevel.DEBUG,
             message = f"Updating property data for property '{fields[FieldNames.NAME.value].current_value}'"
         )
 
@@ -166,7 +172,7 @@ class PropertyDataManager:
         cls._update_ui_data(operator_instance, fields)
 
         utils.log(
-            level = LogLevel.INFO,
+            level = LogLevel.DEBUG,
             message = f"Property data for property '{fields[FieldNames.NAME.value].current_value}' updated successfully!"
         )
 
@@ -304,7 +310,7 @@ class PropertyDataManager:
         }
 
         utils.log(
-            level = LogLevel.INFO,
+            level = LogLevel.DEBUG,
             message = f"Renaming property '{field.current_value}...'"
         )
 
@@ -316,7 +322,7 @@ class PropertyDataManager:
         # Ensure the name has changed, is valid, and is not an ID Property Group
         if not all(name_change_validity.values()):
             utils.log(
-                level = LogLevel.INFO,
+                level = LogLevel.DEBUG,
                 message = f"Property rename not needed. Cancelling..."
             )
             return
@@ -324,7 +330,7 @@ class PropertyDataManager:
         update_group_data()
         update_data_object_prop_name()
         utils.log(
-            level = LogLevel.INFO,
+            level = LogLevel.DEBUG,
             message = f"Property renamed from '{field.current_value}' to '{operator_instance.name}'"
         )
 
@@ -350,7 +356,7 @@ class PropertyDataManager:
         )
 
         utils.log(
-            level = LogLevel.INFO,
+            level = LogLevel.DEBUG,
             message = f"Property '{operator_instance.name}' moved to group '{operator_instance.group}'"
         )
 
@@ -362,7 +368,6 @@ class PropertyDataManager:
         :param operator_instance: The EditMenuPropertyOperator instance.
         :param field: The field with the data used to update the property.
         """
-
 
         # Get the current property type from the data object to compare
         current_property_type = PropertyDataManager.get_type(operator_instance)
@@ -413,7 +418,7 @@ class PropertyDataManager:
         data_object[operator_instance.name] = new_value
 
         utils.log(
-            level = LogLevel.INFO,
+            level = LogLevel.DEBUG,
             message = f"Property '{operator_instance.name}' type changed from {current_property_type} to {operator_instance.property_type}"
         )
 
@@ -428,7 +433,6 @@ class PropertyDataManager:
 
         :param operator_instance: The EditMenuPropertyOperator instance.
         """
-
 
         new_ui_data: UIData
         match operator_instance.property_type:
@@ -494,7 +498,6 @@ class PropertyDataManager:
 
         data_object = utils.resolve_data_object(operator_instance.data_path)
         data_object.id_properties_ui(operator_instance.name).update(**new_ui_data)
-
 
     @staticmethod
     def _construct_ui_data_int(operator, fields: dict[str, Field]) -> dict:

@@ -2,6 +2,7 @@ import bpy, json
 from json import JSONDecodeError
 from ...core import GroupData
 from ...shared import consts, utils
+from ...shared.utils import log_method
 from ...shared.entities import LogLevel
 
 class GroupDataManager:
@@ -9,6 +10,7 @@ class GroupDataManager:
     _cache: dict[str, GroupData] = {}
 
     @classmethod
+    @log_method
     def get_group_data(cls, data_object: bpy.types.Object) -> GroupData:
         """
         Gets the group data for the provided blender object. Data is automatically
@@ -66,6 +68,7 @@ class GroupDataManager:
         return new_data
 
     @classmethod
+    @log_method
     def on_file_save(cls):
         """
         Serializes grouping data for all Blender objects. The data is transformed into a string and stored as a custom
@@ -97,6 +100,7 @@ class GroupDataManager:
         )
 
     @classmethod
+    @log_method
     def on_file_load(cls):
         """Run after the addon is enabled. Deserializes grouping data for all Blender objects."""
         utils.log(

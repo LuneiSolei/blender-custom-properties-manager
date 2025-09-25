@@ -9,10 +9,11 @@ class StructuredLogger:
         self.logger.setLevel(level)
 
         # Create structured formatter
-        handler = logging.StreamHandler()
-        formatter = StructuredFormatter()
-        handler.setFormatter(formatter)
-        self.logger.addHandler(handler)
+        if not self.logger.hasHandlers():
+            handler = logging.StreamHandler()
+            formatter = StructuredFormatter()
+            handler.setFormatter(formatter)
+            self.logger.addHandler(handler)
 
     def log(self, level: LogLevel, message: str, **kwargs):
         """Log with structured context"""
@@ -30,7 +31,8 @@ class StructuredFormatter(logging.Formatter):
     def format(self, record):
         log_entry = {
             "timestamp": getattr(record, "timestamp", datetime.now(timezone.utc).isoformat()),
-            "level": record.getMessage(),
+            "level": record.levelname,
+            "message": record.getMessage(),
             "module": record.module,
             "function": record.funcName,
             "line": record.lineno,

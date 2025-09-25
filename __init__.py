@@ -17,6 +17,7 @@ def register():
     bootstrap.register_classes()
     bootstrap.register_draw_functions()
     bootstrap.register_handlers()
+    bootstrap.post_setup()
 
 def unregister():
     bootstrap.unregister_draw_functions()

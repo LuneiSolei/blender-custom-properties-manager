@@ -64,9 +64,16 @@ def setup():
         property_data_manager = PropertyDataManager,
         field_manager = FieldManager
     )
+
+def post_setup():
+    # Get the current log level from user preferences
+    prefs = bpy.context.preferences.addons[consts.MODULE_NAME].preferences
+    log_level = int(prefs.log_level)
+
+    # Create the logger
     StructuredLogger(
         name = consts.MODULE_NAME,
-        level = LogLevel.INFO.value
+        level = log_level
     )
 
 def _create_draw_function(data_path: str):

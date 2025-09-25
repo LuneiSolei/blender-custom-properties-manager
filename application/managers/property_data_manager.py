@@ -643,8 +643,8 @@ class PropertyDataManager:
             "step": int(getattr(operator, "step", consts.DEFAULT_STEP_INT))
         }
 
-    @classmethod
-    def on_type_change(cls, operator_instance, context):
+    @staticmethod
+    def on_type_change(operator_instance, context):
         """
         Called when the property property_type changes.
 

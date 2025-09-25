@@ -617,16 +617,11 @@ class PropertyDataManager:
 
                 }
 
-        utils.log(
-            level = LogLevel.DEBUG,
-            message = f"New UI Data: {new_ui_data}"
-        )
-
         data_object = utils.resolve_data_object(operator_instance.data_path)
         data_object.id_properties_ui(operator_instance.name).update(**new_ui_data)
 
-    @staticmethod
-    def _construct_ui_data_int(operator, fields: dict[str, Field]) -> dict:
+    @classmethod
+    def _construct_ui_data_int(cls, operator, fields: dict[str, Field]) -> dict:
         """
         Helper to construct UI data for an integer property.
 
@@ -636,7 +631,7 @@ class PropertyDataManager:
         :return: The newly constructed UI data.
         """
 
-        ui_data = {
+        return {
             "subtype": consts.DEFAULT_SUBTYPE,
             "description": consts.DEFAULT_DESCRIPTION,
             "min": int(getattr(operator, fields[FieldNames.MIN.value].attr_name, consts.DEFAULT_MIN_INT)),
@@ -648,16 +643,8 @@ class PropertyDataManager:
             "step": int(getattr(operator, "step", consts.DEFAULT_STEP_INT))
         }
 
-        utils.log(
-            level = LogLevel.DEBUG,
-            message = f"Int UI Data: {ui_data}"
-        )
-
-
-        return ui_data
-
-    @staticmethod
-    def on_type_change(operator_instance, context):
+    @classmethod
+    def on_type_change(cls, operator_instance, context):
         """
         Called when the property property_type changes.
 
@@ -668,11 +655,6 @@ class PropertyDataManager:
         # Prevent infinite recursion
         if not getattr(operator_instance, "initialized", False):
             return
-
-        utils.log(
-            level = LogLevel.DEBUG,
-            message = f"Property type changed to {operator_instance.property_type}, refreshing fields"
-        )
 
         operator_type = utils.get_blender_operator_type(consts.CPM_EDIT_PROPERTY)
         operator_instance.fields = operator_type.field_manager.setup_fields(operator_instance, operator_type)

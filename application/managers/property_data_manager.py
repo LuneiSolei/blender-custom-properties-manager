@@ -274,6 +274,8 @@ class PropertyDataManager:
 
         :param operator_instance: The EditPropertyMenuOperator instance.
         :param field: The field with the data used to update the property.
+
+        :return: The new name of the property.
         """
         def has_name_changed() -> bool:
             """

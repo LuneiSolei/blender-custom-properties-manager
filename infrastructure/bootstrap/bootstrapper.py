@@ -38,7 +38,7 @@ def register_draw_functions():
 def unregister_draw_functions():
     for panel_name, original_draw in original_draws.items():
         if hasattr(bpy.types, panel_name):
-            getattr(bpy.types, panel_name).draw_panels = original_draw
+            getattr(bpy.types, panel_name).draw = original_draw
 
 def clear_state():
     original_draws.clear()

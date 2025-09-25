@@ -187,19 +187,26 @@ class PropertyDataManager:
         """
         fields = operator_instance.field_manager.load_fields(operator_instance.fields)
 
-        utils.log(
+        # Log method entry
+        cls.logger.log(
             level = LogLevel.DEBUG,
-            message = f"Updating property data for property '{fields[FieldNames.NAME.value].current_value}'"
+            message = "Updating property data",
+            extra = {
+                "property": fields[FieldNames.NAME.value].current_value
+            }
         )
 
-        cls._update_name(operator_instance, fields[FieldNames.NAME.value])
-        cls._update_group(operator_instance, fields[FieldNames.GROUP.value])
-        cls._update_type(operator_instance, fields[FieldNames.TYPE.value])
-        cls._update_ui_data(operator_instance, fields)
+        new_data = {
+            "name": cls._update_name(operator_instance, fields[FieldNames.NAME.value]),
+            "group": cls._update_group(operator_instance, fields[FieldNames.GROUP.value]),
+            "type": cls._update_type(operator_instance, fields[FieldNames.TYPE.value]),
+            "ui_data": cls._update_ui_data(operator_instance, fields),
+        }
 
-        utils.log(
+        cls.logger.log(
             level = LogLevel.DEBUG,
-            message = f"Property data for property '{fields[FieldNames.NAME.value].current_value}' updated successfully!"
+            message = "Property data updated",
+            extra = {**new_data}
         )
 
     # noinspection PyUnboundLocalVariable

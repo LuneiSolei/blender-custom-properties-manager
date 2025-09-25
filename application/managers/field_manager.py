@@ -4,15 +4,14 @@ from typing import Any
 from ...shared.entities import LogLevel
 from ...core import Field, field_configs, FieldNames
 from ...shared import utils
-from ...shared.utils import log_method
+from ...shared.utils import logger
 
 class FieldManager:
     def __init__(self):
         pass
 
-    @staticmethod
-    @log_method
-    def setup_fields(operator_instance, operator_type) -> str:
+    @classmethod
+    def setup_fields(cls, operator_instance, operator_type) -> str:
         """
         Sets up the relevant fields for an EditPropertyMenu operator instance.
 
@@ -42,9 +41,8 @@ class FieldManager:
 
         return FieldManager.stringify_fields(fields)
 
-    @staticmethod
-    @log_method
-    def stringify_fields(fields: dict[str, Field]) -> str:
+    @classmethod
+    def stringify_fields(cls, fields: dict[str, Field]) -> str:
         """
         Convert a dictionary of fields to a JSON string.
 
@@ -56,9 +54,8 @@ class FieldManager:
 
         return json.dumps(field_data)
 
-    @staticmethod
-    @log_method
-    def load_fields(fields: str) -> dict[str, Field]:
+    @classmethod
+    def load_fields(cls, fields: str) -> dict[str, Field]:
         """
         Load fields from a JSON string.
 
@@ -79,9 +76,8 @@ class FieldManager:
 
         return return_value
 
-    @staticmethod
-    @log_method
-    def find_value(operator_instance, operator_type, attr_name: str) -> Any:
+    @classmethod
+    def find_value(cls, operator_instance, operator_type, attr_name: str) -> Any:
         """
         Find the value in the operator_instance based on the attr_name.
 

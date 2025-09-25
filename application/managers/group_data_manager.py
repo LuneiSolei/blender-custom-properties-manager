@@ -2,7 +2,7 @@ import bpy, json
 from json import JSONDecodeError
 from ...core import GroupData
 from ...shared import consts, utils
-from ...shared.utils import log_method
+from ...shared.utils import logger
 from ...shared.entities import LogLevel
 
 class GroupDataManager:
@@ -10,7 +10,6 @@ class GroupDataManager:
     _cache: dict[str, GroupData] = {}
 
     @classmethod
-    @log_method
     def get_group_data(cls, data_object: bpy.types.Object) -> GroupData:
         """
         Gets the group data for the provided blender object. Data is automatically
@@ -27,19 +26,9 @@ class GroupDataManager:
         if object_id in cls._cache:
             return cls._cache[object_id]
 
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"Getting group data..."
-        )
-
         # Otherwise, load from the object and cache it
         new_data = cls._load_json(data_object)
         cls._cache[object_id] = new_data
-
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"Done getting group data"
-        )
 
         return new_data
 
@@ -56,10 +45,6 @@ class GroupDataManager:
         try:
             group_data = json.loads(data_str)
         except JSONDecodeError as e:
-            utils.log(
-                level = LogLevel.ERROR,
-                message = f"Error decoding JSON string group data for {data_object.name}: {e}"
-            )
             group_data = {}
 
         new_data = GroupData(group_data = group_data)
@@ -68,17 +53,11 @@ class GroupDataManager:
         return new_data
 
     @classmethod
-    @log_method
     def on_file_save(cls):
         """
         Serializes grouping data for all Blender objects. The data is transformed into a string and stored as a custom
         property on each Blender object.
         """
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"Serializing grouping data for all Blender objects..."
-        )
-
         # If a cache exists, use it to update all objects
         if not hasattr(cls, "_cache"):
             all_objects = list(bpy.data.scenes) + list(bpy.data.objects)
@@ -94,25 +73,9 @@ class GroupDataManager:
                 if data_object.as_pointer() == object_id:
                     data_object[cls._group_data_name] = json.dumps(group_data.as_dict())
 
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"Done serializing grouping data for all Blender objects..."
-        )
-
     @classmethod
-    @log_method
     def on_file_load(cls):
         """Run after the addon is enabled. Deserializes grouping data for all Blender objects."""
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"Deserializing grouping data...",
-        )
-
         all_objects = list(bpy.data.scenes) + list(bpy.data.objects)
         for data_object in all_objects:
             cls._load_json(data_object)
-
-        utils.log(
-            level = LogLevel.INFO,
-            message = f"Done deserializing grouping data."
-        )

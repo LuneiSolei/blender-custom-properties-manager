@@ -69,11 +69,6 @@ class FieldManager:
             for field_data in field_list
         }
 
-        utils.log(
-            level = LogLevel.DEBUG,
-            message = f"Loaded {len(return_value)} fields: {list(return_value.keys())}"
-        )
-
         return return_value
 
     @classmethod
@@ -103,10 +98,5 @@ class FieldManager:
             found_value = operator_instance.group
         else:
             found_value = getattr(operator_instance, attr_name)
-
-        utils.log(
-            level = LogLevel.DEBUG,
-            message = f"Field '{attr_name}' resolved to value: {found_value}"
-        )
 
         return found_value

@@ -1,7 +1,6 @@
-from typing import Union
-
 import bpy, json
 
+from typing import Union
 from ...core import Field, FieldNames, UIData
 from .group_data_manager import GroupDataManager
 from ...shared import consts, utils

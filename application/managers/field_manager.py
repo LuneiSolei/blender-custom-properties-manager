@@ -92,7 +92,6 @@ class FieldManager:
         :return: The value of the attribute.
         """
         ui_data = operator_instance.ui_data
-        found_value = attr_name
 
         if ui_data is None:
             ui_data = operator_type.property_data_manager.load_ui_data(operator_instance)
@@ -105,12 +104,13 @@ class FieldManager:
             data_object = utils.resolve_data_object(operator_instance.data_path)
             group_data = operator_type.group_data_manager.get_group_data(data_object)
             operator_instance.group = group_data.get_group_name(operator_instance.name)
-
             found_value = operator_instance.group
+        else:
+            found_value = getattr(operator_instance, attr_name)
 
         utils.log(
             level = LogLevel.DEBUG,
             message = f"Field '{attr_name}' resolved to value: {found_value}"
         )
 
-        return getattr(operator_instance, found_value)
+        return found_value

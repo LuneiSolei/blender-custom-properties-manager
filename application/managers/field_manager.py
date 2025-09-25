@@ -100,7 +100,7 @@ class FieldManager:
 
         if attr_name in ui_data:
             found_value = ui_data[attr_name]
-        elif attr_name == FieldNames.GROUP:
+        elif attr_name == FieldNames.GROUP.value:
             # noinspection PyTypeChecker
             data_object = utils.resolve_data_object(operator_instance.data_path)
             group_data = operator_type.group_data_manager.get_group_data(data_object)

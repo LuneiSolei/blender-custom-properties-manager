@@ -415,17 +415,33 @@ class PropertyDataManager:
 
         return new_name
 
-    @staticmethod
-    def _update_group(operator_instance, field: Field):
+    @classmethod
+    def _update_group(cls, operator_instance, field: Field) -> str:
         """
         Helper to update the property's group.
 
         :param operator_instance: The EditPropertyMenuOperator instance.
         :param field: The field with the data used to update the property.
+
+        :return: The updated group name.
         """
+        old_group = field.current_value
+        new_group = operator_instance.group
+
+        # Log method entry
+        cls.logger.log(
+            level = LogLevel.DEBUG,
+            message = "Updating property's group",
+            extra = {
+                "old_group": old_group,
+                "new_group": new_group,
+            }
+        )
+
         # Ensure the group name has changed
-        if field.current_value == operator_instance.group:
-            return
+        if old_group == new_group:
+            # Group change not needed
+            return old_group
 
         # Update property in CPM's dataset
         data_object = utils.resolve_data_object(operator_instance.data_path)
@@ -436,10 +452,16 @@ class PropertyDataManager:
             new_group = operator_instance.group
         )
 
-        utils.log(
+        cls.logger.log(
             level = LogLevel.DEBUG,
-            message = f"Property '{operator_instance.name}' moved to group '{operator_instance.group}'"
+            message = "Updated property's group",
+            extra = {
+                "old_group": old_group,
+                "new_group": new_group,
+            }
         )
+
+        return new_group
 
     @staticmethod
     def _update_type(operator_instance, field: Field):

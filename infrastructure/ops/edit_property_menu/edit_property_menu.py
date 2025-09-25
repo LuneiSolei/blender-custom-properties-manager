@@ -22,8 +22,7 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
         self.initialized = False
         is_valid = self.property_data_manager.validate(
             data_path = self.data_path,
-            property_name = self.name,
-            operator = self
+            property_name = self.name
         )
 
         # Ensure data_object exists

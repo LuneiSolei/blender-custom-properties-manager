@@ -4,15 +4,14 @@ from typing import Any
 from ...shared.entities import LogLevel
 from ...core import Field, field_configs, FieldNames
 from ...shared import utils
-from ...shared.utils import log_method
+from ...shared.utils import logger
 
 class FieldManager:
     def __init__(self):
         pass
 
-    @staticmethod
-    @log_method
-    def setup_fields(operator_instance, operator_type) -> str:
+    @classmethod
+    def setup_fields(cls, operator_instance, operator_type) -> str:
         """
         Sets up the relevant fields for an EditPropertyMenu operator instance.
 
@@ -42,9 +41,8 @@ class FieldManager:
 
         return FieldManager.stringify_fields(fields)
 
-    @staticmethod
-    @log_method
-    def stringify_fields(fields: dict[str, Field]) -> str:
+    @classmethod
+    def stringify_fields(cls, fields: dict[str, Field]) -> str:
         """
         Convert a dictionary of fields to a JSON string.
 
@@ -56,9 +54,8 @@ class FieldManager:
 
         return json.dumps(field_data)
 
-    @staticmethod
-    @log_method
-    def load_fields(fields: str) -> dict[str, Field]:
+    @classmethod
+    def load_fields(cls, fields: str) -> dict[str, Field]:
         """
         Load fields from a JSON string.
 
@@ -72,16 +69,10 @@ class FieldManager:
             for field_data in field_list
         }
 
-        utils.log(
-            level = LogLevel.DEBUG,
-            message = f"Loaded {len(return_value)} fields: {list(return_value.keys())}"
-        )
-
         return return_value
 
-    @staticmethod
-    @log_method
-    def find_value(operator_instance, operator_type, attr_name: str) -> Any:
+    @classmethod
+    def find_value(cls, operator_instance, operator_type, attr_name: str) -> Any:
         """
         Find the value in the operator_instance based on the attr_name.
 
@@ -92,7 +83,6 @@ class FieldManager:
         :return: The value of the attribute.
         """
         ui_data = operator_instance.ui_data
-        found_value = attr_name
 
         if ui_data is None:
             ui_data = operator_type.property_data_manager.load_ui_data(operator_instance)
@@ -100,17 +90,13 @@ class FieldManager:
 
         if attr_name in ui_data:
             found_value = ui_data[attr_name]
-        elif attr_name == FieldNames.GROUP:
+        elif attr_name == FieldNames.GROUP.value:
             # noinspection PyTypeChecker
             data_object = utils.resolve_data_object(operator_instance.data_path)
             group_data = operator_type.group_data_manager.get_group_data(data_object)
             operator_instance.group = group_data.get_group_name(operator_instance.name)
-
             found_value = operator_instance.group
+        else:
+            found_value = getattr(operator_instance, attr_name)
 
-        utils.log(
-            level = LogLevel.DEBUG,
-            message = f"Field '{attr_name}' resolved to value: {found_value}"
-        )
-
-        return getattr(operator_instance, found_value)
+        return found_value

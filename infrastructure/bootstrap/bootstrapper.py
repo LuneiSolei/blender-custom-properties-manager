@@ -1,4 +1,7 @@
 import bpy
+
+from ...shared.entities import LogLevel
+from ...shared.utils import StructuredLogger
 from bpy.app.handlers import persistent
 from .. import EditPropertyMenuOperator, AddPropertyGroupOperator, ExpandToggleOperator
 from ...shared import consts
@@ -38,7 +41,7 @@ def register_draw_functions():
 def unregister_draw_functions():
     for panel_name, original_draw in original_draws.items():
         if hasattr(bpy.types, panel_name):
-            getattr(bpy.types, panel_name).draw_panels = original_draw
+            getattr(bpy.types, panel_name).draw = original_draw
 
 def clear_state():
     original_draws.clear()
@@ -60,6 +63,17 @@ def setup():
         group_data_manager = GroupDataManager,
         property_data_manager = PropertyDataManager,
         field_manager = FieldManager
+    )
+
+def post_setup():
+    # Get the current log level from user preferences
+    prefs = bpy.context.preferences.addons[consts.MODULE_NAME].preferences
+    log_level = int(prefs.log_level)
+
+    # Create the logger
+    StructuredLogger(
+        name = consts.MODULE_NAME,
+        level = log_level
     )
 
 def _create_draw_function(data_path: str):

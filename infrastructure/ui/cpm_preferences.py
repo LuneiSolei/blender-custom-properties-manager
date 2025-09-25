@@ -1,6 +1,7 @@
 import bpy
 
 from ...shared import consts
+from ...application.managers import PreferencesManager
 
 class CPMPreferences(bpy.types.AddonPreferences):
     bl_idname = consts.MODULE_NAME
@@ -10,7 +11,8 @@ class CPMPreferences(bpy.types.AddonPreferences):
         items=consts.LOG_LEVELS,
         name = "Log Level",
         description = "Level of debug information to display",
-        default = consts.LOG_LEVELS[0][0]
+        default = consts.LOG_LEVELS[0][0],
+        update = PreferencesManager.on_log_level_update
     )
 
     def draw(self, context):

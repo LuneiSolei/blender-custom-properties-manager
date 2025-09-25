@@ -180,6 +180,11 @@ class PropertyDataManager:
 
     @classmethod
     def update_property_data(cls, operator_instance):
+        """
+        Update the property data for the provided Blender data object.
+
+        :param operator_instance: The EditPropertyMenu operator instance.
+        """
         fields = operator_instance.field_manager.load_fields(operator_instance.fields)
 
         utils.log(

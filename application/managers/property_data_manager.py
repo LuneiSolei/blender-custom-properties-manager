@@ -466,12 +466,14 @@ class PropertyDataManager:
         return new_group
 
     @staticmethod
-    def _update_type(operator_instance, field: Field):
+    def _update_type(operator_instance, field: Field) -> str:
         """
         Helper to update the property's property_type.
 
         :param operator_instance: The EditMenuPropertyOperator instance.
         :param field: The field with the data used to update the property.
+
+        :return: The updated property type.
         """
 
         # Get the current property type from the data object to compare
@@ -527,13 +529,14 @@ class PropertyDataManager:
     #  PyTypeChecker.
     # noinspection PyTypeChecker,PyUnboundLocalVariable
     @classmethod
-    def _update_ui_data(cls, operator_instance, fields: dict[str, Field]):
+    def _update_ui_data(cls, operator_instance, fields: dict[str, Field]) -> UIData:
         """
         Helper to update the property's UI data.
 
         :param operator_instance: The EditMenuPropertyOperator instance.
-        """
 
+        :return: The updated UI data.
+        """
         new_ui_data: UIData
         match operator_instance.property_type:
             case consts.PropertyTypes.FLOAT:

@@ -1,3 +1,5 @@
+from typing import Union
+
 import bpy, json
 
 from ...core import Field, FieldNames, UIData
@@ -7,18 +9,6 @@ from ...shared.utils import StructuredLogger
 from ...shared.entities import LogLevel
 
 class PropertyDataManager:
-    TYPE_MAP = {
-        "float": consts.PropertyTypes.FLOAT,
-        "float_array": consts.PropertyTypes.FLOAT_ARRAY,
-        "int": consts.PropertyTypes.INT,
-        "int_array": consts.PropertyTypes.INT_ARRAY,
-        "bool": consts.PropertyTypes.BOOL,
-        "bool_array": consts.PropertyTypes.BOOL_ARRAY,
-        "string": consts.PropertyTypes.STRING,
-        "IDPropertyGroup": consts.PropertyTypes.PYTHON,
-        "data_block": consts.PropertyTypes.DATA_BLOCK
-    }
-
     logger = StructuredLogger(consts.MODULE_NAME)
 
     @classmethod
@@ -47,9 +37,22 @@ class PropertyDataManager:
         prop_type = type(value).__name__
         return_value: str
 
+        # Define a map to pair types with their Blender type equivalent
+        type_map = {
+            "float": consts.PropertyTypes.FLOAT,
+            "float_array": consts.PropertyTypes.FLOAT_ARRAY,
+            "int": consts.PropertyTypes.INT,
+            "int_array": consts.PropertyTypes.INT_ARRAY,
+            "bool": consts.PropertyTypes.BOOL,
+            "bool_array": consts.PropertyTypes.BOOL_ARRAY,
+            "string": consts.PropertyTypes.STRING,
+            "IDPropertyGroup": consts.PropertyTypes.PYTHON,
+            "data_block": consts.PropertyTypes.DATA_BLOCK
+        }
+
         # Check if it's a standard property_type
-        if prop_type in PropertyDataManager.TYPE_MAP:
-            return_value = PropertyDataManager.TYPE_MAP[prop_type]
+        if prop_type in type_map:
+            return_value = type_map[prop_type]
 
         # Check if it's an array property_type
         elif prop_type == consts.PropertyTypes.ID_PROPERTY_ARRAY:
@@ -454,6 +457,7 @@ class PropertyDataManager:
             new_group = operator_instance.group
         )
 
+        # Log method exit
         cls.logger.log(
             level = LogLevel.DEBUG,
             message = "Updated property's group",
@@ -465,8 +469,8 @@ class PropertyDataManager:
 
         return new_group
 
-    @staticmethod
-    def _update_type(operator_instance, field: Field) -> str:
+    @classmethod
+    def _update_type(cls, operator_instance, field: Field) -> str:
         """
         Helper to update the property's property_type.
 
@@ -475,54 +479,73 @@ class PropertyDataManager:
 
         :return: The updated property type.
         """
+        old_type = cls.get_type(operator_instance)
+        new_type = operator_instance.property_type
+        old_value = operator_instance.value
+        new_value: Union[int, float, bool, str, dict, list[int | float | bool]]
 
-        # Get the current property type from the data object to compare
-        current_property_type = PropertyDataManager.get_type(operator_instance)
-
-        if operator_instance.property_type == current_property_type:
-            return
-
-        new_value = None
-        match operator_instance.property_type:
-            case consts.PropertyTypes.FLOAT:
-                new_value = float(field.current_value) if isinstance(field.current_value, (int, float)) else 0.0
-            case consts.PropertyTypes.INT:
-                new_value = int(field.current_value) if isinstance(field.current_value, (int, float)) else 0
-            case consts.PropertyTypes.BOOL:
-                new_value = bool(field.current_value)
-            case consts.PropertyTypes.STRING:
-                new_value = str(field.current_value)
-            case consts.PropertyTypes.FLOAT_ARRAY:
-                if isinstance(field.current_value, list):
-                    new_value = [float(v) if isinstance(v, (int, float)) else 0.0 for v in field.current_value]
-                else:
-                    new_value = [float(field.current_value) if isinstance(field.current_value, (int, float)) else 0.0]
-            case consts.PropertyTypes.INT_ARRAY:
-                if isinstance(field.current_value, list):
-                    new_value = [int(v) if isinstance(v, (int, float)) else 0 for v in field.current_value]
-                else:
-                    new_value = [int(field.current_value) if isinstance(field.current_value, (int, float)) else 0]
-            case consts.PropertyTypes.BOOL_ARRAY:
-                if isinstance(field.current_value, list):
-                    new_value = [bool(v) for v in field.current_value]
-                else:
-                    new_value = [bool(field.current_value)]
-            case consts.PropertyTypes.PYTHON:
-                new_value = {} if not isinstance(field.current_value, dict) else field.current_value
-
-        utils.log(
+        # Log method entry
+        cls.logger.log(
             level = LogLevel.DEBUG,
-            message = f"New Property Type: {new_value}"
+            message = "Updating property's type",
+            extra = {
+                "old_type": old_type,
+                "new_type": new_type
+            }
         )
+
+        # Define a map convert Blender property types
+        simple_type_converters = {
+            consts.PropertyTypes.FLOAT: lambda v: float(v) if isinstance(v, (int, float)) else 0.0,
+            consts.PropertyTypes.INT: lambda v: int(v) if isinstance(v, (int, float)) else 0,
+            consts.PropertyTypes.BOOL: lambda v: bool(v),
+            consts.PropertyTypes.STRING: lambda v: str(v),
+            consts.PropertyTypes.PYTHON: lambda v: v if isinstance(v, dict) else {}
+        }
+
+        if new_type == old_type:
+            # No need to change type
+            return old_type
+
+        if new_type in simple_type_converters:
+            new_value = simple_type_converters[new_type](old_value)
+        elif new_type in (consts.PropertyTypes.FLOAT_ARRAY,
+                          consts.PropertyTypes.INT_ARRAY,
+                          consts.PropertyTypes.BOOL_ARRAY):
+            converter = simple_type_converters[new_type]
+            if isinstance(old_value, list):
+                new_value = [converter(v) for v in old_value]
+            else:
+                new_value = [converter(old_value)]
+        else:
+            cls.logger.log(
+                level = LogLevel.CRITICAL,
+                message = "Could not determine new value",
+                extra = {
+                    "old_value": old_value,
+                    "old_type": old_type,
+                    "new_type": new_type
+                }
+            )
+
+            return old_type
 
         # Update the property with the new value as the new property_type
         data_object = utils.resolve_data_object(operator_instance.data_path)
         data_object[operator_instance.name] = new_value
 
-        utils.log(
+        cls.logger.log(
             level = LogLevel.DEBUG,
-            message = f"Property '{operator_instance.name}' type changed from {current_property_type} to {operator_instance.property_type}"
+            message = "Finished updating property's type",
+            extra = {
+                "old_value": old_value,
+                "old_type": old_type,
+                "new_value": new_value,
+                "new_type": new_type
+            }
         )
+
+        return new_type
 
     # BUG: I believe the property_type checker is somehow losing the property_type hint information from the constants that are used
     #  as a default value in `getattr()`. This results in a warning. Currently, the solution is to disable the

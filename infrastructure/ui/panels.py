@@ -14,7 +14,6 @@ def draw_panels(self, context, data_path):
         :param context:
         :param self:
     """
-
     layout = self.layout
 
     # Get the data object dynamically

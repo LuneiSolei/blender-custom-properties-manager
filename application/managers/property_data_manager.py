@@ -268,7 +268,7 @@ class PropertyDataManager:
         return return_value
 
     @classmethod
-    def _update_name(cls, operator_instance, field: Field):
+    def _update_name(cls, operator_instance, field: Field) -> str:
         """
         Helper to update the property's name.
 
@@ -281,7 +281,7 @@ class PropertyDataManager:
 
             :return: True if the property name has changed, False otherwise.
             """
-            return field.current_value != operator_instance.name
+            return old_name != new_name
 
         def is_name_valid() -> bool:
             """
@@ -290,13 +290,17 @@ class PropertyDataManager:
             :return: True if the property name is valid, False otherwise.
             """
             if operator_instance.name in data_object:
-                utils.log(
-                    message = f"Property name '{operator_instance.name}' already exists in the data object.",
-                    level = LogLevel.DEBUG
+                cls.logger.log(
+                    level = LogLevel.DEBUG,
+                    message = "Property name already exists in data object",
+                    extra = {
+                        "data_object": data_object.name,
+                        "property": new_name
+                    }
                 )
 
                 # Reset property name
-                operator_instance.name = field.current_value
+                operator_instance.name = old_name
 
                 return False
 
@@ -309,90 +313,107 @@ class PropertyDataManager:
             :return: True if the property is an ID Property Group, False otherwise.
             """
             if isinstance(data_object[field.current_value], bpy.types.bpy_struct):
-                utils.log(
+                # Property is of IDPropertyGroup type
+                cls.logger.log(
                     level = LogLevel.ERROR,
-                    message = f"Cannot rename property '{field.current_value}' to '{field.name}'. Renaming"
-                              f"IDPropertyGroup types is currently not supported."
+                    message = "Renaming ID Property Group types is currently not supported",
+                    extra = {
+                        "property": old_name
+                    }
                 )
 
                 return False
 
             return True
 
-        def update_group_data():
-            """Update the property's group data in the CPM dataset."""
-            group_data = GroupDataManager.get_group_data(data_object)
-            group_data.update_property_name(
-                data_object=data_object,
-                prop_name=field.current_value,
-                new_name=operator_instance.name
-            )
-
         def update_data_object_prop_name():
             """Update the property's name in the data object."""
-            utils.log(
+            cls.logger.log(
                 level = LogLevel.DEBUG,
-                message = f"Updating property name in data object '{data_object.name}'"
+                message = "Updating property name in data object",
+                extra = {
+                    "old_name": old_name,
+                    "new_name": new_name,
+                    "data_object": data_object.name
+                }
             )
 
-            # Temporarily store the new name
-            new_name = operator_instance.name
-
             # Temporarily set the old name to load UI data
-            operator_instance.name = field.current_value
+            operator_instance.name = old_name
             ui_data = cls.load_ui_data(operator_instance)
 
             # Restore the new name
             operator_instance.name = new_name
 
             # Update the UI Data for the new property
-            utils.log(
+            cls.logger.log(
                 level = LogLevel.DEBUG,
-                message = f"Updating UI info.\n"
-                          f"UI Info: {ui_data}"
+                message = "Transferring UI data to new property",
+                extra = {
+                    "ui_data": ui_data
+                }
             )
 
-            data_object[operator_instance.name] = data_object[field.current_value]
-            data_object.id_properties_ui(operator_instance.name).update(**ui_data)
-            del data_object[field.current_value]
+            data_object[new_name] = data_object[old_name]
+            data_object.id_properties_ui(new_name).update(**ui_data)
+            del data_object[old_name]
 
-            utils.log(
-                level = LogLevel.DEBUG,
-                message = f"Property name in data object update successful."
-            )
+        # Log method entry
+        old_name = field.current_value
+        new_name = operator_instance.name
+        cls.logger.log(
+            level = LogLevel.DEBUG,
+            message = "Updating property name",
+            extra = {
+                "old_name": old_name,
+                "new_name": new_name
+            }
+        )
 
         data_object = utils.resolve_data_object(operator_instance.data_path)
-
         name_change_validity = {
             "has_name_changed": has_name_changed(),
             "is_name_valid": is_name_valid(),
             "is_not_id_property_group": is_not_id_property_group(),
         }
 
-        utils.log(
+        cls.logger.log(
             level = LogLevel.DEBUG,
-            message = f"Renaming property '{field.current_value}...'"
-        )
-
-        utils.log(
-            level = LogLevel.DEBUG,
-            message = f"{name_change_validity}"
+            message = "Finished checking validity of property name",
+            extra = {
+                "old_name": old_name,
+                "new_name": new_name,
+                "results": {**name_change_validity}
+            }
         )
 
         # Ensure the name has changed, is valid, and is not an ID Property Group
         if not all(name_change_validity.values()):
-            utils.log(
-                level = LogLevel.DEBUG,
-                message = f"Property rename not needed. Cancelling..."
-            )
-            return
+            # Property rename not needed
+            return old_name
 
-        update_group_data()
-        update_data_object_prop_name()
-        utils.log(
-            level = LogLevel.DEBUG,
-            message = f"Property renamed from '{field.current_value}' to '{operator_instance.name}'"
+        # Update the property name in the group data
+        group_data = GroupDataManager.get_group_data(data_object)
+        group_data.update_property_name(
+            data_object = data_object,
+            prop_name = old_name,
+            new_name = new_name
         )
+
+        # Update the property name in the data object
+        update_data_object_prop_name()
+
+        # Log method exit
+        cls.logger.log(
+            level = LogLevel.DEBUG,
+            message = "Finished updating property name",
+            extra = {
+                "old_name": old_name,
+                "new_name": new_name,
+            }
+        )
+
+        return new_name
 
     @staticmethod
     def _update_group(operator_instance, field: Field):

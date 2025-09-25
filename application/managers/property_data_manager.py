@@ -83,7 +83,6 @@ class PropertyDataManager:
         return return_value
 
     @staticmethod
-    @log_method
     def load_ui_data(operator_instance) -> UIData:
         """
         Loads the UI data for the provided Blender data object.
@@ -122,38 +121,60 @@ class PropertyDataManager:
         return UIData(**ui_data.as_dict())
 
     @staticmethod
-    @log_method
     def stringify_ui_data(ui_data: UIData) -> str:
         return json.dumps(ui_data)
 
-    @staticmethod
-    @log_method
-    def validate(data_path: str, property_name: str, operator) -> bool:
+    @classmethod
+    def validate(cls, data_path: str, property_name: str) -> bool:
         """
         Validate a property's existence from a data path.
 
         :param data_path: Path to the Blender object.
         :param property_name: Name of the property to validate.
-        :param operator: Operator from which the property is evaluated.
 
         :return: The data object if the property exists, None otherwise.
         """
+        # Log method entry
+        cls.logger.log(
+            level = LogLevel.DEBUG,
+            message = "Validating property",
+            extra = {
+                "data_path": data_path,
+                "property_name": property_name,
+            }
+        )
+
+        # Get the data object
         data_object = utils.resolve_data_object(data_path)
         if not data_object:
-            utils.log(
+            cls.logger.log(
                 level = LogLevel.ERROR,
-                message = f"Could not find data object from data path '{data_path}'."
+                message = "Could not find data object from data path",
+                extra = {
+                    "data_path": data_path
+                }
             )
 
             return False
 
+        # Get the property
         if property_name not in data_object:
-            utils.log(
+            cls.logger.log(
                 level = LogLevel.ERROR,
-                message = f"Property '{property_name}' not found in data object '{data_object.name}'."
+                message = "Could not find property from data object",
+                extra = {
+                    "data_object": data_object,
+                    "property": property_name
+                }
             )
 
             return False
+
+        # Log method exit
+        cls.logger.log(
+            level = LogLevel.DEBUG,
+            message = "Property is valid"
+        )
 
         return True
 

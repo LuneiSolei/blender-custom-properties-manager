@@ -210,8 +210,8 @@ class PropertyDataManager:
         )
 
     # noinspection PyUnboundLocalVariable
-    @staticmethod
-    def _determine_array_type(value: list) -> consts.PropertyTypes:
+    @classmethod
+    def _determine_array_type(cls, value: list) -> consts.PropertyTypes:
         """
         Helper to determine the array property_type.
 
@@ -219,9 +219,23 @@ class PropertyDataManager:
 
         :return: One of the PropertyTypes enum values.
         """
+        # Log method entry
+        cls.logger.log(
+            level = LogLevel.DEBUG,
+            message = "Determining array property type",
+            extra = {
+                "value": value
+            }
+        )
+
         return_value: consts.PropertyTypes
         if not value:
-            return_value = consts.PropertyTypes.FLOAT_ARRAY
+            # A value was not provided
+            cls.logger.log(
+                level = LogLevel.WARNING,
+                message = "No value provided to determine array property type"
+            )
+            return consts.PropertyTypes.FLOAT_ARRAY
 
         match value[0]:
             case float():
@@ -231,11 +245,24 @@ class PropertyDataManager:
             case bool():
                 return_value = consts.PropertyTypes.BOOL_ARRAY
             case _:
+                # We have an incorrect property type
+                cls.logger.log(
+                    level = LogLevel.ERROR,
+                    message = "Array property type must be of float, int, or bool",
+                    extra = {
+                        "value": value[0],
+                        "type": type(value[0])
+                    }
+                )
                 return_value = consts.PropertyTypes.FLOAT_ARRAY
 
-        utils.log(
+        # Log method exit
+        cls.logger.log(
             level = LogLevel.DEBUG,
-            message = f"Array Property Type: {return_value}"
+            message = "Array property type found",
+            extra = {
+                "type": return_value
+            }
         )
 
         return return_value

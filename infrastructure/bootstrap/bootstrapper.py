@@ -1,4 +1,7 @@
 import bpy
+
+from ...shared.entities import LogLevel
+from ...shared.utils import StructuredLogger
 from bpy.app.handlers import persistent
 from .. import EditPropertyMenuOperator, AddPropertyGroupOperator, ExpandToggleOperator
 from ...shared import consts
@@ -60,6 +63,10 @@ def setup():
         group_data_manager = GroupDataManager,
         property_data_manager = PropertyDataManager,
         field_manager = FieldManager
+    )
+    StructuredLogger(
+        name = consts.MODULE_NAME,
+        level = LogLevel.INFO.value
     )
 
 def _create_draw_function(data_path: str):

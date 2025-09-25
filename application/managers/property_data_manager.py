@@ -3,7 +3,7 @@ import bpy, json
 from ...core import Field, FieldNames, UIData
 from .group_data_manager import GroupDataManager
 from ...shared import consts, utils
-from ...shared.utils import log_method
+from ...shared.utils import StructuredLogger
 from ...shared.entities import LogLevel
 
 class PropertyDataManager:
@@ -19,26 +19,10 @@ class PropertyDataManager:
         "data_block": consts.PropertyTypes.DATA_BLOCK
     }
 
-    TYPE_CONVERTERS = {
-        consts.PropertyTypes.FLOAT: lambda val: float(val) if isinstance(val, (int, float)) else 0.0,
-        consts.PropertyTypes.INT: lambda val: int(val) if isinstance(val, (int, float)) else 0,
-        consts.PropertyTypes.BOOL: lambda val: bool(val),
-        consts.PropertyTypes.STRING: lambda val: str(val),
-        consts.PropertyTypes.FLOAT_ARRAY: lambda val: ([float(v) if isinstance(v, (int, float)) else 0.0
-                                                        for v in val] if isinstance(val, list)
-                                                        else [float(val) if isinstance(val, (int, float)) else 0.0]),
-        consts.PropertyTypes.INT_ARRAY: lambda val: ([int(v) if isinstance(v, (int, float)) else 0
-                                                            for v in val] if isinstance(val, list)
-                                                           else [int(val) if isinstance(val, (int, float)) else 0]),
-        consts.PropertyTypes.BOOL_ARRAY: lambda val: ([bool(v) for v in val] if isinstance(val, list)
-                                                            else [bool(val)]),
-        consts.PropertyTypes.PYTHON: lambda val: val if isinstance(val, dict) else {},
-        consts.PropertyTypes.DATA_BLOCK: lambda val: val if isinstance(val, bpy.types.ID) else None,
-    }
+    logger = StructuredLogger(consts.MODULE_NAME)
 
-    @staticmethod
-    @log_method
-    def get_type(operator_instance) -> str:
+    @classmethod
+    def get_type(cls, operator_instance) -> str:
         """
         Get the property's type from the operator_instance instance.
 
@@ -46,6 +30,17 @@ class PropertyDataManager:
 
         :return: One of the PropertyTypes enum values
         """
+        # Log method entry
+        cls.logger.log(
+            level = LogLevel.DEBUG,
+            message = "Getting property type",
+            extra = {
+                "data_path": operator_instance.data_path,
+                "prop_name": operator_instance.name,
+            }
+        )
+
+        # Initialize property data
         data_object = utils.resolve_data_object(operator_instance.data_path)
         prop_name = operator_instance.name
         value = data_object[prop_name]
@@ -66,17 +61,23 @@ class PropertyDataManager:
 
         # Default fallback
         else:
-            utils.log(
+            cls.logger.log(
                 level = LogLevel.ERROR,
-                message = f"Could not find property type for '{prop_name}' in data object '{data_object}'. Evaluated"
-                          f"prop type is of '{prop_type}'."
+                message = "Property type not supported",
+                extra = {
+                    "property_type": prop_type
+                }
             )
 
             return consts.PropertyTypes.FLOAT
 
-        utils.log(
+        # Log method exit
+        cls.logger.log(
             level = LogLevel.DEBUG,
-            message = f"Property type for '{prop_name}': {return_value}"
+            message = "Property type found",
+            extra = {
+                "property_type": prop_type,
+            }
         )
 
         return return_value

@@ -1,3 +1,4 @@
+import logging
 from enum import EnumType
 
 PROPERTY_TYPES = (
@@ -51,10 +52,11 @@ PROPERTY_SUBTYPE_VECTORS = (
 )  # https://projects.blender.org/blender/blender/src/branch/main/scripts/startup/bl_operators/wm.py#L1409
 
 LOG_LEVELS = (
-    ('0', "None", "Shows no messages"),
-    ('1', "Debug", "Shows debug, info, warning, and error messages"),
-    ('2', "Info", "Shows info, warning, and error messages"),
-    ('3', "Warning", "Shows warning and error messages"),
-    ('4', "Error", "Shows only error messages"),
+    (str(logging.CRITICAL + 1), "None", "Shows no messages"),
+    (str(logging.DEBUG), "Debug", "Shows debug, info, warning, error, and critical messages"),
+    (str(logging.INFO), "Info", "Shows info, warning, error, and critical messages"),
+    (str(logging.WARNING), "Warning", "Shows warning error, and critical messages"),
+    (str(logging.ERROR), "Error", "Shows error and critical messages"),
+    (str(logging.CRITICAL), "Critical", "Shows only critical messages"),
 )
 

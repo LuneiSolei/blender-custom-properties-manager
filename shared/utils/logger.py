@@ -1,6 +1,7 @@
 import logging, json
 
 from datetime import datetime, timezone
+from ..entities import LogLevel
 
 class StructuredLogger:
     def __init__(self, name: str, level: int = logging.INFO):
@@ -13,13 +14,17 @@ class StructuredLogger:
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
 
-    def log(self, level: str, message: str, **kwargs):
+    def log(self, level: LogLevel, message: str, **kwargs):
         """Log with structured context"""
         extra = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "context": kwargs
         }
-        getattr(self.logger, level.lower())(message, extra = extra)
+        self.logger.log(
+            level = level.value,
+            msg = message,
+            extra = extra
+        )
 
 class StructuredFormatter(logging.Formatter):
     def format(self, record):

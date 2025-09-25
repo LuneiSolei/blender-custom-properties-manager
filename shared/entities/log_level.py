@@ -1,8 +1,11 @@
+import logging
+
 from enum import Enum
 
 class LogLevel(Enum):
-    NONE = 0
-    DEBUG = 1
-    INFO = 2
-    WARNING = 3
-    ERROR = 4
+    NONE = int(logging.CRITICAL + 1)
+    DEBUG = int(logging.DEBUG)
+    INFO = int(logging.INFO)
+    WARNING = int(logging.WARNING)
+    ERROR = int(logging.ERROR)
+    CRITICAL = int(logging.CRITICAL)

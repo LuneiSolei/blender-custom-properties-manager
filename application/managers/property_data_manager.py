@@ -163,7 +163,7 @@ class PropertyDataManager:
                 level = LogLevel.ERROR,
                 message = "Could not find property from data object",
                 extra = {
-                    "data_object": data_object,
+                    "data_object": data_object.name,
                     "property": property_name
                 }
             )

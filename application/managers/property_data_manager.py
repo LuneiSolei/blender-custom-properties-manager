@@ -179,7 +179,6 @@ class PropertyDataManager:
         return True
 
     @classmethod
-    @log_method
     def update_property_data(cls, operator_instance):
         fields = operator_instance.field_manager.load_fields(operator_instance.fields)
 

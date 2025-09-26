@@ -5,21 +5,19 @@ from ...core import expand_states
 from ...shared import consts, utils
 from ...application.managers import GroupDataManager
 
-def draw_panels(self, context, data_path):
+def draw_panels(panel: bpy.types.Panel, context, data_path: str):
     """
     Draws the panel associated with the provided context property_type.
 
-    Args:
-        :param data_path: String path to the data object (e.g., "view_layer", "scene")
-        :param context:
-        :param self:
+    :param data_path: String path to the data object (e.g., "view_layer", "scene")
+    :param context: The Blender context.
+    :param panel: The panel to draw.
     """
-    layout = self.layout
+    layout = panel.layout
 
     # Get the data object dynamically
     data_object = utils.resolve_data_object(data_path)
     if not data_object:
-        layout.label(text=f"No {data_path} available")
         return
 
     # Check if there are any properties to draw
@@ -34,24 +32,28 @@ def draw_panels(self, context, data_path):
     group_data = GroupDataManager.get_group_data(data_object)
 
     # Draw properties based on the associated group
+    lambda_sort = lambda x: x.lower()
     for group_name, props in group_data.items():
+        props.sort(key = lambda_sort)
         _draw_property_group(
             layout,
             data_object,
             data_path,
             group_name,
-            props)
+            props
+        )
 
     # Draw ungrouped properties
-    grouped = set(chain.from_iterable(group_data.values()))
-    ungrouped = set(data_object.keys()) - grouped
+    grouped = sorted(set(chain.from_iterable(group_data.values())))
+    ungrouped = sorted(set(data_object.keys()) - set(grouped), key = lambda_sort)
     for prop_name in ungrouped:
         _draw_property_row(
             layout,
             data_object,
             data_path,
             prop_name,
-            group_name="")
+            group_name=""
+        )
 
 def _draw_add_buttons(layout, data_path):
     # Draw the original "New" button
@@ -91,7 +93,8 @@ def _draw_property_row(layout, data_object, data_path, prop_name, group_name):
         consts.ops.CPM_EDIT_PROPERTY,
         text = "",
         icon = consts.icons.PREFERENCES,
-        emboss = False)
+        emboss = False
+    )
     edit_op.name = prop_name
     edit_op.data_path = data_path
     edit_op.group = group_name

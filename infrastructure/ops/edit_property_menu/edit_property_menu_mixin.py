@@ -1,10 +1,10 @@
-import bpy
-
 from typing import Union
+
 from bpy.props import (BoolProperty, BoolVectorProperty, EnumProperty, FloatProperty, FloatVectorProperty, IntProperty,
                        IntVectorProperty, StringProperty)
-from ....shared import consts
+
 from ....application.services import PropertyTypeService
+from ....shared import consts
 
 # noinspection PyTypeHints
 class EditPropertyMenuOperatorMixin:

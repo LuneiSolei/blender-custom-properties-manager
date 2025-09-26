@@ -1,5 +1,5 @@
-from ...shared.utils import StructuredLogger
 from ...shared import consts
+from ...shared.utils import StructuredLogger
 
 class PreferencesManager:
     @staticmethod

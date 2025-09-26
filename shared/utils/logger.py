@@ -1,6 +1,7 @@
-import logging, json
-
+import json
+import logging
 from datetime import datetime, timezone
+
 from ..entities import LogLevel
 
 class StructuredLogger:

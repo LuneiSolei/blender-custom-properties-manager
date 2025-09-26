@@ -1,14 +1,15 @@
-import bpy, json
+import bpy
 
-from ...core import Field, FieldNames, UIData
 from .group_data_manager import GroupDataManager
+from ..services import PropertyTypeService, UIDataService
+from ...core import Field, FieldNames, UIData
 from ...shared import consts, utils
-from ...shared.utils import StructuredLogger
 from ...shared.entities import LogLevel
-from ..services import PropertyTypeService
+from ...shared.utils import StructuredLogger
 
 class PropertyDataManager:
     property_type_service = PropertyTypeService
+    ui_data_service = UIDataService
     logger = StructuredLogger(consts.MODULE_NAME)
 
     @staticmethod

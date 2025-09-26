@@ -1,4 +1,5 @@
 import bpy
+
 from ...shared import consts
 
 # noinspection PyTypeHints

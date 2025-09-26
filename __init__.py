@@ -1,4 +1,4 @@
-﻿from .infrastructure import AddPropertyGroupOperator, EditPropertyMenuOperator, ExpandToggleOperator, bootstrap
+﻿from .infrastructure import bootstrap
 
 bl_info = {
     "name": "Custom Properties Manager",

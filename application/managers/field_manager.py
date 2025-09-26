@@ -1,10 +1,8 @@
 import json
 from typing import Any
 
-from ...shared.entities import LogLevel
-from ...core import Field, field_configs, FieldNames
+from ...core import Field, FieldNames, field_configs
 from ...shared import utils
-from ...shared.utils import logger
 
 class FieldManager:
     def __init__(self):

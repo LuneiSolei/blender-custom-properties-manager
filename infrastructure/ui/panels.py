@@ -1,9 +1,10 @@
-﻿import bpy
+﻿from itertools import chain
 
-from itertools import chain
+import bpy
+
+from ...application.managers import GroupDataManager
 from ...core import expand_states
 from ...shared import consts, utils
-from ...application.managers import GroupDataManager
 
 def draw_panels(panel: bpy.types.Panel, context, data_path: str):
     """

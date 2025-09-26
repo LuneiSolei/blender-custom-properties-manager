@@ -1,10 +1,11 @@
+from typing import Union
+
 import bpy
 
-from typing import Union
-from ...shared.utils import StructuredLogger
+from ...core import Field
 from ...shared import consts, utils
 from ...shared.entities import LogLevel
-from ...core import Field
+from ...shared.utils import StructuredLogger
 
 class PropertyTypeService:
     logger = StructuredLogger(consts.MODULE_NAME)

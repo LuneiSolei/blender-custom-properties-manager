@@ -1,8 +1,9 @@
-from typing import Any, Callable, List, Optional, Union
-from .reporting_mixin import ReportingMixin
-from ...shared import consts
+from typing import Any, List, Optional, Union
 
 import bpy
+
+from .reporting_mixin import ReportingMixin
+from ...shared import consts
 
 class Field(ReportingMixin):
     name: str

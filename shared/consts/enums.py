@@ -1,5 +1,4 @@
 import logging
-from enum import EnumType
 
 PROPERTY_TYPES = (
     ('FLOAT', "Float", "A single floating-point value"),

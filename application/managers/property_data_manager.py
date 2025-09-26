@@ -2,7 +2,7 @@ import bpy
 
 from .group_data_manager import GroupDataManager
 from ..services import PropertyTypeService, UIDataService
-from ...core import Field, FieldNames, UIData
+from ...core import Field, FieldNames
 from ...shared import consts, utils
 from ...shared.entities import LogLevel
 from ...shared.utils import StructuredLogger

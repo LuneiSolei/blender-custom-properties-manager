@@ -50,7 +50,7 @@ class UIDataService:
     # BUG: I believe the property_type checker is somehow losing the property_type hint information from the constants that are used
     #  as a default value in `getattr()`. This results in a warning. Currently, the solution is to disable the
     #  PyTypeChecker.
-    # noinspection PyTypeChecker,PyUnboundLocalVariable
+    # noinspection PyUnboundLocalVariable
     @classmethod
     def update_ui_data(cls, operator_instance, fields: dict[str, Field]) -> UIData:
         """
@@ -64,19 +64,7 @@ class UIDataService:
         new_ui_data: UIData
         match operator_instance.property_type:
             case consts.PropertyTypes.FLOAT:
-                new_ui_data = {
-                    "subtype": consts.DEFAULT_SUBTYPE,
-                    "description": consts.DEFAULT_DESCRIPTION,
-                    "min": getattr(operator_instance, fields[FieldNames.MIN.value].attr_name, consts.DEFAULT_MIN_FLOAT),
-                    "max": getattr(operator_instance, fields[FieldNames.MAX.value].attr_name, consts.DEFAULT_MAX_FLOAT),
-                    "soft_min": getattr(operator_instance, fields[FieldNames.SOFT_MIN.value].attr_name, consts.DEFAULT_SOFT_MIN_FLOAT),
-                    "soft_max": getattr(operator_instance, fields[FieldNames.SOFT_MAX.value].attr_name, consts.DEFAULT_SOFT_MAX_FLOAT),
-                    "step": getattr(operator_instance, "step", consts.DEFAULT_STEP_FLOAT),
-                    "precision": getattr(operator_instance, "precision", consts.DEFAULT_PRECISION_FLOAT),
-                    # "default": "",
-                    # "id_type": None,
-                    # "items": None
-                }
+                new_ui_data = cls.construct_ui_data_float(operator_instance, fields)
             case consts.PropertyTypes.FLOAT_ARRAY:
                 new_ui_data = {
                     "subtype": consts.DEFAULT_SUBTYPE,
@@ -122,24 +110,56 @@ class UIDataService:
         data_object.id_properties_ui(operator_instance.name).update(**new_ui_data)
 
     @classmethod
-    def construct_ui_data_int(cls, operator, fields: dict[str, Field]) -> dict:
+    def construct_ui_data_float(cls, operator_instance, fields: dict[str, Field]) -> UIData:
+        """
+        Helper method to construct the property's UI data for a float.
+
+        :param operator_instance: The EditMenuPropertyOperator instance.
+        :param fields: The fields with which to construct the UI data from.
+
+        :return: The constructed UI data.
+        """
+        field_map = {
+            "min": (FieldNames.MIN, consts.DEFAULT_MIN_FLOAT, float),
+            "max": (FieldNames.MAX, consts.DEFAULT_MAX_FLOAT, float),
+            "soft_min": (FieldNames.SOFT_MIN, consts.DEFAULT_SOFT_MIN_FLOAT, float),
+            "soft_max": (FieldNames.SOFT_MAX, consts.DEFAULT_SOFT_MAX_FLOAT, float),
+            "step": (FieldNames.STEP, consts.DEFAULT_STEP_FLOAT, float),
+            "precision": (FieldNames.PRECISION, consts.DEFAULT_PRECISION_FLOAT, int),
+        }
+        result = {
+            "subtype": consts.DEFAULT_SUBTYPE,
+            "description": consts.DEFAULT_DESCRIPTION,
+        }
+
+        for key, (field_name, default, cast_type) in field_map.items():
+            attr_name = fields[field_name.value].attr_name
+            result[key] = cast_type(getattr(operator_instance, attr_name, default))
+
+        return UIData(**result)
+        # "default": "",
+        # "id_type": None,
+        # "items": None
+
+
+    @staticmethod
+    def construct_ui_data_int(operator_instance, fields: dict[str, Field]) -> UIData:
         """
         Helper to construct UI data for an integer property.
 
-        :param operator: The EditPropertyMenu operator instance.
+        :param operator_instance: The EditPropertyMenu operator instance.
         :param fields: The fields with which to construct UI data from.
 
         :return: The newly constructed UI data.
         """
-
         return {
             "subtype": consts.DEFAULT_SUBTYPE,
             "description": consts.DEFAULT_DESCRIPTION,
-            "min": int(getattr(operator, fields[FieldNames.MIN.value].attr_name, consts.DEFAULT_MIN_INT)),
-            "max": int(getattr(operator, fields[FieldNames.MAX.value].attr_name, consts.DEFAULT_MAX_INT)),
+            "min": int(getattr(operator_instance, fields[FieldNames.MIN.value].attr_name, consts.DEFAULT_MIN_INT)),
+            "max": int(getattr(operator_instance, fields[FieldNames.MAX.value].attr_name, consts.DEFAULT_MAX_INT)),
             "soft_min": int(
-                getattr(operator, fields[FieldNames.SOFT_MIN.value].attr_name, consts.DEFAULT_SOFT_MIN_INT)),
+                getattr(operator_instance, fields[FieldNames.SOFT_MIN.value].attr_name, consts.DEFAULT_SOFT_MIN_INT)),
             "soft_max": int(
-                getattr(operator, fields[FieldNames.SOFT_MAX.value].attr_name, consts.DEFAULT_SOFT_MAX_INT)),
-            "step": int(getattr(operator, "step", consts.DEFAULT_STEP_INT))
+                getattr(operator_instance, fields[FieldNames.SOFT_MAX.value].attr_name, consts.DEFAULT_SOFT_MAX_INT)),
+            "step": int(getattr(operator_instance, "step", consts.DEFAULT_STEP_INT))
         }

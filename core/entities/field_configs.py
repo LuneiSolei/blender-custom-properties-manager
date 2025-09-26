@@ -45,25 +45,37 @@ field_configs = {
     FieldNames.MIN.value: FieldConfig(
         attr_prefix = "min_",
         draw_on = ['FLOAT', 'FLOAT_ARRAY', 'INT', 'INT_ARRAY'],
-        label = "Min Value",
+        label = "Min",
         name = FieldNames.MIN.value
     ),
     FieldNames.MAX.value: FieldConfig(
         attr_prefix = "max_",
         draw_on = ['FLOAT', 'FLOAT_ARRAY', 'INT', 'INT_ARRAY'],
-        label = "Max Value",
+        label = "Max",
         name = FieldNames.MAX.value
     ),
     FieldNames.SOFT_MIN.value: FieldConfig(
         attr_prefix = "soft_min_",
         draw_on = ['FLOAT', 'FLOAT_ARRAY', 'INT', 'INT_ARRAY'],
-        label = "Soft Min Value",
+        label = "Soft Min",
         name = FieldNames.SOFT_MIN.value
     ),
     FieldNames.SOFT_MAX.value: FieldConfig(
         attr_prefix = "soft_max_",
         draw_on = ['FLOAT', 'FLOAT_ARRAY', 'INT', 'INT_ARRAY'],
-        label = "Soft Max Value",
+        label = "Soft Max",
         name = FieldNames.SOFT_MAX.value
+    ),
+    FieldNames.STEP.value: FieldConfig(
+        attr_prefix = "step_",
+        draw_on = ['FLOAT', 'FLOAT_ARRAY', 'INT', 'INT_ARRAY'],
+        label = "Step",
+        name = FieldNames.STEP.value
+    ),
+    FieldNames.PRECISION.value: FieldConfig(
+        attr_name = "precision",
+        draw_on = ['FLOAT', 'FLOAT_ARRAY', 'INT', 'INT_ARRAY'],
+        label = "Precision",
+        name = FieldNames.PRECISION.value
     )
 }

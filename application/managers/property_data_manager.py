@@ -71,7 +71,7 @@ class PropertyDataManager:
         """
         Update the property data for the provided Blender data object.
 
-        :param operator_instance: The EditPropertyMenu operator instance.
+        :param operator_instance: The EditPropertyMenu operator_instance instance.
         """
         fields = operator_instance.field_manager.load_fields(operator_instance.fields)
 

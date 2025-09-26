@@ -1,19 +1,20 @@
 import json
-from typing import Any
 
+from typing import Any, Union
 from ...core import Field, FieldNames, field_configs
-from ...shared import utils
+from ...shared import consts, utils
+from ...shared.utils import StructuredLogger
+from ...shared.entities import LogLevel
 
 class FieldManager:
-    def __init__(self):
-        pass
+    logger = StructuredLogger(consts.MODULE_NAME)
 
     @classmethod
     def setup_fields(cls, operator_instance, operator_type) -> str:
         """
-        Sets up the relevant fields for an EditPropertyMenu operator instance.
+        Sets up the relevant fields for an EditPropertyMenu operator_instance instance.
 
-        :param operator_instance: The EditPropertyMenu operator instance.
+        :param operator_instance: The EditPropertyMenu operator_instance instance.
         :param operator_type: The EditPropertyMenu type.
 
         :return: A string representing a list of fields.
@@ -32,7 +33,8 @@ class FieldManager:
                 new_field.current_value = FieldManager.find_value(
                     operator_instance = operator_instance,
                     operator_type = operator_type,
-                    attr_name = new_field.attr_name
+                    attr_name = new_field.attr_name,
+                    ui_data_attr = new_field.ui_data_attr
                 )
 
             fields[name] = new_field
@@ -70,24 +72,30 @@ class FieldManager:
         return return_value
 
     @classmethod
-    def find_value(cls, operator_instance, operator_type, attr_name: str) -> Any:
+    def find_value(cls, operator_instance, operator_type, attr_name: str, ui_data_attr: Union[str, None]) -> Any:
         """
         Find the value in the operator_instance based on the attr_name.
 
         :param operator_instance: The EditPropertyMenuOperator instance.
         :param operator_type: The Blender type of the operator_instance.
         :param attr_name: The name of the attribute to find the value of.
+        :param ui_data_attr: The name of the attribute to find the UI data for.
 
         :return: The value of the attribute.
         """
+        cls.logger.log(
+            level = LogLevel.DEBUG,
+            message = "Finding value for attribute name",
+            extra = {"attr_name": attr_name,}
+        )
         ui_data = operator_instance.ui_data
 
         if ui_data is None:
             ui_data = operator_type.property_data_manager.load_ui_data(operator_instance)
             operator_instance.ui_data = ui_data
 
-        if attr_name in ui_data:
-            found_value = ui_data[attr_name]
+        if ui_data_attr is not None:
+            found_value = ui_data[ui_data_attr]
         elif attr_name == FieldNames.GROUP.value:
             # noinspection PyTypeChecker
             data_object = utils.resolve_data_object(operator_instance.data_path)

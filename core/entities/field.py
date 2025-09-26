@@ -3,6 +3,7 @@ from typing import Any, List, Optional, Union
 import bpy
 
 from .reporting_mixin import ReportingMixin
+from .ui_data import UIData
 from ...shared import consts
 
 class Field(ReportingMixin):
@@ -35,7 +36,11 @@ class Field(ReportingMixin):
 
         # UI data in Blender uses specific names for properties such as min_float, soft_max_int, etc. So, we need
         # to generate this name based off of our property's property_type
-        self._generate_attr_name(attr_name, property_type)
+        if attr_prefix is not None:
+            self.attr_name = self._generate_attr_name()
+            self.ui_data_attr = self._generate_ui_data_attr()
+        else:
+            self.attr_name = attr_name
 
     def to_dict(self) -> dict:
         """Convert the field to a serializable dictionary for JSON storage"""
@@ -96,10 +101,22 @@ class Field(ReportingMixin):
         """Helper to determine if the field should be drawn"""
         return property_type in self.draw_on or self.draw_on == consts.ALL
 
-    def _generate_attr_name(self, attr_name: str, property_type: str):
-        """Helper to generate the attribute name based on the property type"""
-        if self.attr_prefix:
-            self.attr_name = f"{self.attr_prefix}{property_type.lower()}"
-            self.attr_name = self.attr_name.removesuffix("_array")
-        else:
-            self.attr_name = attr_name
+    def _generate_attr_name(self) -> str:
+        """
+        Helper to generate the attribute name based on the property type.
+
+        :return: The generated attribute name.
+        """
+        return f"{self.attr_prefix}{self.property_type.lower()}".removesuffix("_array")
+
+    def _generate_ui_data_attr(self) -> Union[str, None]:
+        """
+        Helper to generate the ui data name based on the attribute prefix.
+
+        :return: The generated ui data attribute name.
+        """
+        search_str = self.attr_prefix.removesuffix("_")
+        if hasattr(UIData, search_str):
+            return search_str
+
+        return None

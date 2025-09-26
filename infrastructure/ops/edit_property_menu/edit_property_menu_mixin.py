@@ -4,7 +4,7 @@ from typing import Union
 from bpy.props import (BoolProperty, BoolVectorProperty, EnumProperty, FloatProperty, FloatVectorProperty, IntProperty,
                        IntVectorProperty, StringProperty)
 from ....shared import consts
-from ....application.managers import PropertyDataManager
+from ....application.services import PropertyTypeService
 
 # noinspection PyTypeHints
 class EditPropertyMenuOperatorMixin:
@@ -21,7 +21,7 @@ class EditPropertyMenuOperatorMixin:
     name: StringProperty()
     property_type: EnumProperty(
         items = consts.PROPERTY_TYPES,
-        update = PropertyDataManager.on_type_change
+        update = PropertyTypeService.on_type_change
     )
     group: StringProperty()
     value_float: FloatProperty()

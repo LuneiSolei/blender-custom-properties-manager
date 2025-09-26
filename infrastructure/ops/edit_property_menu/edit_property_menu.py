@@ -39,7 +39,9 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
         # Load additional property data
         data_object = utils.resolve_data_object(self.data_path)
         self.value = data_object[self.name]
-        self.property_type = self.property_data_manager.get_type(operator_instance = self)
+        self.property_type = (self
+                              .property_data_manager.property_type_service
+                              .get_type(operator_instance = self))
         operator_type = utils.get_blender_operator_type(consts.CPM_EDIT_PROPERTY)
         self.fields = self.field_manager.setup_fields(
             operator_instance = self,

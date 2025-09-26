@@ -32,7 +32,9 @@ def draw_panels(panel: bpy.types.Panel, context, data_path: str):
     group_data = GroupDataManager.get_group_data(data_object)
 
     # Draw properties based on the associated group
+    lambda_sort = lambda x: x.lower()
     for group_name, props in group_data.items():
+        props.sort(key = lambda_sort)
         _draw_property_group(
             layout,
             data_object,
@@ -42,8 +44,8 @@ def draw_panels(panel: bpy.types.Panel, context, data_path: str):
         )
 
     # Draw ungrouped properties
-    grouped = set(chain.from_iterable(group_data.values()))
-    ungrouped = set(data_object.keys()) - grouped
+    grouped = sorted(set(chain.from_iterable(group_data.values())))
+    ungrouped = sorted(set(data_object.keys()) - set(grouped), key = lambda_sort)
     for prop_name in ungrouped:
         _draw_property_row(
             layout,

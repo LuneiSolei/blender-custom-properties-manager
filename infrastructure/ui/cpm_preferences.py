@@ -1,7 +1,7 @@
 import bpy
 
-from ...shared import consts
 from ...application.managers import PreferencesManager
+from ...shared import consts
 
 class CPMPreferences(bpy.types.AddonPreferences):
     bl_idname = consts.MODULE_NAME

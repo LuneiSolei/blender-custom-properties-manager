@@ -1,13 +1,12 @@
 import bpy
-
-from ...shared.entities import LogLevel
-from ...shared.utils import StructuredLogger
 from bpy.app.handlers import persistent
-from .. import EditPropertyMenuOperator, AddPropertyGroupOperator, ExpandToggleOperator
+
+from .. import AddPropertyGroupOperator, EditPropertyMenuOperator, ExpandToggleOperator
+from ..ui import CPMPreferences, draw_panels
+from ...application.managers import FieldManager, GroupDataManager, PropertyDataManager
+from ...core import expand_states, original_draws
 from ...shared import consts
-from ...core import original_draws, expand_states
-from ..ui import draw_panels, CPMPreferences
-from ...application.managers import GroupDataManager, PropertyDataManager, FieldManager
+from ...shared.utils import StructuredLogger
 
 _classes = {
     AddPropertyGroupOperator,

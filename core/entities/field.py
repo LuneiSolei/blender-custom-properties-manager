@@ -1,10 +1,14 @@
-from typing import Any, Callable, List, Optional, Union
-from .reporting_mixin import ReportingMixin
-from ...shared import consts
-
 import bpy
 
+from typing import Any, List, Optional, Union, get_type_hints
+from .reporting_mixin import ReportingMixin
+from .ui_data import UIData
+from ...shared import consts
+from ...shared.utils import StructuredLogger
+from ...shared.entities import LogLevel
+
 class Field(ReportingMixin):
+    logger = StructuredLogger(consts.MODULE_NAME)
     name: str
     label: str
     property_type: str
@@ -34,7 +38,15 @@ class Field(ReportingMixin):
 
         # UI data in Blender uses specific names for properties such as min_float, soft_max_int, etc. So, we need
         # to generate this name based off of our property's property_type
-        self._generate_attr_name(attr_name, property_type)
+        has_prefix = attr_prefix is not None
+        has_ui_data_attr = ui_data_attr is not None
+        if has_prefix:
+            self.attr_name = self._generate_attr_name()
+        else:
+            self.attr_name = attr_name
+
+        if has_prefix and not has_ui_data_attr:
+            self.ui_data_attr = self._generate_ui_data_attr()
 
     def to_dict(self) -> dict:
         """Convert the field to a serializable dictionary for JSON storage"""
@@ -95,10 +107,41 @@ class Field(ReportingMixin):
         """Helper to determine if the field should be drawn"""
         return property_type in self.draw_on or self.draw_on == consts.ALL
 
-    def _generate_attr_name(self, attr_name: str, property_type: str):
-        """Helper to generate the attribute name based on the property type"""
-        if self.attr_prefix:
-            self.attr_name = f"{self.attr_prefix}{property_type.lower()}"
-            self.attr_name = self.attr_name.removesuffix("_array")
-        else:
-            self.attr_name = attr_name
+    def _generate_attr_name(self) -> str:
+        """
+        Helper to generate the attribute name based on the property type.
+
+        :return: The generated attribute name.
+        """
+        return f"{self.attr_prefix}{self.property_type.lower()}".removesuffix("_array")
+
+    def _generate_ui_data_attr(self) -> Union[str, None]:
+        """
+        Helper to generate the ui data name based on the attribute prefix.
+
+        :return: The generated ui data attribute name.
+        """
+        ui_data_attr = self.attr_prefix.removesuffix("_").removesuffix("_array")
+        search_result = ui_data_attr in get_type_hints(UIData).keys()
+
+        self.logger.log(
+            level = LogLevel.DEBUG,
+            message = "Generating UI data attribute name",
+            extra = {
+                "ui_data_attribute": ui_data_attr,
+                "search_result": search_result
+            }
+        )
+
+        if search_result:
+            return ui_data_attr
+
+        self.logger.log(
+            level = LogLevel.WARNING,
+            message = "Could not find UI data attribute name in UI data",
+            extra = {
+                "ui_data_attribute": ui_data_attr
+            }
+        )
+
+        return None

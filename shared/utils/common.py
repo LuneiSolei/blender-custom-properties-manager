@@ -1,6 +1,7 @@
-﻿import bpy
+﻿from typing import Union
 
-from typing import Union
+import bpy
+
 from .. import consts
 
 def resolve_data_object(data_path: str) -> Union[bpy.types.Object, None]:

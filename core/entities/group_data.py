@@ -1,8 +1,9 @@
-﻿from typing import ItemsView, Iterator, KeysView, List, Tuple, ValuesView
+﻿from typing import ItemsView, Iterator, KeysView, List, ValuesView
 
 import bpy
-from ...shared import consts
+
 from .reporting_mixin import ReportingMixin
+from ...shared import consts
 
 class GroupData(ReportingMixin):
     _cached_data: dict[str, list[str]]

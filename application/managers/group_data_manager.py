@@ -1,9 +1,10 @@
-import bpy, json
 from json import JSONDecodeError
+
+import bpy
+import json
+
 from ...core import GroupData
-from ...shared import consts, utils
-from ...shared.utils import logger
-from ...shared.entities import LogLevel
+from ...shared import consts
 
 class GroupDataManager:
     _group_data_name: str = consts.CPM_SERIALIZED_GROUP_DATA

@@ -1,7 +1,9 @@
-import bpy
 from typing import Any
+
+import bpy
+
 from .edit_property_menu_mixin import EditPropertyMenuOperatorMixin
-from ....application.managers import GroupDataManager, PropertyDataManager, FieldManager
+from ....application.managers import FieldManager, GroupDataManager, PropertyDataManager
 from ....shared import consts, utils
 
 class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin):
@@ -30,8 +32,8 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
             return {'CANCELLED'}
 
         # Load UI data
-        ui_data = self.property_data_manager.load_ui_data(operator_instance = self)
-        self.ui_data = self.property_data_manager.stringify_ui_data(ui_data = ui_data)
+        ui_data = self.property_data_manager.ui_data_service.load_ui_data(operator_instance = self)
+        self.ui_data = self.property_data_manager.ui_data_service.stringify_ui_data(ui_data = ui_data)
 
         if not self.ui_data:
             return {'CANCELLED'}
@@ -39,7 +41,9 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
         # Load additional property data
         data_object = utils.resolve_data_object(self.data_path)
         self.value = data_object[self.name]
-        self.property_type = self.property_data_manager.get_type(operator_instance = self)
+        self.property_type = (self
+                              .property_data_manager.property_type_service
+                              .get_type(operator_instance = self))
         operator_type = utils.get_blender_operator_type(consts.CPM_EDIT_PROPERTY)
         self.fields = self.field_manager.setup_fields(
             operator_instance = self,
@@ -69,7 +73,7 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
 
     def draw(self, _):
         fields = self.field_manager.load_fields(self.fields)
-        for name, field in fields.items():
+        for field in fields.values():
             # Determine if the field should be drawn
             if not field.should_draw(self.property_type):
                 continue

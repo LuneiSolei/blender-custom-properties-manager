@@ -1,5 +1,5 @@
-from .logger import StructuredLogger
 from .common import *
+from .logger import StructuredLogger
 
 __all__ = [
     "resolve_data_object",

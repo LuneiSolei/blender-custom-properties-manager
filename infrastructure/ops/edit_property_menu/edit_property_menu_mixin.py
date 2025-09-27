@@ -1,10 +1,10 @@
-import bpy
-
 from typing import Union
+
 from bpy.props import (BoolProperty, BoolVectorProperty, EnumProperty, FloatProperty, FloatVectorProperty, IntProperty,
                        IntVectorProperty, StringProperty)
+
+from ....application.services import PropertyTypeService
 from ....shared import consts
-from ....application.managers import PropertyDataManager
 
 # noinspection PyTypeHints
 class EditPropertyMenuOperatorMixin:
@@ -21,29 +21,34 @@ class EditPropertyMenuOperatorMixin:
     name: StringProperty()
     property_type: EnumProperty(
         items = consts.PROPERTY_TYPES,
-        update = PropertyDataManager.on_type_change
+        update = PropertyTypeService.on_type_change
     )
     group: StringProperty()
     value_float: FloatProperty()
     value_int: IntProperty()
     value_bool: BoolProperty()
     value_string: StringProperty()
-    step: IntProperty()
+    step_float: FloatProperty()
+    step_int: IntProperty()
     precision: IntProperty()
-    subtype_float: EnumProperty(items = consts.PROPERTY_SUBTYPES)
     initialized: BoolProperty(default = False)
+    use_soft_limits: BoolProperty()
 
     # FLOAT
     min_float: FloatProperty()
     max_float: FloatProperty()
     soft_min_float: FloatProperty()
     soft_max_float: FloatProperty()
+    subtype_float: EnumProperty(items = consts.PROPERTY_SUBTYPES)
+    subtype_array_float: EnumProperty(items = consts.PROPERTY_SUBTYPE_VECTORS)
 
     # INT
     min_int: IntProperty()
     max_int: IntProperty()
     soft_min_int: IntProperty()
     soft_max_int: IntProperty()
+    subtype_int: EnumProperty(items = consts.PROPERTY_SUBTYPES)
+    subtype_array_int: EnumProperty(items = consts.PROPERTY_SUBTYPE_VECTORS)
 
     default: Union[
         FloatProperty(),
@@ -54,10 +59,7 @@ class EditPropertyMenuOperatorMixin:
         BoolVectorProperty(),
         StringProperty()
     ]
-    use_soft_limits: BoolProperty()
     array_length: IntProperty()
-    subtype_float: EnumProperty(items = consts.PROPERTY_SUBTYPES)
-    subtype_float_array: EnumProperty(items = consts.PROPERTY_SUBTYPE_VECTORS)
     description: StringProperty()
     is_overridable_library: BoolProperty()
 

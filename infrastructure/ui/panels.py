@@ -1,9 +1,10 @@
-﻿import bpy
+﻿from itertools import chain
 
-from itertools import chain
+import bpy
+
+from ...application.managers import GroupDataManager
 from ...core import expand_states
 from ...shared import consts, utils
-from ...application.managers import GroupDataManager
 
 def draw_panels(panel: bpy.types.Panel, context, data_path: str):
     """
@@ -80,12 +81,14 @@ def _draw_property_row(layout, data_object, data_path, prop_name, group_name):
 
     # If the property's value is a list, draw a label manually. Otherwise,
     # Blender misbehaves and just shows the item count.
-    if type(data_object[prop_name]) == list:
-        row.label(text=prop_name)
+    # if type(data_object[prop_name]) == list:
+    #     row.label(text=prop_name)
+
+    row.label(text = prop_name)
     row.prop(
         data = data_object,
         property = f'["{prop_name}"]',
-        text = prop_name
+        text = ""
     )
 
     # Draw the "edit property" button

@@ -25,11 +25,12 @@ class StructuredLogger:
         self.logger.log(
             level = level.value,
             msg = message,
-            extra = extra
+            extra = extra,
+            stacklevel = 2
         )
 
 class StructuredFormatter(logging.Formatter):
-    def format(self, record):
+    def format(self, record) -> str:
         log_entry = {
             "timestamp": getattr(record, "timestamp", datetime.now(timezone.utc).isoformat()),
             "level": record.levelname,
@@ -38,8 +39,13 @@ class StructuredFormatter(logging.Formatter):
             "function": record.funcName,
             "line": record.lineno,
         }
+        timestamp = getattr(record, "timestamp", datetime.now(timezone.utc).isoformat())
+        context = getattr(record, "context", {})
+        context_str = f" | {context}" if context else ""
 
         if hasattr(record, "context"):
             log_entry.update(record.context)
 
-        return json.dumps(log_entry)
+        return (f"CPM: [{record.levelname}] {timestamp}:\n"
+                f"    {record.module}.{record.funcName}:{record.lineno}, "
+                f"message: {record.getMessage()}{context_str}")

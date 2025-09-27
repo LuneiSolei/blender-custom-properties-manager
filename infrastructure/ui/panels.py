@@ -79,11 +79,6 @@ def _draw_property_row(layout, data_object, data_path, prop_name, group_name):
 
     row = layout.row()
 
-    # If the property's value is a list, draw a label manually. Otherwise,
-    # Blender misbehaves and just shows the item count.
-    # if type(data_object[prop_name]) == list:
-    #     row.label(text=prop_name)
-
     row.label(text = prop_name)
     row.prop(
         data = data_object,

@@ -25,6 +25,7 @@ class FieldNames(Enum):
     STEP = "step"
     PRECISION = "precision"
     DEFAULT = "default"
+    IS_OVERRIDABLE_LIBRARY = "is_overridable_library"
 
 
 field_configs = {
@@ -99,5 +100,11 @@ field_configs = {
         draw_on = ['FLOAT', 'FLOAT_ARRAY'],
         label = "Precision",
         name = FieldNames.PRECISION.value
+    ),
+    FieldNames.IS_OVERRIDABLE_LIBRARY.value: FieldConfig(
+        attr_name = "is_overridable_library",
+        draw_on = 'ALL',
+        label = "Is Library Overridable",
+        name = FieldNames.IS_OVERRIDABLE_LIBRARY.value
     )
 }

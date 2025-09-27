@@ -2,15 +2,19 @@ import json
 
 from ...core import Field, FieldNames, UIData
 from ...shared import consts, utils
+from ...shared.utils import StructuredLogger
+from ...shared.entities import LogLevel
 
 class UIDataService:
+    logger = StructuredLogger(consts.MODULE_NAME)
+
     @staticmethod
     def stringify_ui_data(ui_data: UIData) -> str:
         """Returns a string representation of the ui data in JSON format."""
         return json.dumps(ui_data)
 
-    @staticmethod
-    def load_ui_data(operator_instance) -> UIData:
+    @classmethod
+    def load_ui_data(cls, operator_instance) -> UIData:
         """
         Loads the UI data for the provided Blender data object.
 
@@ -43,9 +47,28 @@ class UIDataService:
         :return: An object used to manage the UI data.
         """
         data_object = utils.resolve_data_object(operator_instance.data_path)
-        ui_data = data_object.id_properties_ui(operator_instance.name)
 
-        return UIData(**ui_data.as_dict())
+        cls.logger.log(
+            level = LogLevel.DEBUG,
+            message = "Loading property UI data",
+            extra = {
+                "data object": data_object.name,
+                "property": operator_instance.name
+            }
+        )
+
+        data_object = utils.resolve_data_object(operator_instance.data_path)
+        ui_data = data_object.id_properties_ui(operator_instance.name).as_dict()
+
+        cls.logger.log(
+            level = LogLevel.DEBUG,
+            message = "Property UI data found",
+            extra = {
+                "ui data": {**ui_data}
+            }
+        )
+
+        return UIData(**ui_data)
 
     # BUG: I believe the property_type checker is somehow losing the property_type hint information from the constants that are used
     #  as a default value in `getattr()`. This results in a warning. Currently, the solution is to disable the

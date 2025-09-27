@@ -73,7 +73,7 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
 
     def draw(self, _):
         fields = self.field_manager.load_fields(self.fields)
-        for name, field in fields.items():
+        for field in fields.values():
             # Determine if the field should be drawn
             if not field.should_draw(self.property_type):
                 continue

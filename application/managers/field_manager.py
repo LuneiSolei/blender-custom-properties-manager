@@ -30,16 +30,17 @@ class FieldManager:
             )
 
             if new_field.should_draw(property_type):
-                new_field.current_value = FieldManager.find_value(
+                new_field.current_value = cls.find_value(
                     operator_instance = operator_instance,
                     operator_type = operator_type,
                     attr_name = new_field.attr_name,
                     ui_data_attr = new_field.ui_data_attr
                 )
+                setattr(operator_instance, new_field.attr_name, new_field.current_value)
 
             fields[name] = new_field
 
-        return FieldManager.stringify_fields(fields)
+        return cls.stringify_fields(fields)
 
     @classmethod
     def stringify_fields(cls, fields: dict[str, Field]) -> str:
@@ -86,17 +87,22 @@ class FieldManager:
         cls.logger.log(
             level = LogLevel.DEBUG,
             message = "Finding value for attribute name",
-            extra = {"attr_name": attr_name,}
+            extra = {
+                "attr_name": attr_name,
+                "ui_data_attr": ui_data_attr
+            }
         )
-        ui_data = operator_instance.ui_data
+        ui_data = json.loads(operator_instance.ui_data)
 
         if ui_data is None:
             ui_data = operator_type.property_data_manager.load_ui_data(operator_instance)
             operator_instance.ui_data = ui_data
 
-        if ui_data_attr is not None:
+        is_ui_data = ui_data_attr is not None
+        is_group_attr = attr_name == FieldNames.GROUP.value
+        if is_ui_data:
             found_value = ui_data[ui_data_attr]
-        elif attr_name == FieldNames.GROUP.value:
+        elif is_group_attr:
             # noinspection PyTypeChecker
             data_object = utils.resolve_data_object(operator_instance.data_path)
             group_data = operator_type.group_data_manager.get_group_data(data_object)
@@ -104,5 +110,17 @@ class FieldManager:
             found_value = operator_instance.group
         else:
             found_value = getattr(operator_instance, attr_name)
+
+        cls.logger.log(
+            level = LogLevel.DEBUG,
+            message = "Found value for attribute",
+            extra = {
+                "attr_name": attr_name,
+                "ui_data_attr": ui_data_attr,
+                "is_ui_data": is_ui_data,
+                "is_group_attr": is_group_attr,
+                "found_value": found_value
+            }
+        )
 
         return found_value

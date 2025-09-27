@@ -1,12 +1,14 @@
-from typing import Any, List, Optional, Union
-
 import bpy
 
+from typing import Any, List, Optional, Union, get_type_hints
 from .reporting_mixin import ReportingMixin
 from .ui_data import UIData
 from ...shared import consts
+from ...shared.utils import StructuredLogger
+from ...shared.entities import LogLevel
 
 class Field(ReportingMixin):
+    logger = StructuredLogger(consts.MODULE_NAME)
     name: str
     label: str
     property_type: str
@@ -36,11 +38,15 @@ class Field(ReportingMixin):
 
         # UI data in Blender uses specific names for properties such as min_float, soft_max_int, etc. So, we need
         # to generate this name based off of our property's property_type
-        if attr_prefix is not None:
+        has_prefix = attr_prefix is not None
+        has_ui_data_attr = ui_data_attr is not None
+        if has_prefix:
             self.attr_name = self._generate_attr_name()
-            self.ui_data_attr = self._generate_ui_data_attr()
         else:
             self.attr_name = attr_name
+
+        if has_prefix and not has_ui_data_attr:
+            self.ui_data_attr = self._generate_ui_data_attr()
 
     def to_dict(self) -> dict:
         """Convert the field to a serializable dictionary for JSON storage"""
@@ -115,8 +121,19 @@ class Field(ReportingMixin):
 
         :return: The generated ui data attribute name.
         """
-        search_str = self.attr_prefix.removesuffix("_")
-        if hasattr(UIData, search_str):
-            return search_str
+        ui_data_attr = self.attr_prefix.removesuffix("_")
+        search_result = ui_data_attr in get_type_hints(UIData).keys()
+
+        self.logger.log(
+            level = LogLevel.DEBUG,
+            message = "Generating UI data attribute name",
+            extra = {
+                "ui data attribute": ui_data_attr,
+                "search result": search_result
+            }
+        )
+
+        if search_result:
+            return ui_data_attr
 
         return None

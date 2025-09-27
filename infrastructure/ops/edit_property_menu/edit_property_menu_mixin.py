@@ -31,7 +31,6 @@ class EditPropertyMenuOperatorMixin:
     step_float: FloatProperty()
     step_int: IntProperty()
     precision: IntProperty()
-    subtype_float: EnumProperty(items = consts.PROPERTY_SUBTYPES)
     initialized: BoolProperty(default = False)
     use_soft_limits: BoolProperty()
 
@@ -40,12 +39,16 @@ class EditPropertyMenuOperatorMixin:
     max_float: FloatProperty()
     soft_min_float: FloatProperty()
     soft_max_float: FloatProperty()
+    subtype_float: EnumProperty(items = consts.PROPERTY_SUBTYPES)
+    subtype_array_float: EnumProperty(items = consts.PROPERTY_SUBTYPE_VECTORS)
 
     # INT
     min_int: IntProperty()
     max_int: IntProperty()
     soft_min_int: IntProperty()
     soft_max_int: IntProperty()
+    subtype_int: EnumProperty(items = consts.PROPERTY_SUBTYPES)
+    subtype_array_int: EnumProperty(items = consts.PROPERTY_SUBTYPE_VECTORS)
 
     default: Union[
         FloatProperty(),
@@ -57,8 +60,6 @@ class EditPropertyMenuOperatorMixin:
         StringProperty()
     ]
     array_length: IntProperty()
-    subtype_float: EnumProperty(items = consts.PROPERTY_SUBTYPES)
-    subtype_float_array: EnumProperty(items = consts.PROPERTY_SUBTYPE_VECTORS)
     description: StringProperty()
     is_overridable_library: BoolProperty()
 

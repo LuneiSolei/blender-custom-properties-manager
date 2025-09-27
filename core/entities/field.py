@@ -121,19 +121,27 @@ class Field(ReportingMixin):
 
         :return: The generated ui data attribute name.
         """
-        ui_data_attr = self.attr_prefix.removesuffix("_")
+        ui_data_attr = self.attr_prefix.removesuffix("_").removesuffix("_array")
         search_result = ui_data_attr in get_type_hints(UIData).keys()
 
         self.logger.log(
             level = LogLevel.DEBUG,
             message = "Generating UI data attribute name",
             extra = {
-                "ui data attribute": ui_data_attr,
-                "search result": search_result
+                "ui_data_attribute": ui_data_attr,
+                "search_result": search_result
             }
         )
 
         if search_result:
             return ui_data_attr
+
+        self.logger.log(
+            level = LogLevel.WARNING,
+            message = "Could not find UI data attribute name in UI data",
+            extra = {
+                "ui_data_attribute": ui_data_attr
+            }
+        )
 
         return None

@@ -36,7 +36,9 @@ class FieldManager:
                     attr_name = new_field.attr_name,
                     ui_data_attr = new_field.ui_data_attr
                 )
-                setattr(operator_instance, new_field.attr_name, new_field.current_value)
+                old_value = getattr(operator_instance, new_field.attr_name)
+                if old_value != new_field.current_value:
+                    setattr(operator_instance, new_field.attr_name, new_field.current_value)
 
             fields[name] = new_field
 

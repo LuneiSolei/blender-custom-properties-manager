@@ -15,6 +15,8 @@ class FieldNames(Enum):
     NAME = "name"
     GROUP = "group"
     TYPE = "property_type"
+    SUBTYPE = "subtype"
+    SUBTYPE_ARRAY = "subtype_array"
     MIN = "min"
     MAX = "max"
     USE_SOFT_LIMITS = "use_soft_limits"
@@ -23,6 +25,7 @@ class FieldNames(Enum):
     STEP = "step"
     PRECISION = "precision"
     DEFAULT = "default"
+
 
 field_configs = {
     FieldNames.NAME.value : FieldConfig(
@@ -42,6 +45,18 @@ field_configs = {
         draw_on = 'ALL',
         label = "Type",
         name = FieldNames.TYPE.value
+    ),
+    FieldNames.SUBTYPE.value: FieldConfig(
+        attr_prefix = "subtype_",
+        draw_on = ['FLOAT', 'INT'],
+        label = "Subtype",
+        name = FieldNames.SUBTYPE.value,
+    ),
+    FieldNames.SUBTYPE_ARRAY: FieldConfig(
+        attr_prefix = "subtype_array_",
+        draw_on = ['FLOAT_ARRAY', 'INT_ARRAY'],
+        label = "Subtype",
+        name = FieldNames.SUBTYPE_ARRAY.value
     ),
     FieldNames.MIN.value: FieldConfig(
         attr_prefix = "min_",
@@ -81,7 +96,7 @@ field_configs = {
     ),
     FieldNames.PRECISION.value: FieldConfig(
         attr_name = "precision",
-        draw_on = ['FLOAT', 'FLOAT_ARRAY', 'INT', 'INT_ARRAY'],
+        draw_on = ['FLOAT', 'FLOAT_ARRAY'],
         label = "Precision",
         name = FieldNames.PRECISION.value
     )

@@ -33,6 +33,7 @@ class EditPropertyMenuOperatorMixin:
     precision: IntProperty()
     subtype_float: EnumProperty(items = consts.PROPERTY_SUBTYPES)
     initialized: BoolProperty(default = False)
+    use_soft_limits: BoolProperty()
 
     # FLOAT
     min_float: FloatProperty()
@@ -55,7 +56,6 @@ class EditPropertyMenuOperatorMixin:
         BoolVectorProperty(),
         StringProperty()
     ]
-    use_soft_limits: BoolProperty()
     array_length: IntProperty()
     subtype_float: EnumProperty(items = consts.PROPERTY_SUBTYPES)
     subtype_float_array: EnumProperty(items = consts.PROPERTY_SUBTYPE_VECTORS)

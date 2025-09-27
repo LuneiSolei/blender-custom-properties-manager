@@ -17,6 +17,7 @@ class FieldNames(Enum):
     TYPE = "property_type"
     MIN = "min"
     MAX = "max"
+    USE_SOFT_LIMITS = "use_soft_limits"
     SOFT_MIN = "soft_min"
     SOFT_MAX = "soft_max"
     STEP = "step"
@@ -53,6 +54,12 @@ field_configs = {
         draw_on = ['FLOAT', 'FLOAT_ARRAY', 'INT', 'INT_ARRAY'],
         label = "Max",
         name = FieldNames.MAX.value
+    ),
+    FieldNames.USE_SOFT_LIMITS.value: FieldConfig(
+        attr_name = "use_soft_limits",
+        draw_on = ['FLOAT', 'FLOAT_ARRAY', 'INT', 'INT_ARRAY'],
+        label = "Use Soft Limits",
+        name = FieldNames.USE_SOFT_LIMITS.value
     ),
     FieldNames.SOFT_MIN.value: FieldConfig(
         attr_prefix = "soft_min_",

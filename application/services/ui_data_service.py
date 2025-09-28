@@ -89,17 +89,7 @@ class UIDataService:
             case consts.PropertyTypes.FLOAT:
                 new_ui_data = cls.construct_ui_data_float(operator_instance, fields)
             case consts.PropertyTypes.FLOAT_ARRAY:
-                new_ui_data = {
-                    "subtype": consts.DEFAULT_SUBTYPE,
-                    "description": consts.DEFAULT_DESCRIPTION,
-                    "min": int(getattr(operator_instance, fields[FieldNames.MIN.value].attr_name, consts.DEFAULT_MIN_FLOAT_ARRAY)),
-                    "max": getattr(operator_instance, fields[FieldNames.MAX.value].attr_name, consts.DEFAULT_MAX_FLOAT_ARRAY),
-                    "soft_min": getattr(operator_instance, fields[FieldNames.SOFT_MIN.value].attr_name, consts.DEFAULT_SOFT_MIN_FLOAT_ARRAY),
-                    "soft_max": getattr(operator_instance, fields[FieldNames.SOFT_MAX.value].attr_name, consts.DEFAULT_SOFT_MAX_FLOAT_ARRAY),
-                    "step": getattr(operator_instance, "step", consts.DEFAULT_STEP_FLOAT_ARRAY),
-                    "precision": getattr(operator_instance, "precision", consts.DEFAULT_PRECISION_FLOAT_ARRAY),
-                    "default": getattr(operator_instance, "default", consts.DEFAULT_VALUE_FLOAT_ARRAY)
-                }
+                new_ui_data = cls.construct_ui_data_float_array(operator_instance, fields)
             case consts.PropertyTypes.INT:
                 new_ui_data = cls.construct_ui_data_int(operator_instance, fields)
             case consts.PropertyTypes.INT_ARRAY:
@@ -132,8 +122,8 @@ class UIDataService:
         data_object = utils.resolve_data_object(operator_instance.data_path)
         data_object.id_properties_ui(operator_instance.name).update(**new_ui_data)
 
-    @classmethod
-    def construct_ui_data_float(cls, operator_instance, fields: dict[str, Field]) -> UIData:
+    @staticmethod
+    def construct_ui_data_float(operator_instance, fields: dict[str, Field]) -> UIData:
         """
         Helper method to construct the property's UI data for a float.
 
@@ -142,7 +132,10 @@ class UIDataService:
 
         :return: The constructed UI data.
         """
+        result = {}
         field_map = {
+            "subtype": (FieldNames.SUBTYPE, consts.DEFAULT_SUBTYPE, str),
+            "description": (FieldNames.DESCRIPTION, consts.DEFAULT_DESCRIPTION, str),
             "min": (FieldNames.MIN, consts.DEFAULT_MIN_FLOAT, float),
             "max": (FieldNames.MAX, consts.DEFAULT_MAX_FLOAT, float),
             "soft_min": (FieldNames.SOFT_MIN, consts.DEFAULT_SOFT_MIN_FLOAT, float),
@@ -150,19 +143,12 @@ class UIDataService:
             "step": (FieldNames.STEP, consts.DEFAULT_STEP_FLOAT, float),
             "precision": (FieldNames.PRECISION, consts.DEFAULT_PRECISION_FLOAT, int),
         }
-        result = {
-            "subtype": consts.DEFAULT_SUBTYPE,
-            "description": consts.DEFAULT_DESCRIPTION,
-        }
 
         for key, (field_name, default, cast_type) in field_map.items():
             attr_name = fields[field_name.value].attr_name
             result[key] = cast_type(getattr(operator_instance, attr_name, default))
 
         return UIData(**result)
-        # "default": "",
-        # "id_type": None,
-        # "items": None
 
 
     @staticmethod
@@ -175,14 +161,41 @@ class UIDataService:
 
         :return: The newly constructed UI data.
         """
-        return {
-            "subtype": consts.DEFAULT_SUBTYPE,
-            "description": consts.DEFAULT_DESCRIPTION,
-            "min": int(getattr(operator_instance, fields[FieldNames.MIN.value].attr_name, consts.DEFAULT_MIN_INT)),
-            "max": int(getattr(operator_instance, fields[FieldNames.MAX.value].attr_name, consts.DEFAULT_MAX_INT)),
-            "soft_min": int(
-                getattr(operator_instance, fields[FieldNames.SOFT_MIN.value].attr_name, consts.DEFAULT_SOFT_MIN_INT)),
-            "soft_max": int(
-                getattr(operator_instance, fields[FieldNames.SOFT_MAX.value].attr_name, consts.DEFAULT_SOFT_MAX_INT)),
-            "step": int(getattr(operator_instance, "step", consts.DEFAULT_STEP_INT))
+        result = {}
+        field_map = {
+            "subtype": (FieldNames.SUBTYPE, consts.DEFAULT_SUBTYPE, str),
+            "description": (FieldNames.DESCRIPTION, consts.DEFAULT_DESCRIPTION, str),
+            "min": (FieldNames.MIN, consts.DEFAULT_MIN_INT, int),
+            "max": (FieldNames.MAX, consts.DEFAULT_MAX_INT, int),
+            "soft_min": (FieldNames.SOFT_MIN, consts.DEFAULT_SOFT_MIN_INT, int),
+            "soft_max": (FieldNames.SOFT_MAX, consts.DEFAULT_SOFT_MAX_INT, int),
+            "step": (FieldNames.STEP, consts.DEFAULT_STEP_INT, int)
         }
+
+
+        for key, (field_name, default, cast_type) in field_map.items():
+            attr_name = fields[field_name.value].attr_name
+            result[key] = cast_type(getattr(operator_instance, attr_name, default))
+
+        return UIData(**result)
+
+    @staticmethod
+    def construct_ui_data_float_array(operator_instance, fields: dict[str, Field]) -> UIData:
+        result = {}
+        field_map = {
+            "subtype": (FieldNames.SUBTYPE, consts.DEFAULT_SUBTYPE, str),
+            "description": (FieldNames.DESCRIPTION, consts.DEFAULT_DESCRIPTION, str),
+            "min": (FieldNames.MIN, consts.DEFAULT_MIN_FLOAT_ARRAY, float),
+            "max": (FieldNames.MAX, consts.DEFAULT_MAX_FLOAT_ARRAY, float),
+            "soft_min": (FieldNames.SOFT_MIN, consts.DEFAULT_SOFT_MIN_FLOAT_ARRAY, float),
+            "soft_max": (FieldNames.SOFT_MAX, consts.DEFAULT_SOFT_MAX_FLOAT_ARRAY, float),
+            "step": (FieldNames.STEP, consts.DEFAULT_STEP_FLOAT_ARRAY, float),
+            "precision": (FieldNames.PRECISION, consts.DEFAULT_PRECISION_FLOAT, int),
+            "default": (FieldNames.DEFAULT, consts.DEFAULT_FLOAT_ARRAY, float)
+        }
+
+        for key, (field_name, default, cast_type) in field_map.items():
+            attr_name = fields[field_name.value].attr_name
+            result[key] = cast_type(getattr(operator_instance, attr_name, default))
+
+        return UIData(**result)

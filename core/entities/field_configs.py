@@ -53,11 +53,17 @@ field_configs = {
         label = "Subtype",
         name = FieldNames.SUBTYPE.value,
     ),
-    FieldNames.SUBTYPE_ARRAY: FieldConfig(
+    FieldNames.SUBTYPE_ARRAY.value: FieldConfig(
         attr_prefix = "subtype_array_",
         draw_on = ['FLOAT_ARRAY', 'INT_ARRAY'],
         label = "Subtype",
         name = FieldNames.SUBTYPE_ARRAY.value
+    ),
+    FieldNames.DEFAULT.value: FieldConfig(
+        attr_prefix = "default_",
+        draw_on = 'ALL',
+        label = "Default",
+        name = FieldNames.DEFAULT.value,
     ),
     FieldNames.MIN.value: FieldConfig(
         attr_prefix = "min_",

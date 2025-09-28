@@ -185,7 +185,8 @@ class PropertyTypeService:
         elif new_type in (consts.PropertyTypes.FLOAT_ARRAY,
                           consts.PropertyTypes.INT_ARRAY,
                           consts.PropertyTypes.BOOL_ARRAY):
-            converter = simple_type_converters[new_type]
+            simple_type = new_type.removesuffix("_ARRAY")
+            converter = simple_type_converters[simple_type]
             if isinstance(old_value, list):
                 new_value = [converter(v) for v in old_value]
             else:

@@ -33,8 +33,11 @@ class EditPropertyMenuOperatorMixin:
     precision: IntProperty()
     initialized: BoolProperty(default = False)
     use_soft_limits: BoolProperty()
+    is_overridable_library: BoolProperty()
 
     # FLOAT
+    default_float: FloatProperty()
+    default_float_array: FloatVectorProperty()
     min_float: FloatProperty()
     max_float: FloatProperty()
     soft_min_float: FloatProperty()
@@ -43,6 +46,8 @@ class EditPropertyMenuOperatorMixin:
     subtype_array_float: EnumProperty(items = consts.PROPERTY_SUBTYPE_VECTORS)
 
     # INT
+    default_int: IntProperty()
+    default_int_array: IntVectorProperty()
     min_int: IntProperty()
     max_int: IntProperty()
     soft_min_int: IntProperty()

@@ -26,6 +26,7 @@ class FieldNames(Enum):
     PRECISION = "precision"
     DEFAULT = "default"
     IS_OVERRIDABLE_LIBRARY = "is_overridable_library"
+    DESCRIPTION = "description"
 
 
 field_configs = {
@@ -40,6 +41,13 @@ field_configs = {
         draw_on = 'ALL',
         label = "Group Name",
         name = FieldNames.GROUP.value
+    ),
+    FieldNames.DESCRIPTION.value: FieldConfig(
+        attr_name = "description",
+        ui_data_attr = "description",
+        draw_on = 'ALL',
+        label = "Description",
+        name = FieldNames.DESCRIPTION.value
     ),
     FieldNames.TYPE.value: FieldConfig(
         attr_name = "property_type",
@@ -103,6 +111,7 @@ field_configs = {
     ),
     FieldNames.PRECISION.value: FieldConfig(
         attr_name = "precision",
+        ui_data_attr = "precision",
         draw_on = ['FLOAT', 'FLOAT_ARRAY'],
         label = "Precision",
         name = FieldNames.PRECISION.value

@@ -96,14 +96,18 @@ class FieldManager:
         )
         ui_data = json.loads(operator_instance.ui_data)
 
+        # Ensure the UI data exists
         if ui_data is None:
             ui_data = operator_type.property_data_manager.load_ui_data(operator_instance)
             operator_instance.ui_data = ui_data
 
+        # Check if the attribute exists in the UI dataset
         is_ui_data = ui_data_attr is not None
         is_group_attr = attr_name == FieldNames.GROUP.value
         if is_ui_data:
-            found_value = ui_data[ui_data_attr]
+            # The field has a ui_data_attr tag
+            default_value = consts.DEFAULT_DESCRIPTION if ui_data_attr == "description" else None
+            found_value = ui_data.setdefault(ui_data_attr, default_value)
         elif is_group_attr:
             # noinspection PyTypeChecker
             data_object = utils.resolve_data_object(operator_instance.data_path)

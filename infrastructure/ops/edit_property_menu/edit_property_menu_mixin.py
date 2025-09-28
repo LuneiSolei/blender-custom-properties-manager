@@ -24,10 +24,7 @@ class EditPropertyMenuOperatorMixin:
         update = PropertyTypeService.on_type_change
     )
     group: StringProperty()
-    value_float: FloatProperty()
-    value_int: IntProperty()
-    value_bool: BoolProperty()
-    value_string: StringProperty()
+    description: StringProperty()
     step_float: FloatProperty()
     step_int: IntProperty()
     precision: IntProperty()
@@ -65,8 +62,6 @@ class EditPropertyMenuOperatorMixin:
         StringProperty()
     ]
     array_length: IntProperty()
-    description: StringProperty()
-    is_overridable_library: BoolProperty()
 
     # Misc.
     _group_data = {}

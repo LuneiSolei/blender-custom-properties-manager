@@ -113,7 +113,11 @@ class Field(ReportingMixin):
 
         :return: The generated attribute name.
         """
-        return f"{self.attr_prefix}{self.property_type.lower()}".removesuffix("_array")
+        return_str = f"{self.attr_prefix}{self.property_type.lower()}"
+        if not self.attr_prefix == "default_":
+            return return_str.removesuffix("_array")
+
+        return return_str
 
     def _generate_ui_data_attr(self) -> Union[str, None]:
         """

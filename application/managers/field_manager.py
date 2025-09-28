@@ -108,6 +108,11 @@ class FieldManager:
             # The field has a ui_data_attr tag
             default_value = consts.DEFAULT_DESCRIPTION if ui_data_attr == "description" else None
             found_value = ui_data.setdefault(ui_data_attr, default_value)
+
+            # Ensure that arrays are returning a list and not a single value and is not for subtypes
+            if (not isinstance(found_value, list)
+                and attr_name.startswith("default")):
+                found_value = [found_value, found_value, found_value]
         elif is_group_attr:
             # noinspection PyTypeChecker
             data_object = utils.resolve_data_object(operator_instance.data_path)

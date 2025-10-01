@@ -69,7 +69,7 @@ field_configs = {
     ),
     FieldNames.DEFAULT.value: FieldConfig(
         attr_prefix = "default_",
-        draw_on = 'ALL',
+        draw_on = ['FLOAT_ARRAY', 'INT_ARRAY', 'BOOL_ARRAY'],
         label = "Default",
         name = FieldNames.DEFAULT.value,
     ),

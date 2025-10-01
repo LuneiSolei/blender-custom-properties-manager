@@ -53,7 +53,7 @@ class FieldManager:
 
         :return: A JSON string representing the fields.
         """
-        field_data = [field.to_dict() for field in fields.values()]
+        field_data = [field.as_dict() for field in fields.values()]
 
         return json.dumps(field_data)
 

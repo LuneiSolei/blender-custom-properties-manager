@@ -48,8 +48,12 @@ class Field(ReportingMixin):
         if has_prefix and not has_ui_data_attr:
             self.ui_data_attr = self._generate_ui_data_attr()
 
-    def to_dict(self) -> dict:
-        """Convert the field to a serializable dictionary for JSON storage"""
+    def as_dict(self) -> dict[str, str]:
+        """
+        Converts the field to a dictionary.
+
+        :return: A dictionary representation of the field.
+        """
         return {
             "name": self.name,
             "label": self.label,
@@ -63,7 +67,13 @@ class Field(ReportingMixin):
 
     @classmethod
     def from_dict(cls, data: dict) -> 'Field':
-        """Construct a field from a dictionary"""
+        """
+        Constructs a new Field instance from a dictionary representation.
+
+        :param data: A dictionary representation of the field.
+
+        :return: A new Field instance.
+        """
         field = cls(
             name = data["name"],
             label = data["label"],
@@ -78,17 +88,23 @@ class Field(ReportingMixin):
 
     @property
     def current_value(self):
-        """Get the current value of the field"""
+        """Get the current value of the field."""
         return self._current_value
 
     @current_value.setter
     def current_value(self, value):
-        """Set the current value of the field"""
+        """Set the current value of the field."""
         self._current_value = value
 
-    def draw(self, operator: bpy.types.Operator) -> bpy.types.UILayout:
-        """Draw the field in the UI"""
-        layout = operator.layout
+    def draw(self, operator_instance: bpy.types.Operator) -> bpy.types.UILayout:
+        """
+        Draws the field in the provided operator instance's layout.
+
+        :param operator_instance: The operator instance to draw on.
+
+        :return: The row containing the field.
+        """
+        layout = operator_instance.layout
         row = layout.row()
         split = row.split(factor=0.5)
 
@@ -99,12 +115,12 @@ class Field(ReportingMixin):
 
         # Create the right column
         right_col = split.column()
-        right_col.prop(data = operator, property = self.attr_name, text="")
+        right_col.prop(data = operator_instance, property = self.attr_name, text="")
 
         return row
 
     def should_draw(self, property_type: str) -> bool:
-        """Helper to determine if the field should be drawn"""
+        """Determines if the field should be drawn."""
         return property_type in self.draw_on or self.draw_on == consts.ALL
 
     def _generate_attr_name(self) -> str:

@@ -10,8 +10,6 @@ bl_info = {
     "description": "Manage custom properties"
 }
 
-
-
 def register():
     bootstrap.setup()
     bootstrap.register_classes()

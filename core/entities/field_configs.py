@@ -57,12 +57,14 @@ field_configs = {
     ),
     FieldNames.SUBTYPE.value: FieldConfig(
         attr_prefix = "subtype_",
+        ui_data_attr = "subtype",
         draw_on = ['FLOAT', 'INT'],
         label = "Subtype",
         name = FieldNames.SUBTYPE.value,
     ),
     FieldNames.SUBTYPE_ARRAY.value: FieldConfig(
         attr_prefix = "subtype_array_",
+        ui_data_attr = "subtype",
         draw_on = ['FLOAT_ARRAY', 'INT_ARRAY'],
         label = "Subtype",
         name = FieldNames.SUBTYPE_ARRAY.value

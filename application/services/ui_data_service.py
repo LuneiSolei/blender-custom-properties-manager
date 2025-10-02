@@ -80,6 +80,12 @@ class UIDataService:
 
         :return: The updated UI data.
         """
+        # Log method entry
+        cls.logger.log(
+            level = LogLevel.DEBUG,
+            message = "Updating property UI data"
+        )
+
         ui_data_map = {
             consts.PropertyTypes.FLOAT: cls._get_ui_data_float(operator_instance, fields),
             consts.PropertyTypes.INT: cls._get_ui_data_int(operator_instance, fields),
@@ -93,6 +99,15 @@ class UIDataService:
         new_ui_data = ui_data_map[operator_instance.property_type]
         data_object = utils.resolve_data_object(operator_instance.data_path)
         data_object.id_properties_ui(operator_instance.name).update(**new_ui_data)
+
+        # Log method exit
+        cls.logger.log(
+            level = LogLevel.DEBUG,
+            message = "Property UI data updated",
+            extra = {**new_ui_data}
+        )
+
+        return new_ui_data
 
     @classmethod
     def _get_ui_data_float(cls, operator_instance, fields: dict[str, Field]) -> UIData:
@@ -120,7 +135,7 @@ class UIDataService:
     @classmethod
     def _get_ui_data_float_array(cls, operator_instance, fields: dict[str, Field]) -> UIData:
         field_map = {
-            "subtype": (FieldNames.SUBTYPE, consts.DEFAULT_SUBTYPE, str),
+            "subtype": (FieldNames.SUBTYPE_ARRAY, consts.DEFAULT_SUBTYPE, str),
             "description": (FieldNames.DESCRIPTION, consts.DEFAULT_DESCRIPTION, str),
             "min": (FieldNames.MIN, consts.DEFAULT_MIN_FLOAT_ARRAY, float),
             "max": (FieldNames.MAX, consts.DEFAULT_MAX_FLOAT_ARRAY, float),
@@ -158,7 +173,7 @@ class UIDataService:
     @classmethod
     def _get_ui_data_int_array(cls, operator_instance, fields: dict[str, Field]) -> UIData:
         field_map = {
-            "subtype": (FieldNames.SUBTYPE, consts.DEFAULT_SUBTYPE, str),
+            "subtype": (FieldNames.SUBTYPE_ARRAY, consts.DEFAULT_SUBTYPE, str),
             "description": (FieldNames.DESCRIPTION, consts.DEFAULT_DESCRIPTION, str),
             "min": (FieldNames.MIN, consts.DEFAULT_MIN_INT_ARRAY, int),
             "max": (FieldNames.MAX, consts.DEFAULT_MAX_INT_ARRAY, int),
@@ -192,17 +207,23 @@ class UIDataService:
     @classmethod
     def _get_ui_data_str(cls, operator_instance, fields: dict[str, Field]) -> UIData:
         field_map = {
-            "description": (FieldNames.DESCRIPTION, consts.DESCRIPTION, str),
+            "description": (FieldNames.DESCRIPTION, consts.DEFAULT_DESCRIPTION, str),
         }
 
         return cls._construct_ui_data(operator_instance, fields, field_map)
 
-    @staticmethod
-    def _construct_ui_data(operator_instance, fields: dict[str, Field], field_map: dict[str, tuple[FieldNames, str, type]]) -> UIData:
+    @classmethod
+    def _construct_ui_data(cls, operator_instance, fields: dict[str, Field], field_map: dict[str, tuple[FieldNames, str, type]]) -> UIData:
         result = {}
         for key, (field_name, default, cast_type) in field_map.items():
             attr_name = fields[field_name.value].attr_name
             value = getattr(operator_instance, attr_name, default)
+
+            cls.logger.log(
+                level=LogLevel.DEBUG,
+                message="Construct UI data field value",
+                extra={"key": key, "attr_name": attr_name, "value": value}
+            )
 
             # Special handling for list type
             if cast_type is list:

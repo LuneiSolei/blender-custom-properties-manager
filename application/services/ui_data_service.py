@@ -192,7 +192,7 @@ class UIDataService:
     @classmethod
     def _get_ui_data_str(cls, operator_instance, fields: dict[str, Field]) -> UIData:
         field_map = {
-            "description": (FieldNames.SUBTYPE, consts.DEFAULT_SUBTYPE, str),
+            "description": (FieldNames.DESCRIPTION, consts.DESCRIPTION, str),
         }
 
         return cls._construct_ui_data(operator_instance, fields, field_map)

@@ -89,6 +89,8 @@ class PropertyDataManager:
             "group": cls._update_group(operator_instance, fields[FieldNames.GROUP.value]),
             "type": cls.property_type_service.update_type(operator_instance, fields[FieldNames.TYPE.value]),
             "ui_data": cls.ui_data_service.update_ui_data(operator_instance, fields),
+            "overridable_library": cls._update_overridable_library(operator_instance,
+                                                                   fields[FieldNames.IS_OVERRIDABLE_LIBRARY.value]),
         }
 
         cls.logger.log(
@@ -295,3 +297,12 @@ class PropertyDataManager:
         )
 
         return new_group
+
+    @classmethod
+    def _update_overridable_library(cls, operator_instance, field: Field) -> bool:
+        data_object = utils.resolve_data_object(operator_instance.data_path)
+        prop_name = operator_instance.name
+        is_overridable = operator_instance.is_property_overridable_library
+        result = data_object.property_overridable_library_set(f'["{prop_name}"]', is_overridable)
+
+        return is_overridable if result else False

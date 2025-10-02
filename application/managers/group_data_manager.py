@@ -1,12 +1,12 @@
-from json import JSONDecodeError
-
 import bpy
 import json
-
 from ...core import GroupData
 from ...shared import consts
+from ...shared.utils import StructuredLogger
+from ...shared.entities import LogLevel
 
 class GroupDataManager:
+    logger = StructuredLogger(consts.MODULE_NAME)
     _group_data_name: str = consts.CPM_SERIALIZED_GROUP_DATA
     _cache: dict[str, GroupData] = {}
 
@@ -45,7 +45,16 @@ class GroupDataManager:
         data_str = data_object.get(cls._group_data_name, "{}")
         try:
             group_data = json.loads(data_str)
-        except JSONDecodeError as e:
+        except json.JSONDecodeError as e:
+            cls.logger.log(
+                level = LogLevel.ERROR,
+                message = "Could not load group data from JSON string",
+                extra = {
+                    "data_str": data_str,
+                    "json_decode_error": e
+                }
+            )
+
             group_data = {}
 
         new_data = GroupData(group_data = group_data)
@@ -66,7 +75,7 @@ class GroupDataManager:
                 group_data = cls.get_group_data(data_object)
                 data_object[cls._group_data_name] = json.dumps(group_data.as_dict())
 
-                return
+            return
 
         for object_id, group_data in cls._cache.items():
             # Find the corresponding data_object

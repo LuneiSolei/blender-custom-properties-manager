@@ -60,7 +60,7 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
         self._group_data.set_operator(self)
 
         # Apply "is_overridable_library"
-        data_object.property_overridable_library_set(f'["{self.name}"]', self.is_overridable_library)
+        data_object.property_overridable_library_set(f'["{self.name}"]', self.is_property_overridable_library)
 
         # Apply modified properties
         self.property_data_manager.update_property_data(self)

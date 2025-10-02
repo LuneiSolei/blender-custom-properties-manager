@@ -30,7 +30,7 @@ class EditPropertyMenuOperatorMixin:
     precision: IntProperty()
     initialized: BoolProperty(default = False)
     use_soft_limits: BoolProperty()
-    is_overridable_library: BoolProperty()
+    is_property_overridable_library: BoolProperty()
 
     # FLOAT
     default_float: FloatProperty()

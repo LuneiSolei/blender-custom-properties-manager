@@ -117,7 +117,7 @@ field_configs = {
         name = FieldNames.PRECISION.value
     ),
     FieldNames.IS_OVERRIDABLE_LIBRARY.value: FieldConfig(
-        attr_name = "is_overridable_library",
+        attr_name = "is_property_overridable_library", # Needs to be called on bpy.types.ID, not the property itself
         draw_on = 'ALL',
         label = "Is Library Overridable",
         name = FieldNames.IS_OVERRIDABLE_LIBRARY.value

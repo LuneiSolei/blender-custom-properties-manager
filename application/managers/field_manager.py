@@ -86,6 +86,7 @@ class FieldManager:
 
         :return: The value of the attribute.
         """
+        # Log method entry
         cls.logger.log(
             level = LogLevel.DEBUG,
             message = "Finding value for attribute name",
@@ -101,27 +102,24 @@ class FieldManager:
             ui_data = operator_type.property_data_manager.load_ui_data(operator_instance)
             operator_instance.ui_data = ui_data
 
-        # Check if the attribute exists in the UI dataset
-        is_ui_data = ui_data_attr is not None
-        is_group_attr = attr_name == FieldNames.GROUP.value
-        if is_ui_data:
-            # The field has a ui_data_attr tag
-            default_value = consts.DEFAULT_DESCRIPTION if ui_data_attr == "description" else None
-            found_value = ui_data.setdefault(ui_data_attr, default_value)
+        jump_table = {
+            "group": lambda: cls._get_group_value(operator_instance, operator_type),
+            "is_property_overridable_library": lambda: cls._get_overridable_library_value(operator_instance)
+        }
 
-            # Ensure that arrays are returning a list and not a single value and is not for subtypes
-            if (not isinstance(found_value, list)
-                and attr_name.startswith("default")):
-                found_value = [found_value, found_value, found_value]
-        elif is_group_attr:
-            # noinspection PyTypeChecker
-            data_object = utils.resolve_data_object(operator_instance.data_path)
-            group_data = operator_type.group_data_manager.get_group_data(data_object)
-            operator_instance.group = group_data.get_group_name(operator_instance.name)
-            found_value = operator_instance.group
+        is_ui_data = ui_data_attr is not None
+        if is_ui_data:
+            # Prioritize the `ui_data_attr` value from the field
+            found_value = cls._get_ui_data_value(attr_name, ui_data, ui_data_attr)
+        elif attr_name in jump_table:
+            # Use attr_name as a secondary source if the field does not utilize `ui_data_attr`
+            # Firstly, check for special cases
+            found_value = jump_table[attr_name]()
         else:
+            # Otherwise, use the value of the attribute tied to the operator instance
             found_value = getattr(operator_instance, attr_name)
 
+        # Log method exit
         cls.logger.log(
             level = LogLevel.DEBUG,
             message = "Found value for attribute",
@@ -129,9 +127,41 @@ class FieldManager:
                 "attr_name": attr_name,
                 "ui_data_attr": ui_data_attr,
                 "is_ui_data": is_ui_data,
-                "is_group_attr": is_group_attr,
                 "found_value": found_value
             }
         )
+
+        return found_value
+
+    @staticmethod
+    def _get_group_value(operator_instance, operator_type) -> Any:
+        data_object = utils.resolve_data_object(operator_instance.data_path)
+        group_data = operator_type.group_data_manager.get_group_data(data_object)
+        operator_instance.group = group_data.get_group_name(operator_instance.name)
+        found_value = operator_instance.group
+
+        return found_value
+
+    @staticmethod
+    def _get_ui_data_value(attr_name: str, ui_data, ui_data_attr: str | None) -> Any:
+        # The field has a ui_data_attr tag
+        default_value = consts.DEFAULT_DESCRIPTION if ui_data_attr == "description" else None
+        found_value = ui_data.setdefault(ui_data_attr, default_value)
+
+        # Ensure that arrays are returning a list and not a single value and is not for subtypes
+        if (not isinstance(found_value, list)
+                and attr_name.startswith("default")):
+            found_value = [found_value, found_value, found_value]
+
+        return found_value
+
+    @staticmethod
+    def _get_overridable_library_value(operator_instance) -> bool:
+        data_object = utils.resolve_data_object(operator_instance.data_path)
+
+        # Use bracket notation for property path
+        prop_path = f'["{operator_instance.name}"]'
+        operator_instance.overridable_library = data_object.is_property_overridable_library(prop_path)
+        found_value = operator_instance.overridable_library
 
         return found_value

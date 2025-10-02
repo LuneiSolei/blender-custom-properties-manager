@@ -128,7 +128,7 @@ class UIDataService:
             "soft_max": (FieldNames.SOFT_MAX, consts.DEFAULT_SOFT_MAX_FLOAT_ARRAY, float),
             "step": (FieldNames.STEP, consts.DEFAULT_STEP_FLOAT_ARRAY, float),
             "precision": (FieldNames.PRECISION, consts.DEFAULT_PRECISION_FLOAT, int),
-            "default": (FieldNames.DEFAULT, consts.DEFAULT_FLOAT_ARRAY, float)
+            "default": (FieldNames.DEFAULT, consts.DEFAULT_FLOAT_ARRAY, list)
         }
 
         return cls._construct_ui_data(operator_instance, fields, field_map)
@@ -158,16 +158,14 @@ class UIDataService:
     @classmethod
     def _get_ui_data_int_array(cls, operator_instance, fields: dict[str, Field]) -> UIData:
         field_map = {
-            "subtype": consts.DEFAULT_SUBTYPE,
-            "description": consts.DEFAULT_DESCRIPTION,
-            "min": getattr(operator_instance, fields[FieldNames.MIN.value].attr_name, consts.DEFAULT_MIN_INT_ARRAY),
-            "max": getattr(operator_instance, fields[FieldNames.MAX.value].attr_name, consts.DEFAULT_MAX_INT_ARRAY),
-            "soft_min": getattr(operator_instance, fields[FieldNames.SOFT_MIN.value].attr_name,
-                                consts.DEFAULT_SOFT_MIN_INT_ARRAY),
-            "soft_max": getattr(operator_instance, fields[FieldNames.SOFT_MAX.value].attr_name,
-                                consts.DEFAULT_SOFT_MAX_INT_ARRAY),
-            "step": getattr(operator_instance, "step", consts.DEFAULT_STEP_INT_ARRAY),
-            "default": getattr(operator_instance, "default", consts.DEFAULT_VALUE_INT_ARRAY)
+            "subtype": (FieldNames.SUBTYPE, consts.DEFAULT_SUBTYPE, str),
+            "description": (FieldNames.DESCRIPTION, consts.DEFAULT_DESCRIPTION, str),
+            "min": (FieldNames.MIN, consts.DEFAULT_MIN_INT_ARRAY, int),
+            "max": (FieldNames.MAX, consts.DEFAULT_MAX_INT_ARRAY, int),
+            "soft_min": (FieldNames.SOFT_MIN, consts.DEFAULT_SOFT_MIN_INT_ARRAY, int),
+            "soft_max": (FieldNames.SOFT_MAX, consts.DEFAULT_SOFT_MAX_INT_ARRAY, int),
+            "step": (FieldNames.STEP, consts.DEFAULT_STEP_INT_ARRAY, int),
+            "default": (FieldNames.DEFAULT, consts.DEFAULT_INT_ARRAY, list)
         }
 
         return cls._construct_ui_data(operator_instance, fields, field_map)
@@ -175,8 +173,8 @@ class UIDataService:
     @classmethod
     def _get_ui_data_bool(cls, operator_instance, fields: dict[str, Field]) -> UIData:
         field_map = {
-            "subtype": consts.DEFAULT_SUBTYPE,
-            "description": consts.DEFAULT_DESCRIPTION
+            "subtype": (FieldNames.SUBTYPE, consts.DEFAULT_SUBTYPE, str),
+            "description": (FieldNames.DESCRIPTION, consts.DEFAULT_DESCRIPTION, str),
         }
 
         return cls._construct_ui_data(operator_instance, fields, field_map)
@@ -184,9 +182,9 @@ class UIDataService:
     @classmethod
     def _get_ui_data_bool_array(cls, operator_instance, fields: dict[str, Field]) -> UIData:
         field_map = {
-            "subtype": consts.DEFAULT_SUBTYPE,
-            "description": consts.DEFAULT_DESCRIPTION,
-            "default": consts.DEFAULT_VALUE_BOOL_ARRAY
+            "subtype": (FieldNames.SUBTYPE, consts.DEFAULT_SUBTYPE, str),
+            "description": (FieldNames.DESCRIPTION, consts.DEFAULT_DESCRIPTION, str),
+            "default": (FieldNames.DEFAULT, consts.DEFAULT_BOOL_ARRAY, list)
         }
 
         return cls._construct_ui_data(operator_instance, fields, field_map)
@@ -194,7 +192,7 @@ class UIDataService:
     @classmethod
     def _get_ui_data_str(cls, operator_instance, fields: dict[str, Field]) -> UIData:
         field_map = {
-            "description": consts.DEFAULT_DESCRIPTION
+            "description": (FieldNames.SUBTYPE, consts.DEFAULT_SUBTYPE, str),
         }
 
         return cls._construct_ui_data(operator_instance, fields, field_map)
@@ -204,6 +202,16 @@ class UIDataService:
         result = {}
         for key, (field_name, default, cast_type) in field_map.items():
             attr_name = fields[field_name.value].attr_name
-            result[key] = cast_type(getattr(operator_instance, attr_name, default))
+            value = getattr(operator_instance, attr_name, default)
+
+            # Special handling for list type
+            if cast_type is list:
+                if isinstance(value, list):
+                    result[key] = value
+                else:
+                    # Value isn't a list, use default instead
+                    result[key] = default
+            else:
+                result[key] = cast_type(value)
 
         return UIData(**result)

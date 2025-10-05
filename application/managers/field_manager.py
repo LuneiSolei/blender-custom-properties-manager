@@ -10,12 +10,13 @@ class FieldManager:
     logger = StructuredLogger(consts.MODULE_NAME)
 
     @classmethod
-    def setup_fields(cls, operator_instance, operator_type) -> str:
+    def setup_fields(cls, operator_instance, operator_type, is_redraw: bool = False) -> str:
         """
         Sets up the relevant fields for an EditPropertyMenu operator_instance instance.
 
         :param operator_instance: The EditPropertyMenu operator_instance instance.
         :param operator_type: The EditPropertyMenu type.
+        :param is_redraw: Whether to redraw the fields after creation.
 
         :return: A string representing a list of fields.
         """
@@ -30,12 +31,17 @@ class FieldManager:
             )
 
             if new_field.should_draw(property_type):
-                new_field.current_value = cls.find_value(
-                    operator_instance = operator_instance,
-                    operator_type = operator_type,
-                    attr_name = new_field.attr_name,
-                    ui_data_attr = new_field.ui_data_attr
-                )
+                if is_redraw and new_field.draw_on != 'ALL':
+                    # Use default values for type-specific fields during redraw
+                    new_field.current_value = getattr(operator_instance, new_field.attr_name)
+                else:
+                    new_field.current_value = cls.find_value(
+                        operator_instance = operator_instance,
+                        operator_type = operator_type,
+                        attr_name = new_field.attr_name,
+                        ui_data_attr = new_field.ui_data_attr
+                    )
+
                 old_value = getattr(operator_instance, new_field.attr_name)
                 if old_value != new_field.current_value:
                     setattr(operator_instance, new_field.attr_name, new_field.current_value)
@@ -95,9 +101,10 @@ class FieldManager:
                 "ui_data_attr": ui_data_attr
             }
         )
-        ui_data = json.loads(operator_instance.ui_data)
 
-        # Ensure the UI data exists
+
+        # Load the UI data
+        ui_data = json.loads(operator_instance.ui_data)
         if ui_data is None:
             ui_data = operator_type.property_data_manager.load_ui_data(operator_instance)
             operator_instance.ui_data = ui_data
@@ -161,7 +168,7 @@ class FieldManager:
 
         # Use bracket notation for property path
         prop_path = f'["{operator_instance.name}"]'
-        operator_instance.overridable_library = data_object.is_property_overridable_library(prop_path)
-        found_value = operator_instance.overridable_library
+        operator_instance.is_property_overridable_library = data_object.is_property_overridable_library(prop_path)
+        found_value = operator_instance.is_property_overridable_library
 
         return found_value

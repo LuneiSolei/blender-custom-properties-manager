@@ -235,4 +235,8 @@ class PropertyTypeService:
             return
 
         operator_type = utils.get_blender_operator_type(consts.CPM_EDIT_PROPERTY)
-        operator_instance.fields = operator_type.field_manager.setup_fields(operator_instance, operator_type)
+        operator_instance.fields = operator_type.field_manager.setup_fields(
+            operator_instance = operator_instance,
+            operator_type = operator_type,
+            is_redraw = True
+        )

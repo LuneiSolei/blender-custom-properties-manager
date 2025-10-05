@@ -102,16 +102,6 @@ class GroupData(ReportingMixin):
 
         return self._cached_data.values()
 
-    def get_group_properties(self, key: str, default = None) -> List[str]:
-        """
-        Get properties for a group with a default if the group doesn't exist.
-        :param key: The group name.
-        :param default: The default value to return if the group doesn't exist.
-        :return: A list of properties or the default.
-        """
-
-        return self._cached_data.get(key, default)
-
     def as_dict(self) -> dict[str, list[str]]:
         return self._cached_data.copy()
 
@@ -161,10 +151,6 @@ class GroupData(ReportingMixin):
 
         # Group does not exist, create it
         self._cached_data[new_group] = [prop_name]
-
-    def update_property_type(self, *, data_object: bpy.types.Object, prop_name: str, new_type: str):
-        """Updates the property_type of the property."""
-        pass
 
     def verify(self, data_object: bpy.types.Object):
         """

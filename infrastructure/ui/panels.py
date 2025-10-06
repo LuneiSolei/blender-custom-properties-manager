@@ -1,4 +1,4 @@
-﻿from itertools import chain
+from itertools import chain
 
 import bpy
 
@@ -138,8 +138,15 @@ def _draw_property_group(
     toggle_op.expand_key = expand_key
     toggle_op.current_state = is_expanded
 
+    remove_group_op = header.operator(
+        consts.ops.CPM_REMOVE_PROPERTY_GROUP,
+        text = "",
+        icon = 'TRASH',
+        emboss = False)
+    remove_group_op.data_path = data_path
+    remove_group_op.group = group_name
+
     # Only draw the group's contents if expanded
     if is_expanded:
         for prop_name in props:
-            _draw_property_row(box, data_object, data_path, prop_name,
-                               group_name)
+            _draw_property_row(box, data_object, data_path, prop_name, group_name)

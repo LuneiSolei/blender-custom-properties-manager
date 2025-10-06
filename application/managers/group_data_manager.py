@@ -7,7 +7,7 @@ from ...shared.entities import LogLevel
 
 class GroupDataManager:
     logger = StructuredLogger(consts.MODULE_NAME)
-    _group_data_name: str = consts.CPM_SERIALIZED_GROUP_DATA
+    _group_data_property_name: str = consts.CPM_SERIALIZED_GROUP_DATA
     _cache: dict[str, GroupData] = {}
 
     @classmethod
@@ -34,6 +34,36 @@ class GroupDataManager:
         return new_data
 
     @classmethod
+    def remove_property_group(cls, data_object: bpy.types.Object, group: str) -> bool:
+        """
+        Remove a property group from a Blender data object.
+
+        :param data_object: The Blender object to remove the group from.
+        :param group: The property to remove.
+
+        :return: True if the property group was removed, False otherwise.
+        """
+
+        cls.logger.log(
+            level = LogLevel.DEBUG,
+            message = "Removing property group",
+            extra = {"data_object": data_object.name, "group": group}
+        )
+
+        # Retrieve the group data for the data object
+        group_data = cls.get_group_data(data_object)
+
+        # Remove the group from the group data
+        if group in group_data:
+            del group_data.cached_data[group]
+            # Save updated group data back to the data object
+            data_object[cls._group_data_property_name] = json.dumps(group_data.as_dict())
+
+            return True
+
+        return False
+
+    @classmethod
     def _load_json(cls, data_object: bpy.types.Object) -> GroupData:
         """
         Loads the group data from a JSON string for the provided Blender object.
@@ -42,7 +72,7 @@ class GroupDataManager:
 
         :return: The group data for the provided Blender object.
         """
-        data_str = data_object.get(cls._group_data_name, "{}")
+        data_str = data_object.get(cls._group_data_property_name, "{}")
         try:
             group_data = json.loads(data_str)
         except json.JSONDecodeError as e:
@@ -73,7 +103,7 @@ class GroupDataManager:
             all_objects = list(bpy.data.scenes) + list(bpy.data.objects)
             for data_object in all_objects:
                 group_data = cls.get_group_data(data_object)
-                data_object[cls._group_data_name] = json.dumps(group_data.as_dict())
+                data_object[cls._group_data_property_name] = json.dumps(group_data.as_dict())
 
             return
 
@@ -81,7 +111,7 @@ class GroupDataManager:
             # Find the corresponding data_object
             for data_object in list(bpy.data.scenes) + list(bpy.data.objects):
                 if data_object.as_pointer() == object_id:
-                    data_object[cls._group_data_name] = json.dumps(group_data.as_dict())
+                    data_object[cls._group_data_property_name] = json.dumps(group_data.as_dict())
 
     @classmethod
     def on_file_load(cls):

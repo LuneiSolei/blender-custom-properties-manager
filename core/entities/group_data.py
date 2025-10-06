@@ -6,7 +6,7 @@ from .reporting_mixin import ReportingMixin
 from ...shared import consts
 
 class GroupData(ReportingMixin):
-    _cached_data: dict[str, list[str]]
+    cached_data: dict[str, list[str]]
     _group_data_name: str
 
     def __init__(self, group_data: dict[str, list[str]] = None):
@@ -17,7 +17,7 @@ class GroupData(ReportingMixin):
 
         # Remove ourselves from the property list to avoid recursion
         super().__init__()
-        self._cached_data = group_data
+        self.cached_data = group_data
         self._group_data_name = consts.CPM_SERIALIZED_GROUP_DATA
         if self._group_data_name in self:
             del self[self._group_data_name]
@@ -31,7 +31,7 @@ class GroupData(ReportingMixin):
         :param key: The name of the property to remove.
         :return: True if the property was removed, False otherwise.
         """
-        for group, props in self._cached_data.items():
+        for group, props in self.cached_data.items():
             if key in props:
                 props.remove(key)
                 return True
@@ -45,7 +45,7 @@ class GroupData(ReportingMixin):
         :return: List of properties in the group.
         """
 
-        return self._cached_data.get(key, [])
+        return self.cached_data.get(key, [])
 
     def __setitem__(self, key: str, value: List[str]) -> None:
         """
@@ -53,21 +53,21 @@ class GroupData(ReportingMixin):
         :param key: The group name.
         :param value: The list of properties to set for the provided group.
         """
-        self._cached_data[key] = value
+        self.cached_data[key] = value
 
     def __iter__(self) -> Iterator[str]:
         """
         Iterate over group names.
         :return: The iterator of group names.
         """
-        return iter(self._cached_data)
+        return iter(self.cached_data)
 
     def __len__(self) -> int:
         """
         Get the number of groups.
         :return: The number of groups
         """
-        return len(self._cached_data)
+        return len(self.cached_data)
     
     def __contains__(self, item: str) -> bool:
         """
@@ -76,7 +76,7 @@ class GroupData(ReportingMixin):
         :return: True if the group exists, False otherwise.
         """
         
-        return item in self._cached_data
+        return item in self.cached_data
 
     def keys(self) -> KeysView[str]:
         """
@@ -84,7 +84,7 @@ class GroupData(ReportingMixin):
         :return: The iterator over group names.
         """
 
-        return self._cached_data.keys()
+        return self.cached_data.keys()
 
     def items(self) -> ItemsView[str, list[str]]:
         """
@@ -92,7 +92,7 @@ class GroupData(ReportingMixin):
         :return: The iterator of (group_name, props) tuples.
         """
 
-        return self._cached_data.items()
+        return self.cached_data.items()
 
     def values(self) -> ValuesView[List[str]]:
         """
@@ -100,10 +100,10 @@ class GroupData(ReportingMixin):
         :return: The iterator over the lists of properties.
         """
 
-        return self._cached_data.values()
+        return self.cached_data.values()
 
     def as_dict(self) -> dict[str, list[str]]:
-        return self._cached_data.copy()
+        return self.cached_data.copy()
 
     def update_property_name(self, *, data_object: bpy.types.Object, prop_name: str, new_name: str):
         """
@@ -116,7 +116,7 @@ class GroupData(ReportingMixin):
 
         # Ensure property exists in any of the object's group data
         found = False
-        for group, props in self._cached_data.items():
+        for group, props in self.cached_data.items():
             if prop_name in props:
                 index = props.index(prop_name)
                 props[index] = new_name
@@ -134,7 +134,7 @@ class GroupData(ReportingMixin):
         :param new_group: The name of the group to attach the property to.
         """
         # Remove property from the old group
-        for group_name, props in self._cached_data.items():
+        for group_name, props in self.cached_data.items():
             if prop_name in props:
                 prop_index = props.index(prop_name)
                 props.pop(prop_index)
@@ -144,13 +144,13 @@ class GroupData(ReportingMixin):
         if not new_group:
             return
 
-        for group_name, props in self._cached_data.items():
+        for group_name, props in self.cached_data.items():
             if group_name == new_group:
                 props.append(prop_name)
                 return
 
         # Group does not exist, create it
-        self._cached_data[new_group] = [prop_name]
+        self.cached_data[new_group] = [prop_name]
 
     def verify(self, data_object: bpy.types.Object):
         """
@@ -167,7 +167,7 @@ class GroupData(ReportingMixin):
         # Retrieve properties to be removed
         data_object_keys = set(data_object.keys())
         keys_to_remove = []
-        for group in self._cached_data.values():
+        for group in self.cached_data.values():
             for prop in group:
                 if prop not in data_object_keys or prop.startswith("_"):
                     keys_to_remove.append(prop)
@@ -177,7 +177,7 @@ class GroupData(ReportingMixin):
             del self[key]
 
     def get_group_name(self, prop_name: str) -> str:
-        for group_name, props in self._cached_data.items():
+        for group_name, props in self.cached_data.items():
             if prop_name in props:
                 return group_name
 
@@ -185,4 +185,4 @@ class GroupData(ReportingMixin):
         return ""
 
     def clear(self):
-        self._cached_data.clear()
+        self.cached_data.clear()

@@ -1,7 +1,7 @@
 import bpy
 from bpy.app.handlers import persistent
 
-from .. import AddPropertyGroupOperator, EditPropertyMenuOperator, ExpandToggleOperator
+from .. import AddPropertyGroupOperator, EditPropertyMenuOperator, ExpandToggleOperator, RemovePropertyGroupOperator
 from ..ui import CPMPreferences, draw_panels
 from ...application.managers import FieldManager, GroupDataManager, PropertyDataManager
 from ...core import expand_states, original_draws
@@ -10,6 +10,7 @@ from ...shared.utils import StructuredLogger
 
 _classes = {
     AddPropertyGroupOperator,
+    RemovePropertyGroupOperator,
     EditPropertyMenuOperator,
     ExpandToggleOperator,
     CPMPreferences
@@ -63,6 +64,8 @@ def setup():
         property_data_manager = PropertyDataManager,
         field_manager = FieldManager
     )
+
+    RemovePropertyGroupOperator.initialize(GroupDataManager)
 
 def post_setup():
     # Get the current log level from user preferences

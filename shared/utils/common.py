@@ -1,7 +1,6 @@
-﻿from typing import Union
-
 import bpy
 
+from typing import Union
 from .. import consts
 
 def resolve_data_object(data_path: str) -> Union[bpy.types.Object, None]:
@@ -14,10 +13,27 @@ def resolve_data_object(data_path: str) -> Union[bpy.types.Object, None]:
     """
     # Handle nested paths like "active_object.data"
     obj = bpy.context
-    for attr in data_path.split("."):
-        obj = getattr(obj, attr)
+    try:
+        for attr in data_path.split("."):
+            obj = getattr(obj, attr)
 
-    return obj
+        return obj
+    except AttributeError as e:
+        # Lazy import to avoid circular dependency
+        from .logger import StructuredLogger
+        from ...shared.entities import LogLevel
+
+        logger = StructuredLogger(consts.MODULE_NAME)
+        logger.log(
+            level = LogLevel.ERROR,
+            message = "Invalid data path",
+            extra = {
+                "data_path": data_path,
+                "exception": e
+            }
+        )
+
+        return None
 
 def get_dynamic_blender_property(attr_type: str):
     types = {

@@ -1,19 +1,27 @@
 import bpy
 from bpy.app.handlers import persistent
 
-from .. import AddPropertyGroupOperator, EditPropertyMenuOperator, ExpandToggleOperator
+from .. import (
+    AddPropertyGroupOperator,
+    EditPropertyMenuOperator,
+    ExpandToggleOperator,
+    RemovePropertyGroupOperator,
+    DefaultArrayElement
+)
 from ..ui import CPMPreferences, draw_panels
 from ...application.managers import FieldManager, GroupDataManager, PropertyDataManager
 from ...core import expand_states, original_draws
 from ...shared import consts
 from ...shared.utils import StructuredLogger
 
-_classes = {
+_classes = [
+    DefaultArrayElement,
     AddPropertyGroupOperator,
+    RemovePropertyGroupOperator,
     EditPropertyMenuOperator,
     ExpandToggleOperator,
     CPMPreferences
-}
+]
 
 def register_classes():
     """Register entities for Blender."""
@@ -63,6 +71,8 @@ def setup():
         property_data_manager = PropertyDataManager,
         field_manager = FieldManager
     )
+
+    RemovePropertyGroupOperator.initialize(GroupDataManager)
 
 def post_setup():
     # Get the current log level from user preferences

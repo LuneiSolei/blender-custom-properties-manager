@@ -13,7 +13,7 @@ class PropertyTypeService:
     @classmethod
     def get_type(cls, operator_instance) -> str:
         """
-        Get the property's type from the operator_instance instance.
+        Get the property's type from the operator instance.
 
         :param operator_instance: The EditPropertyMenuOperator instance.
 
@@ -44,7 +44,7 @@ class PropertyTypeService:
             "int_array": consts.PropertyTypes.INT_ARRAY,
             "bool": consts.PropertyTypes.BOOL,
             "bool_array": consts.PropertyTypes.BOOL_ARRAY,
-            "string": consts.PropertyTypes.STRING,
+            "str": consts.PropertyTypes.STRING,
             "IDPropertyGroup": consts.PropertyTypes.PYTHON,
             "data_block": consts.PropertyTypes.DATA_BLOCK
         }
@@ -61,17 +61,19 @@ class PropertyTypeService:
         elif isinstance(value, bpy.types.ID):
             return_value = consts.PropertyTypes.DATA_BLOCK
 
-        # Default fallback
+        # Default fallback - raise exception instead of silently defaulting to FLOAT
         else:
+            error_msg = f"Unsupported property type: '{prop_type}' (type: {type(value).__name__})"
             cls.logger.log(
                 level = LogLevel.ERROR,
-                message = "Property type not supported",
+                message = error_msg,
                 extra = {
-                    "property_type": prop_type
+                    "property_type": prop_type,
+                    "value": value,
+                    "value_type": type(value).__name__
                 }
             )
-
-            return consts.PropertyTypes.FLOAT
+            raise TypeError(error_msg)
 
         # Log method exit
         cls.logger.log(
@@ -185,7 +187,8 @@ class PropertyTypeService:
         elif new_type in (consts.PropertyTypes.FLOAT_ARRAY,
                           consts.PropertyTypes.INT_ARRAY,
                           consts.PropertyTypes.BOOL_ARRAY):
-            converter = simple_type_converters[new_type]
+            simple_type = new_type.removesuffix("_ARRAY")
+            converter = simple_type_converters[simple_type]
             if isinstance(old_value, list):
                 new_value = [converter(v) for v in old_value]
             else:
@@ -234,4 +237,8 @@ class PropertyTypeService:
             return
 
         operator_type = utils.get_blender_operator_type(consts.CPM_EDIT_PROPERTY)
-        operator_instance.fields = operator_type.field_manager.setup_fields(operator_instance, operator_type)
+        operator_instance.fields = operator_type.field_manager.setup_fields(
+            operator_instance = operator_instance,
+            operator_type = operator_type,
+            is_redraw = True
+        )

@@ -38,38 +38,32 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
         if not self.ui_data:
             return {'CANCELLED'}
 
-        # Load additional property data
+        # Get additional property information
+        # Load property value
         data_object = utils.resolve_data_object(self.data_path)
         self.value = data_object[self.name]
+
+        # Load property type
         self.property_type = (self
                               .property_data_manager.property_type_service
                               .get_type(operator_instance = self))
+
+        # Set up fields
         operator_type = utils.get_blender_operator_type(consts.CPM_EDIT_PROPERTY)
         self.fields = self.field_manager.setup_fields(
             operator_instance = self,
             operator_type = operator_type
         )
+
+        # Load array length, if applicable
+        self.array_length = self.property_data_manager.get_array_length(self)
+        self.field_manager.set_default_array_field(self)
+
+        # Everything is ready
         self.initialized= True
 
         # Show the menu as a popup
         return context.window_manager.invoke_props_dialog(self)
-
-    def execute(self, context):
-        data_object = utils.resolve_data_object(self.data_path)
-        self._group_data = self.group_data_manager.get_group_data(data_object)
-        self._group_data.set_operator(self)
-
-        # NOTE: panel.property_overridable_library_set('["prop"]',
-        # True/False) is how you change the "is_overridable_library" attribute
-        # Apply modified properties
-        self.property_data_manager.update_property_data(self)
-
-        # Redraw the Custom Properties panel
-        for area in context.screen.areas:
-            if area.type == 'PROPERTIES':
-                area.tag_redraw()
-
-        return {'FINISHED'}
 
     def draw(self, _):
         fields = self.field_manager.load_fields(self.fields)
@@ -80,16 +74,22 @@ class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin
 
             field_row = field.draw(self)
 
-            # Enable/Disable the soft min/max fields
+            # Enable/Disable the soft min_value/max_value fields
             if (field.ui_data_attr == "soft_max" or
                     field.ui_data_attr == "soft_min"):
                 field_row.enabled = self.use_soft_limits
 
-    def _is_use_soft_limits(self) -> bool:
-        limit_attrs = {}
-        for field in self._processed_fields:
-            if field.ui_data_attr in ["min", "soft_min", "max", "soft_max"]:
-                limit_attrs[field.ui_data_attr] = getattr(self, field.attr_name)
+    def execute(self, context):
+        data_object = utils.resolve_data_object(self.data_path)
+        self._group_data = self.group_data_manager.get_group_data(data_object)
+        self._group_data.set_operator(self)
 
-        return (limit_attrs.get("min") != limit_attrs.get("soft_min") or
-                limit_attrs.get("max") != limit_attrs.get("soft_max"))
+        # Apply modified properties
+        self.property_data_manager.update_property_data(self)
+
+        # Redraw the Custom Properties panel
+        for area in context.screen.areas:
+            if area.type == 'PROPERTIES':
+                area.tag_redraw()
+
+        return {'FINISHED'}

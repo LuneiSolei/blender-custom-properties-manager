@@ -1,4 +1,4 @@
-﻿from itertools import chain
+from itertools import chain
 
 import bpy
 
@@ -65,11 +65,11 @@ def _draw_add_buttons(layout, data_path):
     new_prop_op.data_path = data_path
 
     # Draw the "New Group" button
-    new_prop_group_op = layout.operator(
-        consts.ops.CPM_ADD_PROPERTY_GROUP,
-        text = "New Group",
-        icon = consts.icons.ADD)
-    new_prop_group_op.data_path = data_path
+    # new_prop_group_op = layout.operator(
+    #     consts.ops.CPM_ADD_PROPERTY_GROUP,
+    #     text = "New Group",
+    #     icon = consts.icons.ADD)
+    # new_prop_group_op.data_path = data_path
 
 def _draw_property_row(layout, data_object, data_path, prop_name, group_name):
     """Draws a single property row."""
@@ -78,11 +78,6 @@ def _draw_property_row(layout, data_object, data_path, prop_name, group_name):
         return
 
     row = layout.row()
-
-    # If the property's value is a list, draw a label manually. Otherwise,
-    # Blender misbehaves and just shows the item count.
-    # if type(data_object[prop_name]) == list:
-    #     row.label(text=prop_name)
 
     row.label(text = prop_name)
     row.prop(
@@ -143,8 +138,15 @@ def _draw_property_group(
     toggle_op.expand_key = expand_key
     toggle_op.current_state = is_expanded
 
+    remove_group_op = header.operator(
+        consts.ops.CPM_REMOVE_PROPERTY_GROUP,
+        text = "",
+        icon = 'TRASH',
+        emboss = False)
+    remove_group_op.data_path = data_path
+    remove_group_op.group = group_name
+
     # Only draw the group's contents if expanded
     if is_expanded:
         for prop_name in props:
-            _draw_property_row(box, data_object, data_path, prop_name,
-                               group_name)
+            _draw_property_row(box, data_object, data_path, prop_name, group_name)

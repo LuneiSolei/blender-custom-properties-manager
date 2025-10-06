@@ -1,3 +1,5 @@
+from typing import Union
+
 import bpy
 
 from .group_data_manager import GroupDataManager
@@ -11,6 +13,23 @@ class PropertyDataManager:
     property_type_service = PropertyTypeService
     ui_data_service = UIDataService
     logger = StructuredLogger(consts.MODULE_NAME)
+
+    @classmethod
+    def get_array_length(cls, operator_instance) -> int:
+        cls.logger.log(
+            level = LogLevel.DEBUG,
+            message = "Getting array length",
+            extra = {}
+        )
+
+        if (cls.property_type_service.get_type(operator_instance) in (
+            consts.PropertyTypes.FLOAT_ARRAY,
+            consts.PropertyTypes.INT_ARRAY,
+            consts.PropertyTypes.BOOL_ARRAY
+        )):
+            return len(operator_instance.value)
+
+        return 0
 
     @classmethod
     def validate(cls, data_path: str, property_name: str) -> bool:
@@ -89,13 +108,63 @@ class PropertyDataManager:
             "group": cls._update_group(operator_instance, fields[FieldNames.GROUP.value]),
             "type": cls.property_type_service.update_type(operator_instance, fields[FieldNames.TYPE.value]),
             "ui_data": cls.ui_data_service.update_ui_data(operator_instance, fields),
+            "overridable_library": cls._update_overridable_library(operator_instance,
+                                                                   fields[FieldNames.IS_OVERRIDABLE_LIBRARY.value])
         }
+
+        if operator_instance.property_type in [
+            consts.PropertyTypes.FLOAT_ARRAY,
+            consts.PropertyTypes.INT_ARRAY,
+            consts.PropertyTypes.BOOL_ARRAY
+        ]:
+            # noinspection PyTypeChecker
+            new_data["array_length"] = cls._update_array_length(operator_instance)
 
         cls.logger.log(
             level = LogLevel.DEBUG,
             message = "Property data updated",
             extra = {**new_data}
         )
+
+    @classmethod
+    def _update_array_length(cls, operator_instance) -> Union[None, int]:
+        """Resize the array when length changes"""
+        if not getattr(operator_instance, "initialized", False):
+            return None
+
+        data_object = utils.resolve_data_object(operator_instance.data_path)
+        new_length = operator_instance.array_length
+        current_value = data_object[operator_instance.name]
+        current_length = len(current_value)
+
+        if new_length == current_length:
+            return current_length # No change needed
+
+        # Truncate or pad with defaults
+        if new_length > current_length:
+            pad_value = current_value[-1] if current_length > 0 else 0
+            new_value = list(current_value) + [pad_value] * (new_length - current_length)
+        else:
+            new_value = list(current_value[:new_length])
+
+        # Get UI data to preserve it
+        ui_data = cls.ui_data_service.load_ui_data(operator_instance)
+
+        # Delete and recreate since IDPropertyArray is a fixed size
+        del data_object[operator_instance.name]
+        data_object[operator_instance.name] = new_value
+
+        # Restore UI data
+        prop_instance = data_object.id_properties_ui(operator_instance.name)
+        prop_instance.update(**ui_data)
+
+        cls.logger.log(
+            level = LogLevel.DEBUG,
+            message = "Array length updated",
+            extra = {"current_length": current_length, "new_length": new_length}
+        )
+
+        return new_length
 
     @classmethod
     def _update_name(cls, operator_instance, field: Field) -> str:
@@ -295,3 +364,12 @@ class PropertyDataManager:
         )
 
         return new_group
+
+    @classmethod
+    def _update_overridable_library(cls, operator_instance, field: Field) -> bool:
+        data_object = utils.resolve_data_object(operator_instance.data_path)
+        prop_name = operator_instance.name
+        is_overridable = operator_instance.is_property_overridable_library
+        result = data_object.property_overridable_library_set(f'["{prop_name}"]', is_overridable)
+
+        return is_overridable if result else False

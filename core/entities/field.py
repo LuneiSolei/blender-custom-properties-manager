@@ -6,6 +6,7 @@ from .ui_data import UIData
 from ...shared import consts
 from ...shared.utils import StructuredLogger
 from ...shared.entities import LogLevel
+from .field_configs import FieldNames
 
 class Field(ReportingMixin):
     logger = StructuredLogger(consts.MODULE_NAME)
@@ -48,8 +49,12 @@ class Field(ReportingMixin):
         if has_prefix and not has_ui_data_attr:
             self.ui_data_attr = self._generate_ui_data_attr()
 
-    def to_dict(self) -> dict:
-        """Convert the field to a serializable dictionary for JSON storage"""
+    def as_dict(self) -> dict[str, str]:
+        """
+        Converts the field to a dictionary.
+
+        :return: A dictionary representation of the field.
+        """
         return {
             "name": self.name,
             "label": self.label,
@@ -63,7 +68,13 @@ class Field(ReportingMixin):
 
     @classmethod
     def from_dict(cls, data: dict) -> 'Field':
-        """Construct a field from a dictionary"""
+        """
+        Constructs a new Field instance from a dictionary representation.
+
+        :param data: A dictionary representation of the field.
+
+        :return: A new Field instance.
+        """
         field = cls(
             name = data["name"],
             label = data["label"],
@@ -78,19 +89,25 @@ class Field(ReportingMixin):
 
     @property
     def current_value(self):
-        """Get the current value of the field"""
+        """Get the current value of the field."""
         return self._current_value
 
     @current_value.setter
     def current_value(self, value):
-        """Set the current value of the field"""
+        """Set the current value of the field."""
         self._current_value = value
 
-    def draw(self, operator: bpy.types.Operator) -> bpy.types.UILayout:
-        """Draw the field in the UI"""
-        layout = operator.layout
+    def draw(self, operator_instance: bpy.types.Operator) -> bpy.types.UILayout:
+        """
+        Draws the field in the provided operator_instance instance's layout.
+
+        :param operator_instance: The operator_instance instance to draw on.
+
+        :return: The row containing the field.
+        """
+        layout = operator_instance.layout
         row = layout.row()
-        split = row.split(factor=0.5)
+        split = row.split(factor = 0.5)
 
         # Create the left column
         left_col = split.column()
@@ -99,13 +116,42 @@ class Field(ReportingMixin):
 
         # Create the right column
         right_col = split.column()
-        right_col.prop(data = operator, property = self.attr_name, text="")
+
+        if (self.name == FieldNames.DEFAULT.value and
+            operator_instance.property_type in [
+                consts.PropertyTypes.FLOAT_ARRAY,
+                consts.PropertyTypes.INT_ARRAY,
+                consts.PropertyTypes.BOOL_ARRAY
+            ]):
+            self._draw_array_collection(operator_instance, right_col)
+        elif self.attr_name != "default_array":
+            # Only draw property if it's not the default_array collection
+            right_col.prop(data = operator_instance, property = self.attr_name, text="")
 
         return row
 
     def should_draw(self, property_type: str) -> bool:
-        """Helper to determine if the field should be drawn"""
+        """Determines if the field should be drawn."""
         return property_type in self.draw_on or self.draw_on == consts.ALL
+
+    def _draw_array_collection(self, operator_instance, right_col):
+        collection = operator_instance.default_array
+        prop_type = operator_instance.property_type
+
+        # Determine which value attribute to use
+        value_attr_map = {
+            consts.PropertyTypes.FLOAT_ARRAY: "float_value",
+            consts.PropertyTypes.INT_ARRAY: "int_value",
+            consts.PropertyTypes.BOOL_ARRAY: "bool_value"
+        }
+
+        value_attr = value_attr_map.get(prop_type)
+        if not value_attr:
+            return
+
+        # Draw each element
+        for i, element in enumerate(collection):
+            right_col.prop(element, value_attr, text = f"[{i}]")
 
     def _generate_attr_name(self) -> str:
         """
@@ -113,7 +159,18 @@ class Field(ReportingMixin):
 
         :return: The generated attribute name.
         """
-        return f"{self.attr_prefix}{self.property_type.lower()}".removesuffix("_array")
+        return_str = f"{self.attr_prefix}{self.property_type.lower()}"
+
+        # Special case for default_ prefix with array types
+        if self.attr_prefix == "default_" and self.property_type.lower().endswith("_array"):
+            # For array types, use just "default_array" instead of "default_<type>_array"
+            return "default_array"
+
+        # For non-default prefixes, remove the _array suffix
+        if not self.attr_prefix == "default_":
+            return return_str.removesuffix("_array")
+
+        return return_str
 
     def _generate_ui_data_attr(self) -> Union[str, None]:
         """

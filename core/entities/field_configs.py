@@ -17,14 +17,17 @@ class FieldNames(Enum):
     TYPE = "property_type"
     SUBTYPE = "subtype"
     SUBTYPE_ARRAY = "subtype_array"
-    MIN = "min"
-    MAX = "max"
+    MIN = "min_value"
+    MAX = "max_value"
     USE_SOFT_LIMITS = "use_soft_limits"
     SOFT_MIN = "soft_min"
     SOFT_MAX = "soft_max"
     STEP = "step"
     PRECISION = "precision"
     DEFAULT = "default"
+    IS_OVERRIDABLE_LIBRARY = "is_overridable_library"
+    DESCRIPTION = "description"
+    ARRAY_LENGTH = "array_length"
 
 
 field_configs = {
@@ -40,6 +43,13 @@ field_configs = {
         label = "Group Name",
         name = FieldNames.GROUP.value
     ),
+    FieldNames.DESCRIPTION.value: FieldConfig(
+        attr_name = "description",
+        ui_data_attr = "description",
+        draw_on = 'ALL',
+        label = "Description",
+        name = FieldNames.DESCRIPTION.value
+    ),
     FieldNames.TYPE.value: FieldConfig(
         attr_name = "property_type",
         draw_on = 'ALL',
@@ -48,15 +58,29 @@ field_configs = {
     ),
     FieldNames.SUBTYPE.value: FieldConfig(
         attr_prefix = "subtype_",
+        ui_data_attr = "subtype",
         draw_on = ['FLOAT', 'INT'],
         label = "Subtype",
         name = FieldNames.SUBTYPE.value,
     ),
-    FieldNames.SUBTYPE_ARRAY: FieldConfig(
+    FieldNames.SUBTYPE_ARRAY.value: FieldConfig(
         attr_prefix = "subtype_array_",
+        ui_data_attr = "subtype",
         draw_on = ['FLOAT_ARRAY', 'INT_ARRAY'],
         label = "Subtype",
         name = FieldNames.SUBTYPE_ARRAY.value
+    ),
+    FieldNames.ARRAY_LENGTH.value: FieldConfig(
+        attr_name = "array_length",
+        draw_on = ['FLOAT_ARRAY', 'INT_ARRAY', 'BOOL_ARRAY'],
+        label = "Array Length",
+        name = FieldNames.ARRAY_LENGTH.value
+    ),
+    FieldNames.DEFAULT.value: FieldConfig(
+        attr_prefix = "default_",
+        draw_on = ['FLOAT', 'INT', 'BOOL', 'STRING', 'FLOAT_ARRAY', 'INT_ARRAY', 'BOOL_ARRAY'],
+        label = "Default",
+        name = FieldNames.DEFAULT.value,
     ),
     FieldNames.MIN.value: FieldConfig(
         attr_prefix = "min_",
@@ -96,8 +120,15 @@ field_configs = {
     ),
     FieldNames.PRECISION.value: FieldConfig(
         attr_name = "precision",
+        ui_data_attr = "precision",
         draw_on = ['FLOAT', 'FLOAT_ARRAY'],
         label = "Precision",
         name = FieldNames.PRECISION.value
+    ),
+    FieldNames.IS_OVERRIDABLE_LIBRARY.value: FieldConfig(
+        attr_name = "is_property_overridable_library", # Needs to be called on bpy.types.ID, not the property itself
+        draw_on = 'ALL',
+        label = "Is Library Overridable",
+        name = FieldNames.IS_OVERRIDABLE_LIBRARY.value
     )
 }

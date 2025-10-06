@@ -1,9 +1,7 @@
-from typing import Union
-
-from bpy.props import (BoolProperty, BoolVectorProperty, EnumProperty, FloatProperty, FloatVectorProperty, IntProperty,
-                       IntVectorProperty, StringProperty)
+from bpy.props import BoolProperty, EnumProperty, FloatProperty, IntProperty, StringProperty, CollectionProperty
 from ....application.services import PropertyTypeService, field_validation_service
 from ....shared import consts
+from .default_array_element import DefaultArrayElement
 
 # noinspection PyTypeHints
 class EditPropertyMenuOperatorMixin:
@@ -11,8 +9,6 @@ class EditPropertyMenuOperatorMixin:
     bl_idname = consts.CPM_EDIT_PROPERTY
     bl_description = "Edit custom property menu"
 
-    # Needed for PyCharm to properly property_type check against Blender's EnumProperty.
-    # If removed, PyCharm will complain about the PyTypes.
     # Property attributes
     data_path: StringProperty()
     data_object: StringProperty()
@@ -30,11 +26,15 @@ class EditPropertyMenuOperatorMixin:
     initialized: BoolProperty(default = False)
     use_soft_limits: BoolProperty()
     is_property_overridable_library: BoolProperty()
-    array_length: IntProperty()
+    array_length: IntProperty(
+        min = consts.ARRAY_LENGTH_MIN,
+        max = consts.ARRAY_LENGTH_MAX,
+        update = field_validation_service.on_array_length_update
+    )
+    default_array: CollectionProperty(type = DefaultArrayElement)
 
     # FLOAT
     default_float: FloatProperty()
-    default_float_array: FloatVectorProperty()
     min_float: FloatProperty(update = field_validation_service.on_min_max_float_update)
     max_float: FloatProperty(update = field_validation_service.on_min_max_float_update)
     soft_min_float: FloatProperty(update = field_validation_service.on_soft_min_max_float_update)
@@ -44,24 +44,12 @@ class EditPropertyMenuOperatorMixin:
 
     # INT
     default_int: IntProperty()
-    default_int_array: IntVectorProperty()
     min_int: IntProperty(update = field_validation_service.on_min_max_int_update)
     max_int: IntProperty(update = field_validation_service.on_min_max_int_update)
     soft_min_int: IntProperty(update = field_validation_service.on_soft_min_max_int_update)
     soft_max_int: IntProperty(update = field_validation_service.on_soft_min_max_int_update)
     subtype_int: EnumProperty(items = consts.PROPERTY_SUBTYPES)
     subtype_array_int: EnumProperty(items = consts.PROPERTY_SUBTYPE_VECTORS)
-
-    default: Union[
-        FloatProperty(),
-        FloatVectorProperty(),
-        IntProperty(),
-        IntVectorProperty(),
-        BoolProperty(),
-        BoolVectorProperty(),
-        StringProperty()
-    ]
-    array_length: IntProperty()
 
     # Misc.
     _group_data = {}

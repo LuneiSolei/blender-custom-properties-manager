@@ -81,16 +81,16 @@ class UIDataService:
         :return: The updated UI data.
         """
         ui_data_map = {
-            consts.PropertyTypes.FLOAT: cls._get_ui_data_float(operator_instance, fields),
-            consts.PropertyTypes.INT: cls._get_ui_data_int(operator_instance, fields),
-            consts.PropertyTypes.BOOL: cls._get_ui_data_bool(operator_instance, fields),
-            consts.PropertyTypes.FLOAT_ARRAY: cls._get_ui_data_float_array(operator_instance, fields),
-            consts.PropertyTypes.INT_ARRAY: cls._get_ui_data_int_array(operator_instance, fields),
-            consts.PropertyTypes.BOOL_ARRAY: cls._get_ui_data_bool_array(operator_instance, fields),
-            consts.PropertyTypes.STRING: cls._get_ui_data_str(operator_instance, fields)
+            consts.PropertyTypes.FLOAT: lambda: cls._get_ui_data_float(operator_instance, fields),
+            consts.PropertyTypes.INT: lambda: cls._get_ui_data_int(operator_instance, fields),
+            consts.PropertyTypes.BOOL: lambda: cls._get_ui_data_bool(operator_instance, fields),
+            consts.PropertyTypes.FLOAT_ARRAY: lambda: cls._get_ui_data_float_array(operator_instance, fields),
+            consts.PropertyTypes.INT_ARRAY: lambda: cls._get_ui_data_int_array(operator_instance, fields),
+            consts.PropertyTypes.BOOL_ARRAY: lambda: cls._get_ui_data_bool_array(operator_instance, fields),
+            consts.PropertyTypes.STRING: lambda: cls._get_ui_data_str(operator_instance, fields)
         }
 
-        new_ui_data = ui_data_map[operator_instance.property_type]
+        new_ui_data = ui_data_map[operator_instance.property_type]()
         data_object = utils.resolve_data_object(operator_instance.data_path)
         data_object.id_properties_ui(operator_instance.name).update(**new_ui_data)
 

@@ -1,4 +1,6 @@
 /.idea/
+!/.idea/vcs.xml
+
 /.claude/
 /CLAUDE.md
 __pycache__/

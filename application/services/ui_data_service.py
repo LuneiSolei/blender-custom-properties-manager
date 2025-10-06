@@ -80,12 +80,6 @@ class UIDataService:
 
         :return: The updated UI data.
         """
-        # Log method entry
-        cls.logger.log(
-            level = LogLevel.DEBUG,
-            message = "Updating property UI data"
-        )
-
         ui_data_map = {
             consts.PropertyTypes.FLOAT: cls._get_ui_data_float(operator_instance, fields),
             consts.PropertyTypes.INT: cls._get_ui_data_int(operator_instance, fields),
@@ -99,13 +93,6 @@ class UIDataService:
         new_ui_data = ui_data_map[operator_instance.property_type]
         data_object = utils.resolve_data_object(operator_instance.data_path)
         data_object.id_properties_ui(operator_instance.name).update(**new_ui_data)
-
-        # Log method exit
-        cls.logger.log(
-            level = LogLevel.DEBUG,
-            message = "Property UI data updated",
-            extra = {**new_ui_data}
-        )
 
         return new_ui_data
 

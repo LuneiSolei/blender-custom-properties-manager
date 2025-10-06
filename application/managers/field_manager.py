@@ -102,7 +102,6 @@ class FieldManager:
             }
         )
 
-
         # Load the UI data
         ui_data = json.loads(operator_instance.ui_data)
         if ui_data is None:

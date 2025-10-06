@@ -1,0 +1,13 @@
+name: Dummy Status Check
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  dummy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Report success
+        run: echo "This check always passes."

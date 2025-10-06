@@ -1,0 +1,95 @@
+from typing import Any
+
+import bpy
+
+from .edit_property_menu_mixin import EditPropertyMenuOperatorMixin
+from ....application.managers import FieldManager, GroupDataManager, PropertyDataManager
+from ....shared import consts, utils
+
+class EditPropertyMenuOperator(bpy.types.Operator, EditPropertyMenuOperatorMixin):
+    @classmethod
+    def initialize(cls,
+            group_data_manager: type[GroupDataManager],
+            property_data_manager: type[PropertyDataManager],
+            field_manager: type[FieldManager]):
+        """Initialize the operator_instance with its dependencies."""
+        cls.group_data_manager = group_data_manager
+        cls.property_data_manager = property_data_manager
+        cls.field_manager = field_manager
+
+    # noinspection PyTypeChecker, PyAttributeOutsideInit
+    def invoke(self, context, _):
+        # Initialize the operator_instance
+        self.value: Any = None
+        self.initialized = False
+        is_valid = self.property_data_manager.validate(
+            data_path = self.data_path,
+            property_name = self.name
+        )
+
+        # Ensure data_object exists
+        if not is_valid:
+            return {'CANCELLED'}
+
+        # Load UI data
+        ui_data = self.property_data_manager.ui_data_service.load_ui_data(operator_instance = self)
+        self.ui_data = self.property_data_manager.ui_data_service.stringify_ui_data(ui_data = ui_data)
+
+        if not self.ui_data:
+            return {'CANCELLED'}
+
+        # Get additional property information
+        # Load property value
+        data_object = utils.resolve_data_object(self.data_path)
+        self.value = data_object[self.name]
+
+        # Load property type
+        self.property_type = (self
+                              .property_data_manager.property_type_service
+                              .get_type(operator_instance = self))
+
+        # Set up fields
+        operator_type = utils.get_blender_operator_type(consts.CPM_EDIT_PROPERTY)
+        self.fields = self.field_manager.setup_fields(
+            operator_instance = self,
+            operator_type = operator_type
+        )
+
+        # Load array length, if applicable
+        self.array_length = self.property_data_manager.get_array_length(self)
+        self.field_manager.set_default_array_field(self)
+
+        # Everything is ready
+        self.initialized= True
+
+        # Show the menu as a popup
+        return context.window_manager.invoke_props_dialog(self)
+
+    def draw(self, _):
+        fields = self.field_manager.load_fields(self.fields)
+        for field in fields.values():
+            # Determine if the field should be drawn
+            if not field.should_draw(self.property_type):
+                continue
+
+            field_row = field.draw(self)
+
+            # Enable/Disable the soft min_value/max_value fields
+            if (field.ui_data_attr == "soft_max" or
+                    field.ui_data_attr == "soft_min"):
+                field_row.enabled = self.use_soft_limits
+
+    def execute(self, context):
+        data_object = utils.resolve_data_object(self.data_path)
+        self._group_data = self.group_data_manager.get_group_data(data_object)
+        self._group_data.set_operator(self)
+
+        # Apply modified properties
+        self.property_data_manager.update_property_data(self)
+
+        # Redraw the Custom Properties panel
+        for area in context.screen.areas:
+            if area.type == 'PROPERTIES':
+                area.tag_redraw()
+
+        return {'FINISHED'}

@@ -1,10 +1,4 @@
-﻿import bpy, json
-from bpy.app.handlers import persistent
-from . import config
-from .core.state import cpm_state
-from .core.group_data import GroupData
-from .ui import panels
-from .core import ops
+﻿from .infrastructure import bootstrap
 
 bl_info = {
     "name": "Custom Properties Manager",
@@ -16,69 +10,18 @@ bl_info = {
     "description": "Manage custom properties"
 }
 
-_classes = {
-    ops.AddNewPropertyGroupOperator,
-    ops.ExpandToggleOperator,
-    ops.EditPropertyPopupOperator
-}
-
-@persistent
-def deserialize_on_post_load(dummy):
-    GroupData.deserialize()
-
-@persistent
-def serialize_on_pre_save(dummy):
-    GroupData.serialize()
-
-def _create_flexible_draw_function(data_path):
-    """Factory function to create draw functions for different contexts"""
-    def draw_function(self, context):
-        return panels.draw(self, context, data_path)
-    return draw_function
-
 def register():
-    # Register classes
-    for cls in _classes:
-        if hasattr(bpy.types, cls.__name__):
-            bpy.utils.unregister_class(cls)
-        bpy.utils.register_class(cls)
-
-    # Create custom draw functions
-    for item in config.panels:
-        if hasattr(bpy.types, item.name):
-            panel_class = getattr(bpy.types, item.name)
-            cpm_state.original_draws[item.name] = panel_class.draw
-            panel_class.draw = _create_flexible_draw_function(item.data_path)
-
-    # Register handlers
-    if serialize_on_pre_save in bpy.app.handlers.save_pre:
-        bpy.app.handlers.save_pre.remove(serialize_on_pre_save)
-    bpy.app.handlers.save_pre.append(serialize_on_pre_save)
-
-    if deserialize_on_post_load in bpy.app.handlers.load_post:
-        bpy.app.handlers.load_post.remove(deserialize_on_post_load)
-    bpy.app.handlers.load_post.append(deserialize_on_post_load)
+    bootstrap.setup()
+    bootstrap.register_classes()
+    bootstrap.register_draw_functions()
+    bootstrap.register_handlers()
+    bootstrap.post_setup()
 
 def unregister():
-    # Restore all original draw functions
-    for panel_name, original_draw in cpm_state.original_draws.items():
-        if hasattr(bpy.types, panel_name):
-            getattr(bpy.types, panel_name).draw = original_draw
-
-    # Clear state storage
-    cpm_state.original_draws.clear()
-    cpm_state.expand_states.clear()
-
-    # Unregister classes
-    for cls in _classes:
-        bpy.utils.unregister_class(cls)
-
-    # Unregister handlers
-    if serialize_on_pre_save in bpy.app.handlers.save_pre:
-        bpy.app.handlers.save_pre.remove(serialize_on_pre_save)
-
-    if deserialize_on_post_load in bpy.app.handlers.load_post:
-        bpy.app.handlers.load_post.remove(deserialize_on_post_load)
+    bootstrap.unregister_draw_functions()
+    bootstrap.clear_state()
+    bootstrap.unregister_classes()
+    bootstrap.unregister_handlers()
 
 if __name__ == "__main__":
     register()

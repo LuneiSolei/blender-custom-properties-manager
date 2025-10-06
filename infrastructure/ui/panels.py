@@ -65,11 +65,11 @@ def _draw_add_buttons(layout, data_path):
     new_prop_op.data_path = data_path
 
     # Draw the "New Group" button
-    new_prop_group_op = layout.operator(
-        consts.ops.CPM_ADD_PROPERTY_GROUP,
-        text = "New Group",
-        icon = consts.icons.ADD)
-    new_prop_group_op.data_path = data_path
+    # new_prop_group_op = layout.operator(
+    #     consts.ops.CPM_ADD_PROPERTY_GROUP,
+    #     text = "New Group",
+    #     icon = consts.icons.ADD)
+    # new_prop_group_op.data_path = data_path
 
 def _draw_property_row(layout, data_object, data_path, prop_name, group_name):
     """Draws a single property row."""

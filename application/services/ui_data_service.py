@@ -121,6 +121,7 @@ class UIDataService:
             "soft_max": (FieldNames.SOFT_MAX, consts.DEFAULT_SOFT_MAX_FLOAT, float),
             "step": (FieldNames.STEP, consts.DEFAULT_STEP_FLOAT, float),
             "precision": (FieldNames.PRECISION, consts.DEFAULT_PRECISION_FLOAT, int),
+            "default": (FieldNames.DEFAULT, consts.DEFAULT_VALUE_FLOAT, float),
         }
 
         cls._validate_soft_limits(operator_instance, field_map)
@@ -162,7 +163,8 @@ class UIDataService:
             "max": (FieldNames.MAX, consts.DEFAULT_MAX_INT, int),
             "soft_min": (FieldNames.SOFT_MIN, consts.DEFAULT_SOFT_MIN_INT, int),
             "soft_max": (FieldNames.SOFT_MAX, consts.DEFAULT_SOFT_MAX_INT, int),
-            "step": (FieldNames.STEP, consts.DEFAULT_STEP_INT, int)
+            "step": (FieldNames.STEP, consts.DEFAULT_STEP_INT, int),
+            "default": (FieldNames.DEFAULT, consts.DEFAULT_VALUE_INT, int),
         }
 
         cls._validate_soft_limits(operator_instance, field_map)
@@ -191,6 +193,7 @@ class UIDataService:
         field_map = {
             "subtype": (FieldNames.SUBTYPE, consts.DEFAULT_SUBTYPE, str),
             "description": (FieldNames.DESCRIPTION, consts.DEFAULT_DESCRIPTION, str),
+            "default": (FieldNames.DEFAULT, consts.DEFAULT_VALUE_BOOL, bool),
         }
 
         return cls._construct_ui_data(operator_instance, fields, field_map)
@@ -209,6 +212,7 @@ class UIDataService:
     def _get_ui_data_str(cls, operator_instance, fields: dict[str, Field]) -> UIData:
         field_map = {
             "description": (FieldNames.DESCRIPTION, consts.DEFAULT_DESCRIPTION, str),
+            "default": (FieldNames.DEFAULT, consts.DEFAULT_VALUE_STRING, str),
         }
 
         return cls._construct_ui_data(operator_instance, fields, field_map)

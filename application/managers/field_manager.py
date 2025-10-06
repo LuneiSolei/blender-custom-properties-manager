@@ -31,7 +31,11 @@ class FieldManager:
             )
 
             if new_field.should_draw(property_type):
-                if is_redraw and new_field.draw_on != 'ALL':
+                if new_field.attr_name == "default_array":
+                    # Don't serialize the collection itself, just skip it.
+                    # The collection is managed by on_array_length_update.
+                    new_field.current_value = None
+                elif is_redraw and new_field.draw_on != 'ALL':
                     # Use default values for type-specific fields during redraw
                     new_field.current_value = getattr(operator_instance, new_field.attr_name)
                 else:
@@ -42,13 +46,40 @@ class FieldManager:
                         ui_data_attr = new_field.ui_data_attr
                     )
 
-                old_value = getattr(operator_instance, new_field.attr_name)
-                if old_value != new_field.current_value:
-                    setattr(operator_instance, new_field.attr_name, new_field.current_value)
+                # Skip setattr for collection properties since they are read-only
+                if new_field.attr_name != "default_array":
+                    old_value = getattr(operator_instance, new_field.attr_name)
+                    if old_value != new_field.current_value:
+                        setattr(operator_instance, new_field.attr_name, new_field.current_value)
 
             fields[name] = new_field
 
         return cls.stringify_fields(fields)
+
+    @staticmethod
+    def set_default_array_field(operator_instance):
+        prop_types = [
+            consts.PropertyTypes.FLOAT_ARRAY,
+            consts.PropertyTypes.INT_ARRAY,
+            consts.PropertyTypes.BOOL_ARRAY
+        ]
+
+        value_map = {
+            consts.PropertyTypes.FLOAT_ARRAY: "float_value",
+            consts.PropertyTypes.INT_ARRAY: "int_value",
+            consts.PropertyTypes.BOOL_ARRAY: "bool_value"
+        }
+
+        if operator_instance.property_type in prop_types:
+            ui_data = json.loads(operator_instance.ui_data)
+            default_values = ui_data.get("default", [])
+
+            # Clear and repopulate the collection
+            operator_instance.default_array.clear()
+            attr_name = value_map[operator_instance.property_type]
+            for value in default_values:
+                element = operator_instance.default_array.add()
+                setattr(element, attr_name, value)
 
     @classmethod
     def stringify_fields(cls, fields: dict[str, Field]) -> str:
@@ -155,8 +186,9 @@ class FieldManager:
         found_value = ui_data.setdefault(ui_data_attr, default_value)
 
         # Ensure that arrays are returning a list and not a single value and is not for subtypes
+        # Only apply this conversion for array types (default_array)
         if (not isinstance(found_value, list)
-                and attr_name.startswith("default")):
+                and attr_name == "default_array"):
             found_value = [found_value, found_value, found_value]
 
         return found_value

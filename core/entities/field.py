@@ -6,6 +6,7 @@ from .ui_data import UIData
 from ...shared import consts
 from ...shared.utils import StructuredLogger
 from ...shared.entities import LogLevel
+from .field_configs import FieldNames
 
 class Field(ReportingMixin):
     logger = StructuredLogger(consts.MODULE_NAME)
@@ -98,15 +99,15 @@ class Field(ReportingMixin):
 
     def draw(self, operator_instance: bpy.types.Operator) -> bpy.types.UILayout:
         """
-        Draws the field in the provided operator instance's layout.
+        Draws the field in the provided operator_instance instance's layout.
 
-        :param operator_instance: The operator instance to draw on.
+        :param operator_instance: The operator_instance instance to draw on.
 
         :return: The row containing the field.
         """
         layout = operator_instance.layout
         row = layout.row()
-        split = row.split(factor=0.5)
+        split = row.split(factor = 0.5)
 
         # Create the left column
         left_col = split.column()
@@ -115,13 +116,42 @@ class Field(ReportingMixin):
 
         # Create the right column
         right_col = split.column()
-        right_col.prop(data = operator_instance, property = self.attr_name, text="")
+
+        if (self.name == FieldNames.DEFAULT.value and
+            operator_instance.property_type in [
+                consts.PropertyTypes.FLOAT_ARRAY,
+                consts.PropertyTypes.INT_ARRAY,
+                consts.PropertyTypes.BOOL_ARRAY
+            ]):
+            self._draw_array_collection(operator_instance, right_col)
+        elif self.attr_name != "default_array":
+            # Only draw property if it's not the default_array collection
+            right_col.prop(data = operator_instance, property = self.attr_name, text="")
 
         return row
 
     def should_draw(self, property_type: str) -> bool:
         """Determines if the field should be drawn."""
         return property_type in self.draw_on or self.draw_on == consts.ALL
+
+    def _draw_array_collection(self, operator_instance, right_col):
+        collection = operator_instance.default_array
+        prop_type = operator_instance.property_type
+
+        # Determine which value attribute to use
+        value_attr_map = {
+            consts.PropertyTypes.FLOAT_ARRAY: "float_value",
+            consts.PropertyTypes.INT_ARRAY: "int_value",
+            consts.PropertyTypes.BOOL_ARRAY: "bool_value"
+        }
+
+        value_attr = value_attr_map.get(prop_type)
+        if not value_attr:
+            return
+
+        # Draw each element
+        for i, element in enumerate(collection):
+            right_col.prop(element, value_attr, text = f"[{i}]")
 
     def _generate_attr_name(self) -> str:
         """
@@ -130,6 +160,13 @@ class Field(ReportingMixin):
         :return: The generated attribute name.
         """
         return_str = f"{self.attr_prefix}{self.property_type.lower()}"
+
+        # Special case for default_ prefix with array types
+        if self.attr_prefix == "default_" and self.property_type.lower().endswith("_array"):
+            # For array types, use just "default_array" instead of "default_<type>_array"
+            return "default_array"
+
+        # For non-default prefixes, remove the _array suffix
         if not self.attr_prefix == "default_":
             return return_str.removesuffix("_array")
 

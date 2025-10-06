@@ -17,8 +17,8 @@ class FieldNames(Enum):
     TYPE = "property_type"
     SUBTYPE = "subtype"
     SUBTYPE_ARRAY = "subtype_array"
-    MIN = "min"
-    MAX = "max"
+    MIN = "min_value"
+    MAX = "max_value"
     USE_SOFT_LIMITS = "use_soft_limits"
     SOFT_MIN = "soft_min"
     SOFT_MAX = "soft_max"
@@ -27,6 +27,7 @@ class FieldNames(Enum):
     DEFAULT = "default"
     IS_OVERRIDABLE_LIBRARY = "is_overridable_library"
     DESCRIPTION = "description"
+    ARRAY_LENGTH = "array_length"
 
 
 field_configs = {
@@ -69,9 +70,15 @@ field_configs = {
         label = "Subtype",
         name = FieldNames.SUBTYPE_ARRAY.value
     ),
+    FieldNames.ARRAY_LENGTH.value: FieldConfig(
+        attr_name = "array_length",
+        draw_on = ['FLOAT_ARRAY', 'INT_ARRAY', 'BOOL_ARRAY'],
+        label = "Array Length",
+        name = FieldNames.ARRAY_LENGTH.value
+    ),
     FieldNames.DEFAULT.value: FieldConfig(
         attr_prefix = "default_",
-        draw_on = ['FLOAT_ARRAY', 'INT_ARRAY', 'BOOL_ARRAY'],
+        draw_on = ['FLOAT', 'INT', 'BOOL', 'STRING', 'FLOAT_ARRAY', 'INT_ARRAY', 'BOOL_ARRAY'],
         label = "Default",
         name = FieldNames.DEFAULT.value,
     ),

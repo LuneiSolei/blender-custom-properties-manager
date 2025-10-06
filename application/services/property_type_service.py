@@ -44,7 +44,7 @@ class PropertyTypeService:
             "int_array": consts.PropertyTypes.INT_ARRAY,
             "bool": consts.PropertyTypes.BOOL,
             "bool_array": consts.PropertyTypes.BOOL_ARRAY,
-            "string": consts.PropertyTypes.STRING,
+            "str": consts.PropertyTypes.STRING,
             "IDPropertyGroup": consts.PropertyTypes.PYTHON,
             "data_block": consts.PropertyTypes.DATA_BLOCK
         }
@@ -61,17 +61,19 @@ class PropertyTypeService:
         elif isinstance(value, bpy.types.ID):
             return_value = consts.PropertyTypes.DATA_BLOCK
 
-        # Default fallback
+        # Default fallback - raise exception instead of silently defaulting to FLOAT
         else:
+            error_msg = f"Unsupported property type: '{prop_type}' (type: {type(value).__name__})"
             cls.logger.log(
                 level = LogLevel.ERROR,
-                message = "Property type not supported",
+                message = error_msg,
                 extra = {
-                    "property_type": prop_type
+                    "property_type": prop_type,
+                    "value": value,
+                    "value_type": type(value).__name__
                 }
             )
-
-            return consts.PropertyTypes.FLOAT
+            raise TypeError(error_msg)
 
         # Log method exit
         cls.logger.log(

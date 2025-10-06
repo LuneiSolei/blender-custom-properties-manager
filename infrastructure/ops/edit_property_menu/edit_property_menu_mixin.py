@@ -2,8 +2,7 @@ from typing import Union
 
 from bpy.props import (BoolProperty, BoolVectorProperty, EnumProperty, FloatProperty, FloatVectorProperty, IntProperty,
                        IntVectorProperty, StringProperty)
-
-from ....application.services import PropertyTypeService
+from ....application.services import PropertyTypeService, field_validation_service
 from ....shared import consts
 
 # noinspection PyTypeHints
@@ -31,24 +30,25 @@ class EditPropertyMenuOperatorMixin:
     initialized: BoolProperty(default = False)
     use_soft_limits: BoolProperty()
     is_property_overridable_library: BoolProperty()
+    array_length: IntProperty()
 
     # FLOAT
     default_float: FloatProperty()
     default_float_array: FloatVectorProperty()
-    min_float: FloatProperty()
-    max_float: FloatProperty()
-    soft_min_float: FloatProperty()
-    soft_max_float: FloatProperty()
+    min_float: FloatProperty(update = field_validation_service.on_min_max_float_update)
+    max_float: FloatProperty(update = field_validation_service.on_min_max_float_update)
+    soft_min_float: FloatProperty(update = field_validation_service.on_soft_min_max_float_update)
+    soft_max_float: FloatProperty(update = field_validation_service.on_soft_min_max_float_update)
     subtype_float: EnumProperty(items = consts.PROPERTY_SUBTYPES)
     subtype_array_float: EnumProperty(items = consts.PROPERTY_SUBTYPE_VECTORS)
 
     # INT
     default_int: IntProperty()
     default_int_array: IntVectorProperty()
-    min_int: IntProperty()
-    max_int: IntProperty()
-    soft_min_int: IntProperty()
-    soft_max_int: IntProperty()
+    min_int: IntProperty(update = field_validation_service.on_min_max_int_update)
+    max_int: IntProperty(update = field_validation_service.on_min_max_int_update)
+    soft_min_int: IntProperty(update = field_validation_service.on_soft_min_max_int_update)
+    soft_max_int: IntProperty(update = field_validation_service.on_soft_min_max_int_update)
     subtype_int: EnumProperty(items = consts.PROPERTY_SUBTYPES)
     subtype_array_int: EnumProperty(items = consts.PROPERTY_SUBTYPE_VECTORS)
 

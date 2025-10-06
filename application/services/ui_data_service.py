@@ -96,6 +96,12 @@ class UIDataService:
 
         return new_ui_data
 
+    @staticmethod
+    def _validate_soft_limits(operator_instance, field_map: dict[str, tuple[FieldNames, str, type]]):
+        if not operator_instance.use_soft_limits:
+            field_map["soft_min"] = field_map["min"]
+            field_map["soft_max"] = field_map["max"]
+
     @classmethod
     def _get_ui_data_float(cls, operator_instance, fields: dict[str, Field]) -> UIData:
         """
@@ -117,6 +123,8 @@ class UIDataService:
             "precision": (FieldNames.PRECISION, consts.DEFAULT_PRECISION_FLOAT, int),
         }
 
+        cls._validate_soft_limits(operator_instance, field_map)
+
         return cls._construct_ui_data(operator_instance, fields, field_map)
 
     @classmethod
@@ -132,6 +140,8 @@ class UIDataService:
             "precision": (FieldNames.PRECISION, consts.DEFAULT_PRECISION_FLOAT, int),
             "default": (FieldNames.DEFAULT, consts.DEFAULT_FLOAT_ARRAY, list)
         }
+
+        cls._validate_soft_limits(operator_instance, field_map)
 
         return cls._construct_ui_data(operator_instance, fields, field_map)
 
@@ -155,6 +165,8 @@ class UIDataService:
             "step": (FieldNames.STEP, consts.DEFAULT_STEP_INT, int)
         }
 
+        cls._validate_soft_limits(operator_instance, field_map)
+
         return cls._construct_ui_data(operator_instance, fields, field_map)
 
     @classmethod
@@ -169,6 +181,8 @@ class UIDataService:
             "step": (FieldNames.STEP, consts.DEFAULT_STEP_INT_ARRAY, int),
             "default": (FieldNames.DEFAULT, consts.DEFAULT_INT_ARRAY, list)
         }
+
+        cls._validate_soft_limits(operator_instance, field_map)
 
         return cls._construct_ui_data(operator_instance, fields, field_map)
 
@@ -200,7 +214,12 @@ class UIDataService:
         return cls._construct_ui_data(operator_instance, fields, field_map)
 
     @classmethod
-    def _construct_ui_data(cls, operator_instance, fields: dict[str, Field], field_map: dict[str, tuple[FieldNames, str, type]]) -> UIData:
+    def _construct_ui_data(
+        cls,
+        operator_instance,
+        fields: dict[str, Field],
+        field_map: dict[str, tuple[FieldNames, str, type]]
+    ) -> UIData:
         result = {}
         for key, (field_name, default, cast_type) in field_map.items():
             attr_name = fields[field_name.value].attr_name

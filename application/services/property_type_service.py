@@ -13,7 +13,7 @@ class PropertyTypeService:
     @classmethod
     def get_type(cls, operator_instance) -> str:
         """
-        Get the property's type from the operator_instance instance.
+        Get the property's type from the operator instance.
 
         :param operator_instance: The EditPropertyMenuOperator instance.
 

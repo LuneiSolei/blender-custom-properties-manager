@@ -183,7 +183,14 @@ class FieldManager:
     @staticmethod
     def _get_ui_data_value(attr_name: str, ui_data, ui_data_attr: str | None) -> Any:
         # The field has a ui_data_attr tag
-        default_value = consts.DEFAULT_DESCRIPTION if ui_data_attr == "description" else None
+        # Set appropriate defaults based on the ui_data_attr
+        if ui_data_attr == "description":
+            default_value = consts.DEFAULT_DESCRIPTION
+        elif ui_data_attr == "id_type":
+            default_value = consts.DEFAULT_ID_TYPE
+        else:
+            default_value = None
+
         found_value = ui_data.setdefault(ui_data_attr, default_value)
 
         # Ensure that arrays are returning a list and not a single value and is not for subtypes

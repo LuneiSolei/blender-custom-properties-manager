@@ -1,4 +1,8 @@
 import logging
+from typing import Any, Iterable
+from collections.abc import Sequence
+
+import bpy
 
 PROPERTY_TYPES = (
     ('FLOAT', "Float", "A single floating-point value"),
@@ -59,4 +63,17 @@ LOG_LEVELS = (
     (str(logging.ERROR), "Error", "Shows error and critical messages"),
     (str(logging.CRITICAL), "Critical", "Shows only critical messages"),
 )
+
+def get_data_block_types(self, context):
+    """
+    Dynamically generate the list of data block types from Blender's RNA system.
+
+    :param self: The operator instance
+    :param context: The Blender context
+    :return: Tuple of (identifier, name, description) for each ID type
+    """
+    return tuple(
+        (item.identifier, item.name, item.description)
+        for item in bpy.types.ID.bl_rna.properties["id_type"].enum_items
+    )
 

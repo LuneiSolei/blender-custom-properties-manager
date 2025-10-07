@@ -23,6 +23,7 @@ class PropertyTypes:
     DATA_BLOCK = PROPERTY_TYPES[7][0]
     PYTHON = PROPERTY_TYPES[8][0]
     ID_PROPERTY_ARRAY = "IDPropertyArray"
+    ID_PROPERTY_GROUP = "IDPropertyGroup"
 
 PROPERTY_SUBTYPES = (
     ('NONE', "Plain Data", "Data values without special behavior"),

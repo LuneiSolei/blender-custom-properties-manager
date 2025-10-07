@@ -119,6 +119,8 @@ class PropertyDataManager:
         ]:
             # noinspection PyTypeChecker
             new_data["array_length"] = cls._update_array_length(operator_instance)
+        elif operator_instance.property_type == consts.PropertyTypes.PYTHON:
+            new_data["python_value"] = cls._update_python_value(operator_instance, fields[FieldNames.PYTHON_VALUE.value])
 
         cls.logger.log(
             level = LogLevel.DEBUG,
@@ -373,3 +375,48 @@ class PropertyDataManager:
         result = data_object.property_overridable_library_set(f'["{prop_name}"]', is_overridable)
 
         return is_overridable if result else False
+
+    @classmethod
+    def _update_python_value(cls, operator_instance, field: Field) -> dict:
+        """
+        Update PYTHON property value from JSON string.
+
+        :param operator_instance: The EditPropertyMenuOperator instance.
+        :param field: The field containing the JSON string value.
+
+        :return: The updated dict value.
+        """
+        import json
+
+        data_object = utils.resolve_data_object(operator_instance.data_path)
+        prop_name = operator_instance.name
+
+        # Parse JSON string to dict
+        try:
+            new_value = json.loads(operator_instance.default_python)
+        except json.JSONDecodeError as e:
+            cls.logger.log(
+                level = LogLevel.ERROR,
+                message = "Failed to parse PYTHON property value",
+                extra = {
+                    "property": prop_name,
+                    "error": str(e),
+                    "value": operator_instance.default_python
+                }
+            )
+            # Return current value if parsing fails
+            return dict(data_object[prop_name])
+
+        # Update the property
+        data_object[prop_name] = new_value
+
+        cls.logger.log(
+            level = LogLevel.DEBUG,
+            message = "Updated PYTHON property value",
+            extra = {
+                "property": prop_name,
+                "new_value": new_value
+            }
+        )
+
+        return new_value

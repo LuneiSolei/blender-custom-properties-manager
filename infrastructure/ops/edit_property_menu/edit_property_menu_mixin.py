@@ -1,6 +1,7 @@
 from bpy.props import BoolProperty, EnumProperty, FloatProperty, IntProperty, StringProperty, CollectionProperty
 from ....application.services import PropertyTypeService, field_validation_service
 from ....shared import consts
+from ....shared.consts.enums import get_data_block_types
 from .default_array_element import DefaultArrayElement
 
 # noinspection PyTypeHints
@@ -56,6 +57,16 @@ class EditPropertyMenuOperatorMixin:
 
     # STRING
     default_string: StringProperty()
+
+    # PYTHON
+    default_python: StringProperty()
+
+    # DATA_BLOCK
+    id_type: EnumProperty(
+        name = "ID Type",
+        items = get_data_block_types,
+        default = 24
+    )
 
     # Misc.
     _group_data = {}

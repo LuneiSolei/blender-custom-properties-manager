@@ -57,9 +57,27 @@ class PropertyTypeService:
         elif prop_type == consts.PropertyTypes.ID_PROPERTY_ARRAY:
             return_value = cls.determine_array_type(value)
 
-        # Check if it's a data block property_type
-        elif isinstance(value, bpy.types.ID):
-            return_value = consts.PropertyTypes.DATA_BLOCK
+        # Check if it's a data block property_type (including None values)
+        elif isinstance(value, bpy.types.ID) or value is None:
+            # Check if it's actually a data block by looking at UI data
+            ui_data = data_object.id_properties_ui(prop_name).as_dict()
+            if 'id_type' in ui_data:
+                return_value = consts.PropertyTypes.DATA_BLOCK
+            elif value is None:
+                # Could be None for other reasons, raise error
+                error_msg = f"Property value is None and no id_type found in UI data"
+                cls.logger.log(
+                    level = LogLevel.ERROR,
+                    message = error_msg,
+                    extra = {
+                        "property_type": prop_type,
+                        "value": value,
+                        "ui_data": ui_data
+                    }
+                )
+                raise TypeError(error_msg)
+            else:
+                return_value = consts.PropertyTypes.DATA_BLOCK
 
         # Default fallback - raise exception instead of silently defaulting to FLOAT
         else:
@@ -175,7 +193,8 @@ class PropertyTypeService:
             consts.PropertyTypes.INT: lambda v: int(v) if isinstance(v, (int, float)) else 0,
             consts.PropertyTypes.BOOL: lambda v: bool(v),
             consts.PropertyTypes.STRING: lambda v: str(v),
-            consts.PropertyTypes.PYTHON: lambda v: v if isinstance(v, dict) else {}
+            consts.PropertyTypes.PYTHON: lambda v: v if isinstance(v, dict) else {},
+            consts.PropertyTypes.DATA_BLOCK: lambda v: v if isinstance(v, bpy.types.ID) else None
         }
 
         if new_type == old_type:

@@ -56,8 +56,8 @@ class FieldManager:
 
         return cls.stringify_fields(fields)
 
-    @staticmethod
-    def set_default_array_field(operator_instance):
+    @classmethod
+    def set_default_array_field(cls, operator_instance):
         prop_types = [
             consts.PropertyTypes.FLOAT_ARRAY,
             consts.PropertyTypes.INT_ARRAY,
@@ -72,7 +72,7 @@ class FieldManager:
 
         if operator_instance.property_type in prop_types:
             ui_data = json.loads(operator_instance.ui_data)
-            default_values = ui_data.get("default", [])
+            default_values = cls._get_ui_data_value("default_array", ui_data, "default")
 
             # Clear and repopulate the collection
             operator_instance.default_array.clear()
@@ -141,7 +141,8 @@ class FieldManager:
 
         jump_table = {
             "group": lambda: cls._get_group_value(operator_instance, operator_type),
-            "is_property_overridable_library": lambda: cls._get_overridable_library_value(operator_instance)
+            "is_property_overridable_library": lambda: cls._get_overridable_library_value(operator_instance),
+            "default_python": lambda: cls._get_python_value(operator_instance)
         }
 
         is_ui_data = ui_data_attr is not None
@@ -182,7 +183,14 @@ class FieldManager:
     @staticmethod
     def _get_ui_data_value(attr_name: str, ui_data, ui_data_attr: str | None) -> Any:
         # The field has a ui_data_attr tag
-        default_value = consts.DEFAULT_DESCRIPTION if ui_data_attr == "description" else None
+        # Set appropriate defaults based on the ui_data_attr
+        if ui_data_attr == "description":
+            default_value = consts.DEFAULT_DESCRIPTION
+        elif ui_data_attr == "id_type":
+            default_value = consts.DEFAULT_ID_TYPE
+        else:
+            default_value = None
+
         found_value = ui_data.setdefault(ui_data_attr, default_value)
 
         # Ensure that arrays are returning a list and not a single value and is not for subtypes
@@ -203,3 +211,15 @@ class FieldManager:
         found_value = operator_instance.is_property_overridable_library
 
         return found_value
+
+    @staticmethod
+    def _get_python_value(operator_instance) -> str:
+        """Get PYTHON property value as a JSON string for editing."""
+        data_object = utils.resolve_data_object(operator_instance.data_path)
+        value = data_object[operator_instance.name]
+
+        # Convert IDPropertyGroup to dict, then to JSON string (compact format)
+        if type(value).__name__ == consts.PropertyTypes.ID_PROPERTY_GROUP:
+            return json.dumps(dict(value))
+
+        return "{}"

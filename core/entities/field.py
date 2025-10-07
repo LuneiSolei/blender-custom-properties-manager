@@ -118,14 +118,15 @@ class Field(ReportingMixin):
         right_col = split.column()
 
         if (self.name == FieldNames.DEFAULT.value and
+            # The property is an array
             operator_instance.property_type in [
                 consts.PropertyTypes.FLOAT_ARRAY,
                 consts.PropertyTypes.INT_ARRAY,
                 consts.PropertyTypes.BOOL_ARRAY
             ]):
             self._draw_array_collection(operator_instance, right_col)
-        elif self.attr_name != "default_array":
-            # Only draw property if it's not the default_array collection
+        else:
+            # All other properties get drawn normally
             right_col.prop(data = operator_instance, property = self.attr_name, text="")
 
         return row
@@ -134,7 +135,8 @@ class Field(ReportingMixin):
         """Determines if the field should be drawn."""
         return property_type in self.draw_on or self.draw_on == consts.ALL
 
-    def _draw_array_collection(self, operator_instance, right_col):
+    @staticmethod
+    def _draw_array_collection(operator_instance, right_col):
         collection = operator_instance.default_array
         prop_type = operator_instance.property_type
 

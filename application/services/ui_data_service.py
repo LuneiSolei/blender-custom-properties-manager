@@ -58,7 +58,14 @@ class UIDataService:
         )
 
         data_object = utils.resolve_data_object(operator_instance.data_path)
-        ui_data = data_object.id_properties_ui(operator_instance.name).as_dict()
+
+        # Check if property is PYTHON type (IDPropertyGroup) which has no UI data
+        value = data_object[operator_instance.name]
+        if type(value).__name__ == consts.PropertyTypes.ID_PROPERTY_GROUP:
+            # PYTHON types have no UI data, return empty UIData
+            ui_data = {}
+        else:
+            ui_data = data_object.id_properties_ui(operator_instance.name).as_dict()
 
         cls.logger.log(
             level = LogLevel.DEBUG,
@@ -80,6 +87,10 @@ class UIDataService:
 
         :return: The updated UI data.
         """
+        # PYTHON types have no UI data, return empty UIData
+        if operator_instance.property_type == consts.PropertyTypes.PYTHON:
+            return UIData()
+
         ui_data_map = {
             consts.PropertyTypes.FLOAT: lambda: cls._get_ui_data_float(operator_instance, fields),
             consts.PropertyTypes.INT: lambda: cls._get_ui_data_int(operator_instance, fields),
@@ -87,7 +98,8 @@ class UIDataService:
             consts.PropertyTypes.FLOAT_ARRAY: lambda: cls._get_ui_data_float_array(operator_instance, fields),
             consts.PropertyTypes.INT_ARRAY: lambda: cls._get_ui_data_int_array(operator_instance, fields),
             consts.PropertyTypes.BOOL_ARRAY: lambda: cls._get_ui_data_bool_array(operator_instance, fields),
-            consts.PropertyTypes.STRING: lambda: cls._get_ui_data_str(operator_instance, fields)
+            consts.PropertyTypes.STRING: lambda: cls._get_ui_data_str(operator_instance, fields),
+            consts.PropertyTypes.DATA_BLOCK: lambda: cls._get_ui_data_data_block(operator_instance, fields)
         }
 
         new_ui_data = ui_data_map[operator_instance.property_type]()
@@ -213,6 +225,23 @@ class UIDataService:
         field_map = {
             "description": (FieldNames.DESCRIPTION, consts.DEFAULT_DESCRIPTION, str),
             "default": (FieldNames.DEFAULT, consts.DEFAULT_VALUE_STRING, str),
+        }
+
+        return cls._construct_ui_data(operator_instance, fields, field_map)
+
+    @classmethod
+    def _get_ui_data_data_block(cls, operator_instance, fields: dict[str, Field]) -> UIData:
+        """
+        Helper to construct UI data for a data block property.
+
+        :param operator_instance: The EditPropertyMenu operator_instance instance.
+        :param fields: The fields with which to construct UI data from.
+
+        :return: The newly constructed UI data.
+        """
+        field_map = {
+            "description": (FieldNames.DESCRIPTION, consts.DEFAULT_DESCRIPTION, str),
+            "id_type": (FieldNames.ID_TYPE, consts.DEFAULT_ID_TYPE, str),
         }
 
         return cls._construct_ui_data(operator_instance, fields, field_map)

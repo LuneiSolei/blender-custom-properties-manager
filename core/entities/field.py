@@ -134,7 +134,8 @@ class Field(ReportingMixin):
         """Determines if the field should be drawn."""
         return property_type in self.draw_on or self.draw_on == consts.ALL
 
-    def _draw_array_collection(self, operator_instance, right_col):
+    @staticmethod
+    def _draw_array_collection(operator_instance, right_col):
         collection = operator_instance.default_array
         prop_type = operator_instance.property_type
 

@@ -141,7 +141,8 @@ class FieldManager:
 
         jump_table = {
             "group": lambda: cls._get_group_value(operator_instance, operator_type),
-            "is_property_overridable_library": lambda: cls._get_overridable_library_value(operator_instance)
+            "is_property_overridable_library": lambda: cls._get_overridable_library_value(operator_instance),
+            "default_python": lambda: cls._get_python_value(operator_instance)
         }
 
         is_ui_data = ui_data_attr is not None
@@ -203,3 +204,15 @@ class FieldManager:
         found_value = operator_instance.is_property_overridable_library
 
         return found_value
+
+    @staticmethod
+    def _get_python_value(operator_instance) -> str:
+        """Get PYTHON property value as a JSON string for editing."""
+        data_object = utils.resolve_data_object(operator_instance.data_path)
+        value = data_object[operator_instance.name]
+
+        # Convert IDPropertyGroup to dict, then to JSON string (compact format)
+        if type(value).__name__ == consts.PropertyTypes.ID_PROPERTY_GROUP:
+            return json.dumps(dict(value))
+
+        return "{}"

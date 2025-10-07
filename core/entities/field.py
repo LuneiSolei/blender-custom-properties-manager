@@ -118,6 +118,7 @@ class Field(ReportingMixin):
         right_col = split.column()
 
         if (self.name == FieldNames.DEFAULT.value and
+            # The property is an array
             operator_instance.property_type in [
                 consts.PropertyTypes.FLOAT_ARRAY,
                 consts.PropertyTypes.INT_ARRAY,

@@ -58,7 +58,14 @@ class UIDataService:
         )
 
         data_object = utils.resolve_data_object(operator_instance.data_path)
-        ui_data = data_object.id_properties_ui(operator_instance.name).as_dict()
+
+        # Check if property is PYTHON type (IDPropertyGroup) which has no UI data
+        value = data_object[operator_instance.name]
+        if type(value).__name__ == consts.PropertyTypes.ID_PROPERTY_GROUP:
+            # PYTHON types have no UI data, return empty UIData
+            ui_data = {}
+        else:
+            ui_data = data_object.id_properties_ui(operator_instance.name).as_dict()
 
         cls.logger.log(
             level = LogLevel.DEBUG,
@@ -80,6 +87,10 @@ class UIDataService:
 
         :return: The updated UI data.
         """
+        # PYTHON types have no UI data, return empty UIData
+        if operator_instance.property_type == consts.PropertyTypes.PYTHON:
+            return UIData()
+
         ui_data_map = {
             consts.PropertyTypes.FLOAT: lambda: cls._get_ui_data_float(operator_instance, fields),
             consts.PropertyTypes.INT: lambda: cls._get_ui_data_int(operator_instance, fields),

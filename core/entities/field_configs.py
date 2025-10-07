@@ -25,6 +25,7 @@ class FieldNames(Enum):
     STEP = "step"
     PRECISION = "precision"
     DEFAULT = "default"
+    PYTHON_VALUE = "python_value"
     IS_OVERRIDABLE_LIBRARY = "is_overridable_library"
     DESCRIPTION = "description"
     ARRAY_LENGTH = "array_length"
@@ -46,7 +47,7 @@ field_configs = {
     FieldNames.DESCRIPTION.value: FieldConfig(
         attr_name = "description",
         ui_data_attr = "description",
-        draw_on = 'ALL',
+        draw_on = ['FLOAT', 'FLOAT_ARRAY', 'INT', 'INT_ARRAY', 'BOOL', 'BOOL_ARRAY', 'STRING'],
         label = "Description",
         name = FieldNames.DESCRIPTION.value
     ),
@@ -124,6 +125,12 @@ field_configs = {
         draw_on = ['FLOAT', 'FLOAT_ARRAY'],
         label = "Precision",
         name = FieldNames.PRECISION.value
+    ),
+    FieldNames.PYTHON_VALUE.value: FieldConfig(
+        attr_name = "default_python",
+        draw_on = ['PYTHON'],
+        label = "Value",
+        name = FieldNames.PYTHON_VALUE.value
     ),
     FieldNames.IS_OVERRIDABLE_LIBRARY.value: FieldConfig(
         attr_name = "is_property_overridable_library", # Needs to be called on bpy.types.ID, not the property itself

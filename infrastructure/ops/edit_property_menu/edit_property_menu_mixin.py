@@ -57,6 +57,9 @@ class EditPropertyMenuOperatorMixin:
     # STRING
     default_string: StringProperty()
 
+    # PYTHON
+    default_python: StringProperty()
+
     # Misc.
     _group_data = {}
     _current = {}

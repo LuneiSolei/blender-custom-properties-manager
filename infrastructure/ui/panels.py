@@ -79,12 +79,19 @@ def _draw_property_row(layout, data_object, data_path, prop_name, group_name):
 
     row = layout.row()
 
-    row.label(text = prop_name)
-    row.prop(
-        data = data_object,
-        property = f'["{prop_name}"]',
-        text = ""
-    )
+    # Check if property is PYTHON type (dict/IDPropertyGroup)
+    value = data_object[prop_name]
+    if type(value).__name__ == consts.PropertyTypes.ID_PROPERTY_GROUP:
+        # Display Python properties as read-only string representations
+        row.label(text = prop_name)
+        row.label(text = str(dict(value)))
+    else:
+        row.label(text = prop_name)
+        row.prop(
+            data = data_object,
+            property = f'["{prop_name}"]',
+            text = ""
+        )
 
     # Draw the "edit property" button
     edit_op = row.operator(

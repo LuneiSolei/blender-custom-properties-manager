@@ -46,7 +46,7 @@ field_configs = {
     FieldNames.DESCRIPTION.value: FieldConfig(
         attr_name = "description",
         ui_data_attr = "description",
-        draw_on = 'ALL',
+        draw_on = ['FLOAT', 'FLOAT_ARRAY', 'INT', 'INT_ARRAY', 'BOOL', 'BOOL_ARRAY', 'STRING'],
         label = "Description",
         name = FieldNames.DESCRIPTION.value
     ),

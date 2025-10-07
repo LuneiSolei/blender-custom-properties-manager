@@ -124,8 +124,8 @@ class Field(ReportingMixin):
                 consts.PropertyTypes.BOOL_ARRAY
             ]):
             self._draw_array_collection(operator_instance, right_col)
-        elif self.attr_name != "default_array":
-            # Only draw property if it's not the default_array collection
+        else:
+            # All other properties get drawn normally
             right_col.prop(data = operator_instance, property = self.attr_name, text="")
 
         return row

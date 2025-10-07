@@ -56,8 +56,8 @@ class FieldManager:
 
         return cls.stringify_fields(fields)
 
-    @staticmethod
-    def set_default_array_field(operator_instance):
+    @classmethod
+    def set_default_array_field(cls, operator_instance):
         prop_types = [
             consts.PropertyTypes.FLOAT_ARRAY,
             consts.PropertyTypes.INT_ARRAY,
@@ -72,7 +72,7 @@ class FieldManager:
 
         if operator_instance.property_type in prop_types:
             ui_data = json.loads(operator_instance.ui_data)
-            default_values = ui_data.get("default", [])
+            default_values = cls._get_ui_data_value("default_array", ui_data, "default")
 
             # Clear and repopulate the collection
             operator_instance.default_array.clear()
